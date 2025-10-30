@@ -36,12 +36,12 @@ class EntitlementService
         $entitlement = EmployeeEntitlement::where('user_id', $user->id)
             ->where('leave_type_id', $leaveTypeId)
             ->where('year', Carbon::now()->year)
-            ->sum('days');
+            ->sum('initial_balance');
 
         // 2. Hitung Jumlah Hari yang Sudah Diambil (Approved/Used)
         $daysUsed = LeaveRequest::where('user_id', $user->id)
             ->where('leave_type_id', $leaveTypeId)
-            ->where('status', 'Approved') // Hanya hitung yang sudah FINAL APPROVED
+            ->where('current_status', 'Approved') // Hanya hitung yang sudah FINAL APPROVED
             // Filter tahun cuti (misalnya, hanya hitung cuti tahun ini)
             ->whereYear('start_date', Carbon::now()->year) 
             ->get()

@@ -56,15 +56,7 @@ class UserResource extends JsonResource
                     'status' => $leaveRequest->status,
                 ];
             })->values()->all(),
-            'approvalsGiven' => $this->approvalsGiven()->when($this->approvalsGiven->exists(), function ($approvals) {
-                return $approvals->map(function ($approval) {
-                    return [
-                        'id' => $approval->id?? null,
-                        'leave_request_id' => $approval->leave_request_id?? null,
-                        'status' => $approval->status?? null,
-                    ];
-                });
-            })->when($this->approvalsGiven->count() === 0, fn () => collect([]))
+          
         ];
     }
 }

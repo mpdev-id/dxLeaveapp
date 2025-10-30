@@ -1,24 +1,29 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\API;
 
+use App\Helpers\ResponseFormatter;
 use App\Http\Controllers\Controller;
 use App\Models\LeaveRequest;
 use App\Models\Workflow;
 use App\Services\LeaveRequestService;
+use App\Services\EntitlementService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class LeaveRequestController extends Controller
 {
     protected $leaveRequestService;
+    protected $entitlementService;
 
-    // Injeksi dependensi (Dependency Injection) LeaveRequestService
-    public function __construct(LeaveRequestService $leaveRequestService)
+    // Injeksi dependensi (Dependency Injection) LeaveRequestService dan EntitlementService
+    public function __construct(LeaveRequestService $leaveRequestService, EntitlementService $entitlementService)
     {
         $this->leaveRequestService = $leaveRequestService;
+        $this->entitlementService = $entitlementService;
     }
 
     /**
@@ -41,14 +46,14 @@ class LeaveRequestController extends Controller
             // Untuk kesederhanaan, kita hanya menampilkan semua yang Pending atau In Progress saat ini.
             
             // TODO: Implementasikan filter yang lebih ketat menggunakan WorkflowService.
-            $requests = $query->whereIn('status', ['Pending', 'In Progress', 'Rejected'])->get();
+            $requests = $query->whereIn('current_status', ['Pending'])->get();
 
         } else {
             // Logika untuk Karyawan: Tampilkan permintaan miliknya sendiri.
             $requests = $query->where('user_id', $user->id)->get();
         }
 
-        return response()->json($requests);
+        return ResponseFormatter::success($requests, 'Leave requests retrieved successfully');
     }
 
     /**
@@ -66,16 +71,19 @@ class LeaveRequestController extends Controller
 
         // 2. Cari Alur Kerja yang Sesuai
         // Kita asumsikan ada logika untuk menentukan workflow, misal berdasarkan LeaveType
-        $workflow = Workflow::where('applies_to_model', LeaveRequest::class)->first();
+        $workflow = Workflow::where('applicable_model', LeaveRequest::class)->first();
 
         if (!$workflow) {
-            return response()->json(['message' => 'Alur kerja cuti tidak ditemukan.'], 500);
+            return ResponseFormatter::error(null, 'Leave workflow not found.', 500);
         }
 
-        // 3. Cek Jatah Cuti (Placeholder)
-        // TODO: Panggil EntitlementService untuk cek apakah jatah cuti mencukupi.
+        // 3. Cek Jatah Cuti
+        $startDate = Carbon::parse($validatedData['start_date']);
+        $endDate = Carbon::parse($validatedData['end_date']);
+        $daysNeeded = $startDate->diffInDays($endDate) + 1;
+
         if (!$this->entitlementService->hasSufficientBalance(Auth::user(), $validatedData['leave_type_id'], $daysNeeded)) {
-            throw ValidationException::withMessages(['leave' => 'Jatah cuti tidak mencukupi.']);
+            throw ValidationException::withMessages(['leave' => 'Insufficient leave balance.']);
         }
 
         // 4. Buat Permintaan Cuti
@@ -88,16 +96,13 @@ class LeaveRequestController extends Controller
                     'start_date' => $validatedData['start_date'],
                     'end_date' => $validatedData['end_date'],
                     'reason' => $validatedData['reason'],
-                    'status' => 'Pending', // Selalu mulai dari Pending
+                    'current_status' => 'Pending', // Selalu mulai dari Pending
                 ]);
             });
 
-            return response()->json([
-                'message' => 'Permintaan cuti berhasil diajukan.',
-                'request' => $leaveRequest->load('leaveType')
-            ], 201);
+            return ResponseFormatter::success($leaveRequest->load('leaveType'), 'Leave request submitted successfully');
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Gagal mengajukan cuti.', 'error' => $e->getMessage()], 500);
+            return ResponseFormatter::error(null, 'Failed to submit leave request: ' . $e->getMessage(), 500);
         }
     }
 
@@ -120,19 +125,13 @@ class LeaveRequestController extends Controller
             // Panggil Service Layer yang memegang semua logika sequential check.
             $this->leaveRequestService->processApproval($leaveRequest, $approver, $action, $comments);
 
-            return response()->json([
-                'message' => 'Tindakan persetujuan berhasil dicatat.',
-                'status' => $leaveRequest->fresh()->status
-            ], 200);
+            return ResponseFormatter::success($leaveRequest->fresh()->current_status, 'Approval action recorded successfully.');
 
         } catch (ValidationException $e) {
             // Menangkap kesalahan validasi, termasuk batasan urutan (sequential check)
-            return response()->json([
-                'message' => $e->getMessage(),
-                'errors' => $e->errors()
-            ], 403); // 403 Forbidden
+            return ResponseFormatter::error($e->errors(), $e->getMessage(), 403);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Terjadi kesalahan sistem.'], 500);
+            return ResponseFormatter::error(null, 'A system error occurred.', 500);
         }
     }
 }
