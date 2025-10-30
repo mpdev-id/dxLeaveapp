@@ -16,7 +16,7 @@ class LeaveTypeSeeder extends Seeder
             [
                 'name' => 'Annual Leave',
                 'default_entitlement_days' => 12.0,
-                'accrual_frequency' => 'Yearly',
+                'accrual_frequency' => 'Annually',
                 'is_paid' => true,
                 'max_carry_over_days' => 6.0,
                 'requires_attachment' => false,
@@ -24,7 +24,7 @@ class LeaveTypeSeeder extends Seeder
             [
                 'name' => 'Sick Leave',
                 'default_entitlement_days' => 6.0,
-                'accrual_frequency' => 'Yearly',
+                'accrual_frequency' => 'Annually',
                 'is_paid' => true,
                 'max_carry_over_days' => 0.0,
                 'requires_attachment' => true, // Membutuhkan Surat Dokter
@@ -37,6 +37,30 @@ class LeaveTypeSeeder extends Seeder
                 'max_carry_over_days' => 0.0,
                 'requires_attachment' => true,
             ],
+            [
+                'name' => 'Special Leave',
+                'default_entitlement_days' => 14.0,
+                'accrual_frequency' => 'Per Request',
+                'is_paid' => true,
+                'max_carry_over_days' => 0.0,
+                'requires_attachment' => true,
+            ],
+            [
+                'name' => 'Unpaid Leave',
+                'default_entitlement_days' => 0.0,
+                'accrual_frequency' => 'Per Request',
+                'is_paid' => false,
+                'max_carry_over_days' => 0.0,
+                'requires_attachment' => false,
+            ],
+            [
+                'name' => 'Monthly Leave',
+                'default_entitlement_days' => 1.0,
+                'accrual_frequency' => 'Per Request',
+                'is_paid' => false,
+                'max_carry_over_days' => 0.0,
+                'requires_attachment' => false,
+            ]
         ];
 
         foreach ($leaveTypes as $type) {

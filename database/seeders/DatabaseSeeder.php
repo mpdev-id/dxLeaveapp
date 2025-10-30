@@ -17,10 +17,10 @@ class DatabaseSeeder extends Seeder
 
         // 2. Roles, Permissions, dan Admin User
         // Role & User harus dibuat setelah Department (untuk admin user)
-        $this->call(RoleAndPermissionSeeder::class);
+        // $this->call(RoleAndPermissionSeeder::class);
 
         // 3. Jenis Cuti
-        // $this->call(LeaveTypeSeeder::class);
+        $this->call(LeaveTypeSeeder::class);
 
         // Anda dapat menambahkan seeder lain di sini
         // $this->call(WorkflowSeeder::class);

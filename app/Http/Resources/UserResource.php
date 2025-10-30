@@ -19,8 +19,52 @@ class UserResource extends JsonResource
             'id'         => $this->id,
             'name'       => $this->name,
             'email'      => $this->email,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            'employee_code' => $this->employee_code,
+            'role'       => $this->roles->pluck('name'), // Assuming Spatie Roles are used
+            'status'     => $this->status,
+            'manager_name' => $this->manager ? $this->manager->name : null,
+            'members' => $this->subordinates->map(function ($subordinate) {
+                return [
+                    'id'   => $subordinate->id,
+                    'name' => $subordinate->name,
+                    'email'=> $subordinate->email,
+                    'employee_code' => $subordinate->employee_code,
+                    'sisa_cuti' => $subordinate->entitlements->mapWithKeys(function ($entitlement) {
+                        return [
+                            'tahun' =>  $entitlement->year,
+                            $entitlement->leaveType->name => ($entitlement->initial_balance - $entitlement->days_taken + $entitlement->carry_over_days),
+                            'Annual Leave Terpakai' =>  $entitlement->days_taken,
+                        ];
+                    }),
+                ];
+            })->values()->all(),
+            'department' => $this->department->name,
+            'hire_date'  => $this->hire_date,
+            'sisa_cuti' => $this->entitlements->mapWithKeys(function ($entitlement) {
+                return [
+                    'tahun' =>  $entitlement->year,
+                    $entitlement->leaveType->name => ($entitlement->initial_balance - $entitlement->days_taken + $entitlement->carry_over_days),
+                    'Annual Leave Terpakai' =>  $entitlement->days_taken,
+                ];
+            }),
+            'leaveRequests' => $this->leaveRequests->map(function ($leaveRequest) {
+                return [
+                    'id' => $leaveRequest->id,
+                    'leave_type' => $leaveRequest->leaveType->name,
+                    'start_date' => $leaveRequest->start_date,
+                    'end_date' => $leaveRequest->end_date,
+                    'status' => $leaveRequest->status,
+                ];
+            })->values()->all(),
+            'approvalsGiven' => $this->approvalsGiven()->when($this->approvalsGiven->exists(), function ($approvals) {
+                return $approvals->map(function ($approval) {
+                    return [
+                        'id' => $approval->id?? null,
+                        'leave_request_id' => $approval->leave_request_id?? null,
+                        'status' => $approval->status?? null,
+                    ];
+                });
+            })->when($this->approvalsGiven->count() === 0, fn () => collect([]))
         ];
     }
 }

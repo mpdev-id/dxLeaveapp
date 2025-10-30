@@ -88,6 +88,9 @@ class RoleAndPermissionSeeder extends Seeder
                 'employee_code' => '112471',
                 'password' => Hash::make('@mnprasetya12'), 
                 'status' => 'Active',
+                'department_id'=>2,
+                'hire_date'=>'2019-11-04',
+                'manager_id'=>2,
             ]
         );
 

@@ -4,14 +4,15 @@ namespace App\Http\Controllers\API;
 
 use App\Helpers\ResponseFormatter;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
@@ -50,7 +51,7 @@ class UserController extends Controller
             );
 
             // TODO: Send email to user with token
-            Mail::to($user->email)->send(new PasswordResetMail($token));
+            // Mail::to($user->email)->send(new PasswordResetMail($token));
 
             return ResponseFormatter::success([
                 'message' => 'Password reset link sent to your email',
@@ -211,6 +212,6 @@ class UserController extends Controller
 
     public function fetch(Request $request)
     {
-        return ResponseFormatter::success($request->user(), 'Data profile user berhasil diambil');
+        return ResponseFormatter::success(new UserResource($request->user()), 'Data profile user berhasil diambil');
     }
 }
