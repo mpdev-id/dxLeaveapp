@@ -2,6 +2,10 @@
 
 use App\Http\Controllers\API\UserController;
 use App\Http\Controllers\API\LeaveRequestController; // Import Controller Cuti
+use App\Http\Controllers\API\EmployeeEntitlementController;
+use App\Http\Controllers\API\DepartmentController;
+use App\Http\Controllers\API\LeaveTypeController;
+use App\Http\Controllers\API\PublicHolidayController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -17,6 +21,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('user', [UserController::class, 'fetch']);
     Route::post('logout', [UserController::class, 'logout']);
 
+    // Rute untuk mengelola jatah cuti karyawan (Employee Entitlements)
+    Route::apiResource('employee-entitlements', EmployeeEntitlementController::class);
+
     // --- Rute Modul Cuti (Leave Requests) ---
     
     // 1. Pengajuan dan Daftar Cuti (Akses oleh Karyawan & Manajer)
@@ -27,3 +34,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('leave-requests/{leaveRequest}/approve', [LeaveRequestController::class, 'handleApproval'])
         ->middleware('role_or_permission:manager|approve leave request'); 
 });
+
+// --- Rute Administrasi Data Master (Hanya untuk Admin) ---
+Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin/master')->group(function () {
+    Route::apiResource('departments', DepartmentController::class);
+    Route::apiResource('leave-types', LeaveTypeController::class);
+    Route::apiResource('public-holidays', PublicHolidayController::class);
+});
+

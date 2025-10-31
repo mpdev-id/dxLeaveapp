@@ -96,7 +96,9 @@ class LeaveRequestController extends Controller
                     'start_date' => $validatedData['start_date'],
                     'end_date' => $validatedData['end_date'],
                     'reason' => $validatedData['reason'],
-                    'current_status' => 'Pending', // Selalu mulai dari Pending
+                    'duration_days' => Carbon::parse($validatedData['start_date'])->diffInDays(Carbon::parse($validatedData['end_date'])) + 1 ,
+                    'supporting_attachment_path' => null,
+                    'current_status' => 'Draft', // Selalu mulai dari Pending
                 ]);
             });
 

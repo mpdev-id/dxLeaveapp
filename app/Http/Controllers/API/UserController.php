@@ -6,6 +6,8 @@ use App\Helpers\ResponseFormatter;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Services\EntitlementService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +18,13 @@ use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
+    protected $entitlementService;
+
+    public function __construct(EntitlementService $entitlementService)
+    {
+        $this->entitlementService = $entitlementService;
+    }
+
     public function forgotPassword(Request $request)
     {
         try {
@@ -110,48 +119,61 @@ class UserController extends Controller
 
     public function register(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            'name' => ['required', 'string', 'max:255'],
+            'employee_code' => ['required', 'string', 'max:255', 'unique:users'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'department_id' => ['nullable', 'exists:departments,id'],
+            'manager_id' => ['nullable', 'exists:users,id'],
+            'status' => ['nullable', 'string', 'max:255'],
+            'hire_date' => ['nullable', 'date'],
+        ]);
+
+        if ($validator->fails()) {
+            return ResponseFormatter::error(['errors' => $validator->errors()], 'Validation failed', 422);
+        }
+
         try {
-            $validator = Validator::make($request->all(), [
-                'name' => ['required', 'string', 'max:255'],
-                'employee_code' => ['required', 'string', 'max:255', 'unique:users'],
-                'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-                'password' => ['required', 'string', 'min:8', 'confirmed'],
-                'department_id' => ['nullable', 'exists:departments,id'],
-                'manager_id' => ['nullable', 'exists:users,id'],
-                'status' => ['nullable', 'string', 'max:255'],
-                'hire_date' => ['nullable', 'date'],
-            ]);
+            $user = DB::transaction(function () use ($request) {
+                // 1. Create the user
+                $newUser = User::create([
+                    'name' => $request->name,
+                    'employee_code' => $request->employee_code,
+                    'email' => $request->email,
+                    'password' => Hash::make($request->password),
+                    'department_id' => $request->department_id,
+                    'manager_id' => $request->manager_id,
+                    'status' => $request->status,
+                    'hire_date' => $request->hire_date,
+                ]);
 
-            if ($validator->fails()) {
-                return ResponseFormatter::error([
-                    'message' => 'Something went wrong',
-                    'error' => $validator->errors(),
-                ], 'Authentication Failed', 500);
-            }
+                // 2. Automatically create annual leave entitlement for the new user
+                // Assuming '1' is the ID for 'Cuti Tahunan' (Annual Leave)
+                $this->entitlementService->createEntitlement([
+                    'user_id' => $newUser->id,
+                    'leave_type_id' => 1, // Default to Annual Leave
+                    'year' => Carbon::now()->year,
+                    'initial_balance' => 12, // Default 12 days
+                    'days_taken' => 0,
+                    'carry_over_days' => 0,
+                ]);
 
-            User::create([
-                'name' => $request->name,
-                'employee_code' => $request->employee_code,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-                'department_id' => $request->department_id,
-                'manager_id' => $request->manager_id,
-                'status' => $request->status,
-                'hire_date' => $request->hire_date,
-            ]);
+                return $newUser;
+            });
 
-            $user = User::where('email', $request->email)->first();
-
+            // Create token for the new user
             $tokenResult = $user->createToken('authToken')->plainTextToken;
 
             return ResponseFormatter::success([
                 'access_token' => $tokenResult,
                 'token_type' => 'Bearer',
-                'user' => $user,
-            ], 'Authenticated');
+                'user' => new UserResource($user),
+            ], 'User Registered & Entitlement Created Successfully');
+
         } catch (\Exception $e) {
             return ResponseFormatter::error([
-                'message' => 'Something went wrong',
+                'message' => 'Something went wrong during registration.',
                 'error' => $e->getMessage(),
             ], 'Authentication Failed', 500);
         }
