@@ -25,11 +25,10 @@ class LeaveApprovalWorkflowSeeder extends Seeder
             // 2. Buat record Workflow utama
             $leaveWorkflow = Workflow::create([
                 'name' => $workflowName,
-                'description' => 'Alur kerja persetujuan cuti yang membutuhkan 5 level approval: SPV, SL, ASMEN, TeamLeader, Manager.',
                 'applicable_model' => \App\Models\LeaveRequest::class,
             ]);
 
-            // 3. Definisikan urutan peran (roles)
+            // 4. Buat setiap langkah (WorkflowStep) secara berurutan
             $roles = [
                 'SPV', 
                 'SL', 
@@ -38,7 +37,6 @@ class LeaveApprovalWorkflowSeeder extends Seeder
                 'Manager'
             ];
 
-            // 4. Buat setiap langkah (WorkflowStep) secara berurutan
             foreach ($roles as $index => $roleName) {
                 $role = Role::where('name', $roleName)->first();
 
@@ -47,8 +45,9 @@ class LeaveApprovalWorkflowSeeder extends Seeder
                     WorkflowStep::create([
                         'workflow_id' => $leaveWorkflow->id,
                         'approver_role_id' => $role->id,
-                        'step_order' => $index + 1,
-                        'step_name' => 'Approval by ' . $roleName,
+                        'step_number' => $index + 1,
+                        'required_approver_type' => 'Role',
+                        'is_final_step' => ($index == count($roles) - 1),
                     ]);
                 }
             }

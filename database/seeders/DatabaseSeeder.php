@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             DepartmentsSeeder::class,
             RoleAndPermissionSeeder::class,
+            UserSeeder::class,
             LeaveApprovalWorkflowSeeder::class, // Alur kerja 5 langkah yang baru
             LeaveTypeSeeder::class,
             PublicHolidaySeeder::class,

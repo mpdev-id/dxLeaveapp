@@ -2,10 +2,6 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Helpers\ResponseFormatter;
-use App\Http\Controllers\Controller;
-use App\Http\Resources\UserResource;
-use App\Models\User;
 use App\Services\EntitlementService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -15,6 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
@@ -148,7 +145,13 @@ class UserController extends Controller
                     'hire_date' => $request->hire_date,
                 ]);
 
-                // 2. Automatically create annual leave entitlement for the new user
+                // 2. Assign 'Employee' role
+                $employeeRole = Role::where('name', 'Employee')->first();
+                if ($employeeRole) {
+                    $newUser->assignRole($employeeRole);
+                }
+
+                // 3. Automatically create annual leave entitlement for the new user
                 // Assuming '1' is the ID for 'Cuti Tahunan' (Annual Leave)
                 $this->entitlementService->createEntitlement([
                     'user_id' => $newUser->id,

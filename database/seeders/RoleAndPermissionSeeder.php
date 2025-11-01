@@ -86,13 +86,17 @@ class RoleAndPermissionSeeder extends Seeder
             [
                 'name' => 'Median Prasetya',
                 'employee_code' => '112471',
-                'password' => Hash::make('@mnprasetya12'), 
+                'password' => Hash::make('@mnprasetya12'),
                 'status' => 'Active',
-                'department_id'=>2,
-                'hire_date'=>'2019-11-04',
-                'manager_id'=>2,
+                'department_id' => 2,
+                'hire_date' => '2019-11-04',
+                'manager_id' => null,
             ]
         );
+        
+        $admin->manager_id = $admin->id;
+        $admin->save();
+
 
         // Berikan Role Super Admin
         $admin->assignRole($adminRole);
