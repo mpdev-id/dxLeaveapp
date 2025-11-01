@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Helpers\ResponseFormatter;
+use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
+use App\Models\User;
 use App\Services\EntitlementService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
