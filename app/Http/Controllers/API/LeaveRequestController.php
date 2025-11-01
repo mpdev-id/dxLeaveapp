@@ -109,6 +109,41 @@ class LeaveRequestController extends Controller
     }
 
 
+    public function update(Request $request, LeaveRequest $leaveRequest)
+    {
+        // Otorisasi: Pastikan pengguna hanya mengedit permintaan cuti miliknya sendiri.
+        $this->authorize('update', $leaveRequest);
+
+        // Cek status: Hanya izinkan edit jika statusnya masih 'Draft'.
+        if ($leaveRequest->current_status !== 'Draft') {
+            return ResponseFormatter::error(
+                null,
+                'This leave request cannot be edited because it is already being processed.',
+                403
+            );
+        }
+
+        // Validasi input
+        $validatedData = $request->validate([
+            'leave_type_id' => 'sometimes|required|exists:leave_types,id',
+            'start_date' => 'sometimes|required|date',
+            'end_date' => 'sometimes|required|date|after_or_equal:start_date',
+            'reason' => 'sometimes|required|string|max:500',
+        ]);
+
+        // Hitung ulang durasi jika tanggal berubah
+        if (isset($validatedData['start_date']) || isset($validatedData['end_date'])) {
+            $startDate = Carbon::parse($validatedData['start_date'] ?? $leaveRequest->start_date);
+            $endDate = Carbon::parse($validatedData['end_date'] ?? $leaveRequest->end_date);
+            $validatedData['duration_days'] = $startDate->diffInDays($endDate) + 1;
+        }
+
+        // Lakukan pembaruan
+        $leaveRequest->update($validatedData);
+
+        return ResponseFormatter::success($leaveRequest->fresh(), 'Leave request updated successfully');
+    }
+
     /**
      * Endpoint untuk manajer menyetujui atau menolak permintaan cuti (menggunakan Service Layer).
      */
