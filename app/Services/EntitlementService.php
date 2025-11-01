@@ -20,7 +20,7 @@ class EntitlementService
      * @param LeaveRequest $leaveRequest Permintaan cuti yang telah disetujui.
      * @return void
      */
-    public function deductEntitlement(LeaveRequest $leaveRequest): void
+    public function deductLeaveBalance(LeaveRequest $leaveRequest): void
     {
         $year = Carbon::parse($leaveRequest->start_date)->year;
 

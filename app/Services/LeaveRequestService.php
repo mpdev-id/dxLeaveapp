@@ -26,25 +26,51 @@ class LeaveRequestService
     public function processApproval(LeaveRequest $request, User $approver, string $action, ?string $comments = null): void
     {
         DB::transaction(function () use ($request, $approver, $action, $comments) {
-            // ... (Logika validasi dan pencatatan riwayat yang sudah ada)
+            $currentStep = $this->workflowService->getCurrentStep($request);
 
-            // 6. PERBARUI STATUS PERMINTAAN CUTI
+            if (!$currentStep) {
+                throw ValidationException::withMessages(['workflow' => 'No pending approval step found for this request.']);
+            }
+
+            // Cek apakah approver memiliki peran yang sesuai untuk langkah ini
+            if (!$this->workflowService->isApproverForStep($approver, $currentStep)) {
+                throw ValidationException::withMessages(['authorization' => 'You are not authorized to approve this step.']);
+            }
+
+            // 1. CATAT RIWAYAT PERSETUJUAN
+            ApprovalHistory::create([
+                'approvable_id' => $request->id,
+                'approvable_type' => LeaveRequest::class,
+                'workflow_step_id' => $currentStep->id,
+                'approver_user_id' => $approver->id,
+                'action' => $action,
+                'comments' => $comments,
+                'acted_at' => now(),
+            ]);
+
+            // 2. PERBARUI STATUS PERMINTAAN CUTI
+            $nextStep = $this->workflowService->getNextStep($request->workflow, $currentStep);
+
             if ($action === 'Rejected') {
-                $request->update(['current_status' => 'Rejected']);
-            } else { // Action is 'Approved'
-                // Cek langkah berikutnya setelah tindakan ini
-                $nextStep = $this->workflowService->getNextPendingStep($request, $request->workflow);
-
+                $request->update([
+                    'current_status' => 'Rejected',
+                    'current_workflow_step_id' => null, // Hentikan alur kerja
+                ]);
+            } elseif ($action === 'Approved') {
                 if (!$nextStep) {
-                    // Alur kerja selesai, ubah status menjadi Approved
-                    $request->update(['current_status' => 'Approved']);
-                    
-                    // Panggil fungsi untuk mengurangi jatah cuti
-                    $this->entitlementService->deductEntitlement($request);
-
+                    // Langkah terakhir, alur kerja selesai
+                    $request->update([
+                        'current_status' => 'Approved',
+                        'current_workflow_step_id' => null,
+                    ]);
+                    // Kurangi jatah cuti
+                    $this->entitlementService->deductLeaveBalance($request);
                 } else {
-                    // Masih ada langkah selanjutnya
-                    $request->update(['current_status' => 'In Progress']);
+                    // Lanjut ke langkah berikutnya
+                    $request->update([
+                        'current_status' => 'In Progress',
+                        'current_workflow_step_id' => $nextStep->id,
+                    ]);
                 }
             }
         });

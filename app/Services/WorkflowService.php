@@ -14,23 +14,24 @@ use Illuminate\Support\Facades\Log;
  */
 class WorkflowService
 {
-    /**
-     * Menemukan langkah alur kerja berikutnya yang harus disetujui.
-     */
-    public function getNextPendingStep(Model $requestModel, Workflow $workflow): ?WorkflowStep
+    public function getCurrentStep(Model $requestModel): ?WorkflowStep
     {
-        // 1. Dapatkan ID dari langkah-langkah yang sudah disetujui (Approved)
-        $approvedSteps = $requestModel->approvalsHistory()
-            ->where('action', 'Approved')
-            ->pluck('workflow_step_id');
+        return $requestModel->currentStep;
+    }
 
-        // 2. Dapatkan semua langkah dalam alur kerja, diurutkan
-        $allSteps = $workflow->steps()->orderBy('step_order')->get();
+    public function isApproverForStep(User $approver, WorkflowStep $step): bool
+    {
+        // Cek apakah peran approver cocok dengan peran yang dibutuhkan di langkah ini
+        return $approver->hasRole($step->approverRole->name);
+    }
 
-        // 3. Temukan langkah pertama (berdasarkan step_order) yang ID-nya belum ada di approvedSteps.
-        return $allSteps->first(function (WorkflowStep $step) use ($approvedSteps) {
-            return !$approvedSteps->contains($step->id);
-        });
+    public function getNextStep(Workflow $workflow, WorkflowStep $currentStep): ?WorkflowStep
+    {
+        // Temukan langkah berikutnya berdasarkan urutan
+        return $workflow->steps()
+            ->where('step_number', '>', $currentStep->step_number)
+            ->orderBy('step_number', 'asc')
+            ->first();
     }
 
     /**

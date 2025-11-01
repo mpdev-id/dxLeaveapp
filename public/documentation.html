@@ -3,140 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DXLeave API Documentation</title>
+    <title>API Documentation</title>
     <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
-        h1, h2, h3 { color: #2c3e50; }
-        pre { background-color: #f4f4f4; padding: 15px; border-radius: 5px; white-space: pre-wrap; word-wrap: break-word; }
-        code { font-family: "Courier New", Courier, monospace; }
-        .endpoint { border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
-        .method { font-weight: bold; padding: 5px 10px; border-radius: 3px; color: white; display: inline-block; margin-bottom: 10px; }
-        .post { background-color: #49cc90; }
-        .get { background-color: #61affe; }
-        .patch { background-color: #fca130; }
-        .put { background-color: #fca130; }
-        .delete { background-color: #f93e3e; }
-        table { border-collapse: collapse; width: 100%; margin-top: 10px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
+        body {
+            font-family: sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .endpoint {
+            border-left: 4px solid #3498db;
+            padding-left: 15px;
+            margin-bottom: 20px;
+        }
+        .endpoint .method {
+            font-weight: bold;
+            color: #2980b9;
+        }
     </style>
 </head>
 <body>
 
-    <h1>DXLeave API Documentation</h1>
-    <p>Dokumentasi ini menjelaskan cara menggunakan API DXLeave untuk berbagai peran pengguna.</p>
+    <h1>API Documentation</h1>
 
-    <!-- =================================================================== -->
-    <h2>1. Autentikasi</h2>
-    <!-- =================================================================== -->
-    <div class="endpoint">
-        <p>Semua request ke API (kecuali login/register) harus menyertakan token autentikasi.</p>
-        <h3>Login untuk Mendapatkan Token</h3>
-        <p><span class="method post">POST</span> <code>/api/login</code></p>
-        <h4>Request Body:</h4>
-        <pre><code>{
-    "email": "user@example.com",
-    "password": "password"
-}</code></pre>
-        <h4>Response Sukses:</h4>
-        <pre><code>{
-    "meta": {
-        "code": 200,
-        "status": "success",
-        "message": "Authenticated"
-    },
-    "data": {
-        "access_token": "1|xxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-        "token_type": "Bearer",
-        "user": { ... }
-    }
-}</code></pre>
-        <h3>Header untuk Request Selanjutnya</h3>
-        <p>Setelah mendapatkan token, semua request berikutnya harus menyertakan header berikut:</p>
-        <pre><code>Accept: application/json
-Authorization: Bearer &lt;YOUR_ACCESS_TOKEN&gt;</code></pre>
-    </div>
+    <p>This documentation outlines the API endpoints and usage for different user roles within the dxLeaveApp system.</p>
 
-    <!-- =================================================================== -->
-    <h2>2. Peran: User (Karyawan)</h2>
-    <!-- =================================================================== -->
-    <div class="endpoint">
-        <h3>Membuat Pengajuan Cuti Baru</h3>
-        <p><span class="method post">POST</span> <code>/api/leave-requests</code></p>
-        <h4>Deskripsi:</h4>
-        <p>Endpoint ini digunakan oleh karyawan untuk mengajukan permintaan cuti baru.</p>
-        <h4>Request Body:</h4>
-        <table>
-            <tr><th>Field</th><th>Tipe</th><th>Deskripsi</th></tr>
-            <tr><td><code>leave_type_id</code></td><td>integer</td><td>ID dari jenis cuti yang diambil (e.g., 1 untuk Cuti Tahunan).</td></tr>
-            <tr><td><code>start_date</code></td><td>string</td><td>Tanggal mulai cuti (Format: YYYY-MM-DD).</td></tr>
-            <tr><td><code>end_date</code></td><td>string</td><td>Tanggal selesai cuti (Format: YYYY-MM-DD).</td></tr>
-            <tr><td><code>reason</code></td><td>string</td><td>Alasan mengajukan cuti.</td></tr>
-        </table>
-        <h4>Contoh Body:</h4>
-        <pre><code>{
-    "leave_type_id": 1,
-    "start_date": "2025-11-20",
-    "end_date": "2025-11-21",
-    "reason": "Ada keperluan keluarga mendadak."
-}</code></pre>
-    </div>
+    <!-- General Workflow -->
+    <section>
+        <h2>General Workflow</h2>
+        <p>The general workflow for all users is as follows:</p>
+        <ol>
+            <li><strong>Register:</strong> Create a new user account.</li>
+            <li><strong>Login:</strong> Authenticate to get an API token.</li>
+            <li><strong>Use API:</strong> Access endpoints according to your role using the obtained token in the <code>Authorization</code> header as a Bearer token.</li>
+            <li><strong>Logout:</strong> Invalidate the API token.</li>
+        </ol>
+    </section>
 
-    <!-- =================================================================== -->
-    <h2>3. Peran: Manager (Atasan)</h2>
-    <!-- =================================================================== -->
-    <div class="endpoint">
-        <h3>Memberi Persetujuan/Penolakan Cuti</h3>
-        <p><span class="method patch">PATCH</span> <code>/api/leave-requests/{id}/approve</code></p>
-        <h4>Deskripsi:</h4>
-        <p>Endpoint ini digunakan oleh atasan (Manager, SPV, dll.) untuk menyetujui atau menolak pengajuan cuti. Ganti <code>{id}</code> dengan ID dari pengajuan cuti yang relevan.</p>
-        <h4>Request Body:</h4>
-        <table>
-            <tr><th>Field</th><th>Tipe</th><th>Deskripsi</th></tr>
-            <tr><td><code>action</code></td><td>string</td><td>Aksi yang akan diambil. Harus berisi <code>"Approved"</code> atau <code>"Rejected"</code>.</td></tr>
-            <tr><td><code>comments</code></td><td>string</td><td>(Opsional) Komentar atau catatan terkait keputusan.</td></tr>
-        </table>
-        <h4>Contoh Body (Menyetujui):</h4>
-        <pre><code>{
-    "action": "Approved",
-    "comments": "Disetujui. Semoga lancar acaranya."
-}</code></pre>
-        <h4>Contoh Body (Menolak):</h4>
-        <pre><code>{
-    "action": "Rejected",
-    "comments": "Ditolak karena bentrok dengan jadwal audit."
-}</code></pre>
-    </div>
+    <!-- Role: Member (Employee) -->
+    <section>
+        <h2>Role: Member (Employee)</h2>
+        <p>This role is for standard employees. They can apply for leave and view their own leave history.</p>
 
-    <!-- =================================================================== -->
-    <h2>4. Peran: Super Admin</h2>
-    <!-- =================================================================== -->
-    <div class="endpoint">
-        <h3>Mengelola Data Master</h3>
-        <p>Super Admin bertanggung jawab untuk mengelola data master seperti Departemen, Jenis Cuti, dan Hari Libur. Semua endpoint ini berada di bawah prefix <code>/api/admin/master/</code> dan memerlukan peran <code>admin</code>.</p>
-        
-        <h3>Contoh: Pengelolaan Departemen</h3>
-        
-        <h4>Mendapatkan Semua Departemen</h4>
-        <p><span class="method get">GET</span> <code>/api/admin/master/departments</code></p>
+        <h3>Endpoints:</h3>
 
-        <h4>Membuat Departemen Baru</h4>
-        <p><span class="method post">POST</span> <code>/api/admin/master/departments</code></p>
-        <pre><code>{
-    "name": "Finance & Accounting"
-}</code></pre>
+        <div class="endpoint">
+            <p><span class="method">POST</span> <code>/api/register</code></p>
+            <p><strong>Description:</strong> Register a new user account.</p>
+        </div>
 
-        <h4>Mengubah Departemen</h4>
-        <p><span class="method put">PUT</span> <code>/api/admin/master/departments/{id}</code></p>
-        <pre><code>{
-    "name": "Finance"
-}</code></pre>
+        <div class="endpoint">
+            <p><span class="method">POST</span> <code>/api/login</code></p>
+            <p><strong>Description:</strong> Login to get an authentication token.</p>
+        </div>
 
-        <h4>Menghapus Departemen</h4>
-        <p><span class="method delete">DELETE</span> <code>/api/admin/master/departments/{id}</code></p>
+        <div class="endpoint">
+            <p><span class="method">GET</span> <code>/api/user</code></p>
+            <p><strong>Description:</strong> Fetch own user profile.</p>
+        </div>
 
-        <p>Pola yang sama berlaku untuk <code>/leave-types</code> dan <code>/public-holidays</code> dengan body yang disesuaikan dengan field masing-masing model.</p>
-    </div>
+        <div class="endpoint">
+            <p><span class="method">POST</span> <code>/api/leave-requests</code></p>
+            <p><strong>Description:</strong> Submit a new leave request.</p>
+        </div>
+
+        <div class="endpoint">
+            <p><span class="method">GET</span> <code>/api/leave-requests</code></p>
+            <p><strong>Description:</strong> View own leave request history.</p>
+        </div>
+
+        <div class="endpoint">
+            <p><span class="method">POST</span> <code>/api/logout</code></p>
+            <p><strong>Description:</strong> Logout and invalidate the token.</p>
+        </div>
+    </section>
+
+    <!-- Role: Approvers (SPV, SL, ASMEN, TL, Manager) -->
+    <section>
+        <h2>Role: Approvers (SPV, SL, ASMEN, TL, Manager)</h2>
+        <p>These roles have all the permissions of a Member, plus the ability to approve or reject leave requests.</p>
+
+        <h3>Additional Endpoints:</h3>
+
+        <div class="endpoint">
+            <p><span class="method">GET</span> <code>/api/leave-requests</code></p>
+            <p><strong>Description:</strong> View pending leave requests that require their approval.</p>
+        </div>
+
+        <div class="endpoint">
+            <p><span class="method">PATCH</span> <code>/api/leave-requests/{leaveRequest}/approve</code></p>
+            <p><strong>Description:</strong> Approve or reject a leave request.</p>
+            <p><strong>Parameters:</strong></p>
+            <ul>
+                <li><code>action</code> (required): 'Approved' or 'Rejected'.</li>
+                <li><code>comments</code> (optional): A reason for the action.</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- Role: Super Admin -->
+    <section>
+        <h2>Role: Super Admin</h2>
+        <p>The Super Admin has full access to the system, including managing master data.</p>
+
+        <h3>Additional Endpoints (Prefix: <code>/api/admin/master</code>):</h3>
+
+        <div class="endpoint">
+            <p><span class="method">API Resource</span> <code>/departments</code></p>
+            <p><strong>Description:</strong> Full CRUD for managing departments.</p>
+        </div>
+
+        <div class="endpoint">
+            <p><span class="method">API Resource</span> <code>/leave-types</code></p>
+            <p><strong>Description:</strong> Full CRUD for managing leave types.</p>
+        </div>
+
+        <div class="endpoint">
+            <p><span class="method">API Resource</span> <code>/public-holidays</code></p>
+            <p><strong>Description:</strong> Full CRUD for managing public holidays.</p>
+        </div>
+
+    </section>
 
 </body>
 </html>
