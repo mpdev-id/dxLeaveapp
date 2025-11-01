@@ -54,14 +54,10 @@ class EmployeeEntitlementController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show($id)
+    public function show(EmployeeEntitlement $employeeEntitlement)
     {
-        $entitlement = $this->entitlementService->findEntitlementById($id);
-        if (!$entitlement) {
-            return ResponseFormatter::error(null, 'Employee entitlement not found', 404);
-        }
         return ResponseFormatter::success(
-            new EmployeeEntitlementResource($entitlement),
+            new EmployeeEntitlementResource($employeeEntitlement),
             'Employee entitlement retrieved successfully'
         );
     }
