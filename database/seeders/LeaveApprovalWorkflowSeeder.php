@@ -33,7 +33,7 @@ class LeaveApprovalWorkflowSeeder extends Seeder
                 'SPV', 
                 'SL', 
                 'ASMEN', 
-                'TeamLeader', 
+                'TL', 
                 'Manager'
             ];
 

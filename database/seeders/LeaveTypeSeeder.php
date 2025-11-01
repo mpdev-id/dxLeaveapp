@@ -57,7 +57,7 @@ class LeaveTypeSeeder extends Seeder
                 'name' => 'Monthly Leave',
                 'default_entitlement_days' => 1.0,
                 'accrual_frequency' => 'Per Request',
-                'is_paid' => false,
+                'is_paid' => true,
                 'max_carry_over_days' => 0.0,
                 'requires_attachment' => false,
             ]

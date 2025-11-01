@@ -86,4 +86,9 @@ class UserController extends Controller
         $user->delete();
         return ResponseFormatter::success(null, 'User deleted successfully');
     }
+
+    public function getStatus(User $user)
+    {
+        return ResponseFormatter::success($user->status, 'User status retrieved successfully');
+    }
 }

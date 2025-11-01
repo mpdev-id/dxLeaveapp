@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class LeaveRequestController extends Controller
 {
@@ -98,7 +99,7 @@ class LeaveRequestController extends Controller
                     'reason' => $validatedData['reason'],
                     'duration_days' => Carbon::parse($validatedData['start_date'])->diffInDays(Carbon::parse($validatedData['end_date'])) + 1 ,
                     'supporting_attachment_path' => null,
-                    'current_status' => 'Draft', // Selalu mulai dari Pending
+                    'current_status' => 'Draft', // Selalu mulai dari Draft
                 ]);
             });
 
@@ -111,11 +112,30 @@ class LeaveRequestController extends Controller
 
     public function update(Request $request, LeaveRequest $leaveRequest)
     {
+        Log::info('Update method called', ['request_data' => $request->all()]);
+
         // Otorisasi: Pastikan pengguna hanya mengedit permintaan cuti miliknya sendiri.
         $this->authorize('update', $leaveRequest);
+        Log::info('Authorization successful');
+
+        // Validasi input dasar
+        try {
+            $validatedData = $request->validate([
+                'leave_type_id' => 'sometimes|required|exists:leave_types,id',
+                'start_date' => 'sometimes|required|date',
+                'end_date' => 'sometimes|required|date|after_or_equal:start_date',
+                'reason' => 'sometimes|required|string|max:500',
+                'current_status' => 'sometimes|required|in:Draft,Pending', // Izinkan perubahan status
+            ]);
+            Log::info('Validation successful', ['validated_data' => $validatedData]);
+        } catch (ValidationException $e) {
+            Log::error('Validation failed', ['errors' => $e->errors()]);
+            throw $e;
+        }
 
         // Cek status: Hanya izinkan edit jika statusnya masih 'Draft'.
         if ($leaveRequest->current_status !== 'Draft') {
+            Log::warning('Attempted to update a non-draft leave request', ['leave_request_id' => $leaveRequest->id, 'current_status' => $leaveRequest->current_status]);
             return ResponseFormatter::error(
                 null,
                 'This leave request cannot be edited because it is already being processed.',
@@ -123,13 +143,23 @@ class LeaveRequestController extends Controller
             );
         }
 
-        // Validasi input
-        $validatedData = $request->validate([
-            'leave_type_id' => 'sometimes|required|exists:leave_types,id',
-            'start_date' => 'sometimes|required|date',
-            'end_date' => 'sometimes|required|date|after_or_equal:start_date',
-            'reason' => 'sometimes|required|string|max:500',
-        ]);
+        // Jika status diubah ke 'Pending', pastikan semua field yang diperlukan sudah ada.
+        if (isset($validatedData['current_status']) && $validatedData['current_status'] === 'Pending') {
+            Log::info('Attempting to change status to Pending');
+            try {
+                $request->validate([
+                    'leave_type_id' => 'required|exists:leave_types,id',
+                    'start_date' => 'required|date',
+                    'end_date' => 'required|date|after_or_equal:start_date',
+                    'reason' => 'required|string|max:500',
+                ]);
+                Log::info('Validation for Pending status successful');
+            } catch (ValidationException $e) {
+                Log::error('Validation for Pending status failed', ['errors' => $e->errors()]);
+                throw $e;
+            }
+        }
+
 
         // Hitung ulang durasi jika tanggal berubah
         if (isset($validatedData['start_date']) || isset($validatedData['end_date'])) {
@@ -140,6 +170,7 @@ class LeaveRequestController extends Controller
 
         // Lakukan pembaruan
         $leaveRequest->update($validatedData);
+        Log::info('Leave request updated successfully', ['leave_request_id' => $leaveRequest->id]);
 
         return ResponseFormatter::success($leaveRequest->fresh(), 'Leave request updated successfully');
     }

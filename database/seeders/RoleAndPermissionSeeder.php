@@ -72,6 +72,38 @@ class RoleAndPermissionSeeder extends Seeder
             'approve leave request',
         ]);
 
+        $slRole = Role::where('name', '=', 'SL')->first();
+        $slRole->givePermissionTo([
+            'view holidays',
+            'create leave request',
+            'view self leave history',
+            'approve leave request',
+        ]);
+
+        $asmenRole = Role::where('name', '=', 'ASMEN')->first();
+        $asmenRole->givePermissionTo([
+            'view holidays',
+            'create leave request',
+            'view self leave history',
+            'approve leave request',
+        ]);
+
+        $tlRole = Role::where('name', '=', 'TL')->first();
+        $tlRole->givePermissionTo([
+            'view holidays',
+            'create leave request',
+            'view self leave history',
+            'approve leave request',
+        ]);
+
+        $managerRole = Role::where('name', '=', 'Manager')->first();
+        $managerRole->givePermissionTo([
+            'view holidays',
+            'create leave request',
+            'view self leave history',
+            'approve leave request',
+        ]);
+
         // Employee: Hanya dapat mengajukan cuti dan melihat riwayatnya sendiri
         $employeeRole = Role::where('name', '=', 'Employee')->first();
         $employeeRole->givePermissionTo([

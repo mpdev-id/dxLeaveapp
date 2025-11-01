@@ -1,17 +1,28 @@
 <?php
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\User;
 use App\Models\Department;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 uses(RefreshDatabase::class);
 
+
+
 it('allows a user to register', function () {
-    $department = \App\Models\Department::factory()->create();
-    $manager = User::factory()->create();
+    $department = Department::create(['name' => 'Test Department']);
+    $manager = User::create([
+        'name' => 'Test Manager',
+        'employee_code' => 'EMP' . Str::random(5),
+        'email' => 'manager@example.com',
+        'password' => 'password',
+        'department_id' => $department->id,
+        'hire_date' => '2023-01-01',
+    ]);
+
+    $this->withoutExceptionHandling();
 
     $response = $this->postJson('/api/register', [
         'name' => 'Test User',
@@ -24,6 +35,8 @@ it('allows a user to register', function () {
         'status' => 'active',
         'hire_date' => '2023-01-01',
     ]);
+
+    dd($response->getContent());
 
     $response->assertStatus(200)
         ->assertJsonStructure([
@@ -58,7 +71,7 @@ it('allows a user to register', function () {
 it('allows a user to login with email', function () {
     $user = User::factory()->create([
         'email' => 'test@example.com',
-        'password' => bcrypt('password'),
+        'password' => Hash::make('password'),
     ]);
 
     $response = $this->postJson('/api/login', [
@@ -79,7 +92,7 @@ it('allows a user to login with email', function () {
 it('allows a user to login with employee code', function () {
     $user = User::factory()->create([
         'employee_code' => 'EMP002',
-        'password' => bcrypt('password'),
+        'password' => Hash::make('password'),
     ]);
 
     $response = $this->postJson('/api/login', [

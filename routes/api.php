@@ -42,5 +42,6 @@ Route::middleware(['auth:sanctum', 'role:Super Admin'])->prefix('admin/master')-
     Route::apiResource('public-holidays', PublicHolidayController::class);
     Route::apiResource('employee-entitlements', EmployeeEntitlementController::class);
     Route::apiResource('leave-requests', AdminLeaveRequestController::class)->names('admin.leave-requests');
+    Route::get('users/{user}/status', [AdminUserController::class, 'getStatus'])->name('admin.users.status');
 });
 
