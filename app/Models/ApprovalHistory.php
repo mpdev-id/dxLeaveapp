@@ -18,6 +18,7 @@ class ApprovalHistory extends Model
         'approver_user_id',
         'action',
         'comments',
+        'acted_at',
     ];
 
     /**

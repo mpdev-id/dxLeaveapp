@@ -15,7 +15,7 @@
             padding: 20px;
         }
         h1, h2, h3, h4 {
-            color: #4a90e2;
+            color: #E2544A;
             border-bottom: 1px solid #444;
             padding-bottom: 10px;
         }
@@ -102,11 +102,27 @@
         <div class="endpoint">
             <h3><span class="method post">POST</span> <code>/api/register</code></h3>
             <p><strong>Description:</strong> Register a new user account.</p>
+            <h4>Request Body:</h4>
+            <pre><code>{
+    "name": "John Doe",
+    "employee_code": "EMP12345",
+    "email": "john.doe@example.com",
+    "password": "password123",
+    "password_confirmation": "password123",
+    "department_id": 1,
+    "manager_id": 2,
+    "hire_date": "2023-01-15"
+}</code></pre>
         </div>
 
         <div class="endpoint">
             <h3><span class="method post">POST</span> <code>/api/login</code></h3>
             <p><strong>Description:</strong> Login to get an authentication token.</p>
+            <h4>Request Body:</h4>
+            <pre><code>{
+    "identifier": "john.doe@example.com", // or "EMP12345"
+    "password": "password123"
+}</code></pre>
         </div>
 
         <div class="endpoint">
@@ -117,6 +133,13 @@
         <div class="endpoint">
             <h3><span class="method post">POST</span> <code>/api/leave-requests</code></h3>
             <p><strong>Description:</strong> Submit a new leave request. The request starts in 'Draft' status.</p>
+            <h4>Request Body:</h4>
+            <pre><code>{
+    "leave_type_id": 1,
+    "start_date": "2025-12-20",
+    "end_date": "2025-12-22",
+    "reason": "Holiday vacation"
+}</code></pre>
         </div>
 
         <div class="endpoint">
@@ -127,7 +150,7 @@
         <div class="endpoint">
             <h3><span class="method patch">PATCH</span> <code>/api/leave-requests/{leaveRequest}</code></h3>
             <p><strong>Description:</strong> Update a leave request that is in 'Draft' status. To submit for approval, set <code>current_status</code> to 'Pending'.</p>
-            <h4>Example Body (to submit):</h4>
+            <h4>Request Body (Example for submitting):</h4>
             <pre><code>{
     "leave_type_id": 1,
     "start_date": "2025-12-20",
@@ -160,10 +183,9 @@
             <p><strong>Description:</strong> Approve or reject a leave request.</p>
             <h4>Request Body:</h4>
             <pre><code>{
-    "action": "Approved",
+    "action": "Approved", // or "Rejected"
     "comments": "Enjoy your vacation!"
 }</code></pre>
-            <p>Set <code>action</code> to <code>"Rejected"</code> to reject the request.</p>
         </div>
     </div>
 
@@ -181,42 +203,64 @@
         </div>
         <div class="endpoint">
             <h3><span class="method post">POST</span> <code>/users</code></h3>
-            <p><strong>Description:</strong> Create a new user.</p>
+            <p><strong>Description:</strong> Create a new user and assign roles.</p>
+            <h4>Request Body:</h4>
+            <pre><code>{
+    "name": "Jane Doe",
+    "employee_code": "EMP67890",
+    "email": "jane.doe@example.com",
+    "password": "password123",
+    "department_id": 2,
+    "manager_id": 1,
+    "hire_date": "2024-02-01",
+    "status": "Active",
+    "roles": ["Employee", "Manager"]
+}</code></pre>
         </div>
         <div class="endpoint">
             <h3><span class="method get">GET</span> <code>/users/{user}</code></h3>
-            <p><strong>Description:</strong> Get details of a specific user.</p>
+            <p><strong>Description:</strong> Get details of a specific user, including their roles.</p>
         </div>
         <div class="endpoint">
             <h3><span class="method put">PUT/PATCH</span> <code>/users/{user}</code></h3>
-            <p><strong>Description:</strong> Update a user's information.</p>
+            <p><strong>Description:</strong> Update a user's information and roles. To change roles, provide the <code>roles</code> array. This will replace all existing roles with the new ones provided.</p>
+            <h4>Request Body (Example):</h4>
+            <pre><code>{
+    "name": "Jane Doe Updated",
+    "roles": ["Employee"]
+}</code></pre>
         </div>
         <div class="endpoint">
             <h3><span class="method delete">DELETE</span> <code>/users/{user}</code></h3>
             <p><strong>Description:</strong> Delete a user.</p>
         </div>
 
+        <div class="endpoint">
+            <h3>Role Management</h3>
+            <p>The <code>roles</code> attribute in the user creation and update endpoints accepts an array of role names. Providing this array will sync the user's roles, removing any they no longer have and adding new ones.</p>
+            <p><strong>Available Roles:</strong></p>
+            <ul>
+                <li><code>Super Admin</code></li>
+                <li><code>SL</code></li>
+                <li><code>SPV</code></li>
+                <li><code>ASMEN</code></li>
+                <li><code>TL</code></li>
+                <li><code>Manager</code></li>
+                <li><code>Employee</code></li>
+            </ul>
+        </div>
+
         <hr>
 
         <div class="endpoint">
-            <h3><span class="method get">GET</span> <code>/departments</code></h3>
-            <p><strong>Description:</strong> Full CRUD for managing departments.</p>
-        </div>
-        <div class="endpoint">
-            <h3><span class="method get">GET</span> <code>/leave-types</code></h3>
-            <p><strong>Description:</strong> Full CRUD for managing leave types.</p>
-        </div>
-        <div class="endpoint">
-            <h3><span class="method get">GET</span> <code>/public-holidays</code></h3>
-            <p><strong>Description:</strong> Full CRUD for managing public holidays.</p>
-        </div>
-        <div class="endpoint">
-            <h3><span class="method get">GET</span> <code>/employee-entitlements</code></h3>
-            <p><strong>Description:</strong> Full CRUD for managing employee leave entitlements.</p>
-        </div>
-        <div class="endpoint">
-            <h3><span class="method get">GET</span> <code>/leave-requests</code></h3>
-            <p><strong>Description:</strong> Full CRUD for managing all leave requests.</p>
+            <h3>CRUD: <code>/departments</code>, <code>/leave-types</code>, <code>/public-holidays</code>, <code>/employee-entitlements</code>, <code>/leave-requests</code></h3>
+            <p>These endpoints support full Create, Read, Update, and Delete operations. The required fields for creation/update generally correspond to the model's database columns.</p>
+            <p>For example, to create a department:</p>
+            <h4>POST <code>/departments</code></h4>
+            <pre><code>{
+    "name": "Human Resources",
+    "description": "HR Department"
+}</code></pre>
         </div>
     </div>
 
