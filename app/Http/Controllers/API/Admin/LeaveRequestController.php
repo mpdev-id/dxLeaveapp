@@ -38,7 +38,7 @@ class LeaveRequestController extends Controller
 
     public function show(LeaveRequest $leaveRequest)
     {
-        return ResponseFormatter::success($leaveRequest->load(['user', 'leaveType']), 'Leave request retrieved successfully');
+        return ResponseFormatter::success($leaveRequest->load(['user', 'leaveType', 'approvals']), 'Leave request retrieved successfully');
     }
 
     public function update(Request $request, LeaveRequest $leaveRequest)
