@@ -45,7 +45,6 @@ class LeaveRequestService
                 'approver_user_id' => $approver->id,
                 'action' => $action,
                 'comments' => $comments,
-                'acted_at' => now(),
             ]);
 
             // 2. PERBARUI STATUS PERMINTAAN CUTI

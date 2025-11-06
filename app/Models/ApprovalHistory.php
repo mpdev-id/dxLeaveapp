@@ -11,6 +11,8 @@ class ApprovalHistory extends Model
 {
     use HasFactory;
 
+    protected $table = 'approvals_history';
+
     protected $fillable = [
         'approvable_type',
         'approvable_id',
@@ -18,7 +20,6 @@ class ApprovalHistory extends Model
         'approver_user_id',
         'action',
         'comments',
-        'acted_at',
     ];
 
     /**

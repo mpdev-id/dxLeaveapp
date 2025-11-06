@@ -181,7 +181,7 @@ class LeaveRequestController extends Controller
     public function handleApproval(Request $request, LeaveRequest $leaveRequest)
     {
         $request->validate([
-            'action' => 'required|in:Approved,Rejected',
+            'action' => 'required',
             'comments' => 'nullable|string',
         ]);
 
@@ -199,7 +199,7 @@ class LeaveRequestController extends Controller
             // Menangkap kesalahan validasi, termasuk batasan urutan (sequential check)
             return ResponseFormatter::error($e->errors(), $e->getMessage(), 403);
         } catch (\Exception $e) {
-            return ResponseFormatter::error(null, 'A system error occurred.', 500);
+            return ResponseFormatter::error($e->getMessage(), 'A system error occurred.', 500);
         }
     }
 }

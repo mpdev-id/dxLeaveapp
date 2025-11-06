@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('supporting_attachment_path')->nullable()->comment('Path ke file lampiran (misalnya, sertifikat medis).');
 
             // Status yang dikelola oleh alur kerja
-            $table->enum('current_status', ['Pending', 'Approved', 'Rejected', 'Canceled', 'Draft'])->default('Draft');
+            $table->enum('current_status', ['Pending', 'Approved', 'Rejected', 'Canceled', 'Draft','In Progress'])->default('Draft');
             $table->foreignId('workflow_id')->constrained('workflows')->onDelete('restrict')->comment('Template alur kerja yang digunakan.');
             // Membutuhkan workflow_steps
             $table->foreignId('current_workflow_step_id')->nullable()->constrained('workflow_steps')->onDelete('set null')
