@@ -15,7 +15,7 @@
         <nuxt-link to="/admin/leave-requests" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700">Leave Requests</nuxt-link>
       </nav>
     </aside>
-    <main class="flex-1 p-10">
+    <main class="flex-1 p-10 max-w-520px bg-gray-300">
       <slot />
     </main>
   </div>
