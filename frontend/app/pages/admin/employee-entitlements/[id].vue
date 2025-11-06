@@ -43,7 +43,7 @@
         </div>
       </div>
       <div class="flex items-center justify-between">
-        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+        <button class="bg-slate-500 hover:bg-slate-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
           Update
         </button>
         <nuxt-link to="/admin/employee-entitlements" class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
@@ -59,37 +59,22 @@
     layout: 'admin',
   });
 
-  const { token } = useAuth();
   const route = useRoute();
   const id = route.params.id;
 
-  const { data: entitlement, error } = await useFetch(`/api/admin/master/employee-entitlements/${id}`, {
-    headers: {
-      Authorization: `Bearer ${token.value}`,
-    },
-  });
+  const { data: entitlement, error } = await useApi(`/admin/master/employee-entitlements/${id}`);
 
-  const { data: users } = await useFetch('/api/admin/master/users', {
-    headers: {
-      Authorization: `Bearer ${token.value}`,
-    },
-  });
+  const { token } = useAuth();
+  const { data: users } = await useApi('/admin/master/users');
 
-  const { data: leaveTypes } = await useFetch('/api/admin/master/leave-types', {
-    headers: {
-      Authorization: `Bearer ${token.value}`,
-    },
-  });
+  const { data: leaveTypes } = await useApi('/admin/master/leave-types');
 
   const updateEmployeeEntitlement = async () => {
     try {
-      await useFetch(`/api/admin/master/employee-entitlements/${id}`,
+      await useApi(`/admin/master/employee-entitlements/${id}`,
         {
           method: 'PUT',
           body: entitlement.value.data,
-          headers: {
-            Authorization: `Bearer ${token.value}`,
-          },
         }
       );
       await navigateTo('/admin/employee-entitlements');

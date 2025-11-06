@@ -41,7 +41,7 @@
         </div>
       </div>
       <div class="flex items-center justify-between">
-        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+        <button class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
           Create
         </button>
         <nuxt-link to="/admin/users" class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
@@ -66,20 +66,13 @@
     roles: [],
   });
 
-  const { data: roles } = await useFetch('/api/admin/master/roles', {
-    headers: {
-      Authorization: `Bearer ${token.value}`,
-    },
-  });
+  const { data: roles } = await useApi('/admin/master/roles');
 
   const createUser = async () => {
     try {
-      await useFetch('/api/admin/master/users', {
+      await useApi('/admin/master/users', {
         method: 'POST',
         body: form.value,
-        headers: {
-          Authorization: `Bearer ${token.value}`,
-        },
       });
       await navigateTo('/admin/users');
     } catch (error) {

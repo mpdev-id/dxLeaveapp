@@ -23,7 +23,7 @@
         </div>
       </div>
       <div class="flex items-center justify-between">
-        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+        <button class="bg-slate-500 hover:bg-slate-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
           Update
         </button>
         <nuxt-link to="/admin/public-holidays" class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
@@ -39,25 +39,17 @@
     layout: 'admin',
   });
 
-  const { token } = useAuth();
   const route = useRoute();
   const id = route.params.id;
 
-  const { data: publicHoliday, error } = await useFetch(`/api/admin/master/public-holidays/${id}`, {
-    headers: {
-      Authorization: `Bearer ${token.value}`,
-    },
-  });
+  const { data: publicHoliday, error } = await useApi(`/admin/master/public-holidays/${id}`);
 
   const updatePublicHoliday = async () => {
     try {
-      await useFetch(`/api/admin/master/public-holidays/${id}`,
+      await useApi(`/api/admin/master/public-holidays/${id}`,
         {
           method: 'PUT',
           body: publicHoliday.value.data,
-          headers: {
-            Authorization: `Bearer ${token.value}`,
-          },
         }
       );
       await navigateTo('/admin/public-holidays');

@@ -12,6 +12,7 @@ use App\Models\LeaveType;
 use App\Models\PublicHoliday;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Spatie\Permission\Models\Role;
 
 class MasterDataController extends Controller
 {
@@ -153,5 +154,11 @@ class MasterDataController extends Controller
     {
         $publicHoliday->delete();
         return ResponseFormatter::success(null, 'Public holiday deleted successfully');
+    }
+
+    public function roles()
+    {
+        $roles = Role::all();
+        return ResponseFormatter::success($roles, 'Roles retrieved successfully');
     }
 }

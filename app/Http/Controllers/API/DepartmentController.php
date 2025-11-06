@@ -14,10 +14,29 @@ class DepartmentController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $departments = Department::all();
-        return ResponseFormatter::success(DepartmentResource::collection($departments), 'Departments retrieved successfully');
+        $query = Department::query();
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where('name', 'like', '%' . $search . '%');
+        }
+
+        // Sorting functionality
+        if ($request->filled('sort_by')) {
+            $sortBy = $request->input('sort_by');
+            $sortDir = $request->input('sort_dir', 'asc');
+            
+            if ($sortBy === 'name') {
+                $query->orderBy($sortBy, $sortDir);
+            }
+        }
+
+        $departments = $query->paginate($request->input('per_page', 10));
+
+        return ResponseFormatter::success($departments, 'Departments retrieved successfully');
     }
 
     /**

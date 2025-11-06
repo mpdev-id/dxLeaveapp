@@ -14,10 +14,30 @@ class LeaveTypeController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $leaveTypes = LeaveType::all();
-        return ResponseFormatter::success(LeaveTypeResource::collection($leaveTypes), 'Leave types retrieved successfully');
+        $query = LeaveType::query();
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where('name', 'like', '%' . $search . '%');
+        }
+
+        // Sorting functionality
+        if ($request->filled('sort_by')) {
+            $sortBy = $request->input('sort_by');
+            $sortDir = $request->input('sort_dir', 'asc');
+            
+            $allowedSorts = ['name', 'default_entitlement_days'];
+            if (in_array($sortBy, $allowedSorts)) {
+                $query->orderBy($sortBy, $sortDir);
+            }
+        }
+
+        $leaveTypes = $query->paginate($request->input('per_page', 10));
+
+        return ResponseFormatter::success($leaveTypes, 'Leave types retrieved successfully');
     }
 
     /**

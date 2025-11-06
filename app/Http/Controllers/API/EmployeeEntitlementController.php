@@ -22,11 +22,11 @@ class EmployeeEntitlementController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $entitlements = $this->entitlementService->getEntitlements();
+        $entitlements = $this->entitlementService->getEntitlements($request);
         return ResponseFormatter::success(
-            EmployeeEntitlementResource::collection($entitlements),
+            $entitlements,
             'Employee entitlements retrieved successfully'
         );
     }

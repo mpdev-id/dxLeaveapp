@@ -27,7 +27,7 @@
           <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">
             Roles
           </label>
-          <div v-for="role in roles.data" :key="role.id">
+          <div v-if="roles && roles.data" v-for="role in roles.data" :key="role.id">
             <label class="inline-flex items-center">
               <input type="checkbox" :value="role.name" v-model="selectedRoles" class="form-checkbox h-5 w-5 text-gray-600">
               <span class="ml-2 text-gray-700">{{ role.name }}</span>
@@ -36,7 +36,7 @@
         </div>
       </div>
       <div class="flex items-center justify-between">
-        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+        <button class="bg-slate-500 hover:bg-slate-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
           Update
         </button>
         <nuxt-link to="/admin/users" class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
@@ -48,37 +48,35 @@
 </template>
 
 <script setup>
+  import { ref } from 'vue';
+
   definePageMeta({
     layout: 'admin',
   });
 
-  const { token } = useAuth();
   const route = useRoute();
   const id = route.params.id;
 
-  const { data: user, error } = await useFetch(`/api/admin/master/users/${id}`, {
-    headers: {
-      Authorization: `Bearer ${token.value}`,
-    },
-  });
+  // Fetch data. `await` pauses setup until data is available.
+  const { data: user, error } = await useApi(`/admin/master/users/${id}`);
+  const { data: roles } = await useApi('/admin/master/roles');
 
-  const { data: roles } = await useFetch('/api/admin/master/roles', {
-    headers: {
-      Authorization: `Bearer ${token.value}`,
-    },
-  });
+  // DEBUGGING: Log the user data structure
+  console.log('--- DEBUGGING USER DATA ---');
+  console.log(JSON.stringify(user.value, null, 2));
+  console.log('---------------------------');
 
-  const selectedRoles = ref(user.value.data.roles.map(role => role.name));
+  const selectedRoles = ref(user.value?.data?.role || []);
 
   const updateUser = async () => {
+    // Add a guard clause in case the user data fetch failed.
+    if (!user.value) return;
+
     try {
-      await useFetch(`/api/admin/master/users/${id}`,
+      await useApi(`/admin/master/users/${id}`,
         {
           method: 'PUT',
           body: { ...user.value.data, roles: selectedRoles.value },
-          headers: {
-            Authorization: `Bearer ${token.value}`,
-          },
         }
       );
       await navigateTo('/admin/users');

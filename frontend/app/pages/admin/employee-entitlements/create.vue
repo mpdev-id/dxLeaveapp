@@ -40,7 +40,7 @@
         </div>
       </div>
       <div class="flex items-center justify-between">
-        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+        <button class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
           Create
         </button>
         <nuxt-link to="/admin/employee-entitlements" class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
@@ -65,26 +65,15 @@
     year: new Date().getFullYear(),
   });
 
-  const { data: users } = await useFetch('/api/admin/master/users', {
-    headers: {
-      Authorization: `Bearer ${token.value}`,
-    },
-  });
+  const { data: users } = await useApi('/admin/master/users');
 
-  const { data: leaveTypes } = await useFetch('/api/admin/master/leave-types', {
-    headers: {
-      Authorization: `Bearer ${token.value}`,
-    },
-  });
+  const { data: leaveTypes } = await useApi('/admin/master/leave-types');
 
   const createEmployeeEntitlement = async () => {
     try {
-      await useFetch('/api/admin/master/employee-entitlements', {
+      await useApi('/admin/master/employee-entitlements', {
         method: 'POST',
         body: form.value,
-        headers: {
-          Authorization: `Bearer ${token.value}`,
-        },
       });
       await navigateTo('/admin/employee-entitlements');
     } catch (error) {

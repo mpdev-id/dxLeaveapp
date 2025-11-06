@@ -21,7 +21,7 @@
             </tr>
           </thead>
           <tbody class="text-gray-600 text-sm font-light">
-            <tr v-for="approval in leaveRequest.data.approvals" :key="approval.id" class="border-b border-gray-200 hover:bg-gray-100">
+            <tr v-for="approval in leaveRequest.data.approvals" :key="approval.id" class="border-b border-gray-200 hover:bg-slate-600">
               <td class="py-3 px-6 text-left whitespace-nowrap">{{ approval.user.name }}</td>
               <td class="py-3 px-6 text-left">{{ approval.status }}</td>
               <td class="py-3 px-6 text-left">{{ new Date(approval.created_at).toLocaleString() }}</td>
@@ -38,37 +38,22 @@
     layout: 'admin',
   });
 
-  const { token } = useAuth();
   const route = useRoute();
   const id = route.params.id;
 
-  const { data: leaveRequest, error } = await useFetch(`/api/admin/master/leave-requests/${id}`, {
-    headers: {
-      Authorization: `Bearer ${token.value}`,
-    },
-  });
+  const { data: leaveRequest, error } = await useApi(`/admin/master/leave-requests/${id}`);
 
-  const { data: users } = await useFetch('/api/admin/master/users', {
-    headers: {
-      Authorization: `Bearer ${token.value}`,
-    },
-  });
+  const { token } = useAuth();
+  const { data: users } = await useApi('/admin/master/users');
 
-  const { data: leaveTypes } = await useFetch('/api/admin/master/leave-types', {
-    headers: {
-      Authorization: `Bearer ${token.value}`,
-    },
-  });
+  const { data: leaveTypes } = await useApi('/admin/master/leave-types');
 
   const updateLeaveRequest = async () => {
     try {
-      await useFetch(`/api/admin/master/leave-requests/${id}`,
+      await useApi(`/admin/master/leave-requests/${id}`,
         {
           method: 'PUT',
           body: leaveRequest.value.data,
-          headers: {
-            Authorization: `Bearer ${token.value}`,
-          },
         }
       );
       await navigateTo('/admin/leave-requests');

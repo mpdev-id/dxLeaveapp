@@ -10,9 +10,46 @@ use Illuminate\Support\Facades\Validator;
 
 class LeaveRequestController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $leaveRequests = LeaveRequest::with(['user', 'leaveType'])->get();
+        $query = LeaveRequest::with(['user', 'leaveType'])
+                         ->select('leave_requests.*_’);
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('user', function ($userQuery) use ($search) {
+                    $userQuery->where('name', 'like', '%' . $search . '%');
+                })
+                ->orWhereHas('leaveType', function ($leaveTypeQuery) use ($search) {
+                    $leaveTypeQuery->where('name', 'like', '%' . $search . '%');
+                });
+            });
+        }
+
+        // Sorting functionality
+        if ($request->filled('sort_by')) {
+            $sortBy = $request->input('sort_by');
+            $sortDir = $request->input('sort_dir', 'asc');
+
+            $allowedSorts = ['start_date', 'end_date', 'current_status', 'user_name', 'leave_type_name'];
+
+            if (in_array($sortBy, $allowedSorts)) {
+                if ($sortBy === 'user_name') {
+                    $query->join('users', 'leave_requests.user_id', '=', 'users.id')
+                          ->orderBy('users.name', $sortDir);
+                } elseif ($sortBy === 'leave_type_name') {
+                    $query->join('leave_types', 'leave_requests.leave_type_id', '=', 'leave_types.id')
+                          ->orderBy('leave_types.name', $sortDir);
+                } else {
+                    $query->orderBy($sortBy, $sortDir);
+                }
+            }
+        }
+
+        $leaveRequests = $query->paginate($request->input('per_page', 10));
+
         return ResponseFormatter::success($leaveRequests, 'Leave requests retrieved successfully');
     }
 

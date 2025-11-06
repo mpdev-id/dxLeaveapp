@@ -15,7 +15,7 @@
         </div>
       </div>
       <div class="flex items-center justify-between">
-        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+        <button class="bg-slate-500 hover:bg-slate-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
           Update
         </button>
         <nuxt-link to="/admin/departments" class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
@@ -31,25 +31,17 @@
     layout: 'admin',
   });
 
-  const { token } = useAuth();
   const route = useRoute();
   const id = route.params.id;
 
-  const { data: department, error } = await useFetch(`/api/admin/master/departments/${id}`, {
-    headers: {
-      Authorization: `Bearer ${token.value}`,
-    },
-  });
+  const { data: department, error } = await useApi(`/admin/master/departments/${id}`);
 
   const updateDepartment = async () => {
     try {
-      await useFetch(`/api/admin/master/departments/${id}`,
+      await useApi(`/admin/master/departments/${id}`,
         {
           method: 'PUT',
           body: department.value.data,
-          headers: {
-            Authorization: `Bearer ${token.value}`,
-          },
         }
       );
       await navigateTo('/admin/departments');

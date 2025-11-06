@@ -14,10 +14,30 @@ class PublicHolidayController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $holidays = PublicHoliday::all();
-        return ResponseFormatter::success(PublicHolidayResource::collection($holidays), 'Public holidays retrieved successfully');
+        $query = PublicHoliday::query();
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where('name', 'like', '%' . $search . '%');
+        }
+
+        // Sorting functionality
+        if ($request->filled('sort_by')) {
+            $sortBy = $request->input('sort_by');
+            $sortDir = $request->input('sort_dir', 'asc');
+            
+            $allowedSorts = ['name', 'date'];
+            if (in_array($sortBy, $allowedSorts)) {
+                $query->orderBy($sortBy, $sortDir);
+            }
+        }
+
+        $holidays = $query->paginate($request->input('per_page', 10));
+
+        return ResponseFormatter::success($holidays, 'Public holidays retrieved successfully');
     }
 
     /**

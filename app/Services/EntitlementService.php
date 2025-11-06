@@ -12,9 +12,42 @@ use Illuminate\Validation\ValidationException;
 
 class EntitlementService
 {
-    public function getEntitlements()
+    public function getEntitlements(Request $request)
     {
-        return EmployeeEntitlement::with(['user', 'leaveType'])->get();
+        $query = EmployeeEntitlement::with(['user', 'leaveType'])
+                    ->select('employee_entitlements.*');
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->whereHas('user', function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%');
+            })->orWhereHas('leaveType', function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%');
+            });
+        }
+
+        // Sorting functionality
+        if ($request->filled('sort_by')) {
+            $sortBy = $request->input('sort_by');
+            $sortDir = $request->input('sort_dir', 'asc');
+
+            $allowedSorts = ['year', 'entitlement', 'user_name', 'leave_type_name'];
+
+            if (in_array($sortBy, $allowedSorts)) {
+                if ($sortBy === 'user_name') {
+                    $query->join('users', 'employee_entitlements.user_id', '=', 'users.id')
+                          ->orderBy('users.name', $sortDir);
+                } elseif ($sortBy === 'leave_type_name') {
+                    $query->join('leave_types', 'employee_entitlements.leave_type_id', '=', 'leave_types.id')
+                          ->orderBy('leave_types.name', $sortDir);
+                } else {
+                    $query->orderBy($sortBy, $sortDir);
+                }
+            }
+        }
+
+        return $query->paginate($request->input('per_page', 10));
     }
 
     public function findEntitlementById($id)

@@ -38,7 +38,7 @@
         </div>
       </div>
       <div class="flex items-center justify-between">
-        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+        <button class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
           Create
         </button>
         <nuxt-link to="/admin/leave-requests" class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
@@ -63,26 +63,15 @@
     end_date: '',
   });
 
-  const { data: users } = await useFetch('/api/admin/master/users', {
-    headers: {
-      Authorization: `Bearer ${token.value}`,
-    },
-  });
+  const { data: users } = await useApi('/admin/master/users');
 
-  const { data: leaveTypes } = await useFetch('/api/admin/master/leave-types', {
-    headers: {
-      Authorization: `Bearer ${token.value}`,
-    },
-  });
+  const { data: leaveTypes } = await useApi('/admin/master/leave-types');
 
   const createLeaveRequest = async () => {
     try {
-      await useFetch('/api/admin/master/leave-requests', {
+      await useApi('/admin/master/leave-requests', {
         method: 'POST',
         body: form.value,
-        headers: {
-          Authorization: `Bearer ${token.value}`,
-        },
       });
       await navigateTo('/admin/leave-requests');
     } catch (error) {

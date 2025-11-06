@@ -12,7 +12,7 @@
         </div>
       </div>
       <div class="flex items-center justify-between">
-        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+        <button class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
           Create
         </button>
         <nuxt-link to="/admin/leave-types" class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
@@ -36,12 +36,9 @@
 
   const createLeaveType = async () => {
     try {
-      await useFetch('/api/admin/master/leave-types', {
+      await useApi('/admin/master/leave-types', {
         method: 'POST',
         body: form.value,
-        headers: {
-          Authorization: `Bearer ${token.value}`,
-        },
       });
       await navigateTo('/admin/leave-types');
     } catch (error) {
