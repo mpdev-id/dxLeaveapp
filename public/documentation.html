@@ -3,281 +3,424 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API Documentation</title>
+    <title>DXLeave API Documentation</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📄</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-color: #121212;
+            --sidebar-bg: #1A1A1A;
+            --content-bg: #1E1E1E;
+            --text-color: #E0E0E0;
+            --heading-color: #FFFFFF;
+            --accent-color: #007BFF;
+            --border-color: #333333;
+            --pre-bg: #282C34;
+            --code-text: #ABB2BF;
+            --method-get: #61AFEF;
+            --method-post: #98C379;
+            --method-put: #E5C07B;
+            --method-patch: #E5C07B;
+            --method-delete: #E06C75;
+            --badge-bg: #3a3a3a;
+            --badge-text: #d0d0d0;
+            --badge-admin-bg: #8e44ad;
+            --badge-admin-text: #ffffff;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #f1f1f1;
-            background-color: #1e1e1e;
-            max-width: 1200px;
-            margin: 0 auto;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+        }
+        #sidebar {
+            width: 280px;
+            background-color: var(--sidebar-bg);
+            height: 100vh;
+            position: fixed;
             padding: 20px;
+            overflow-y: auto;
+            border-right: 1px solid var(--border-color);
         }
-        h1, h2, h3, h4 {
-            color: #085E83;
-            border-bottom: 1px solid #444;
+        #sidebar h1 {
+            font-size: 24px;
+            color: var(--heading-color);
+            margin-bottom: 20px;
+        }
+        #sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+        #sidebar ul li a {
+            display: block;
+            color: var(--text-color);
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            transition: background-color 0.2s ease, color 0.2s ease;
+            font-size: 15px;
+        }
+        #sidebar ul li a:hover, #sidebar ul li a.active {
+            background-color: var(--accent-color);
+            color: var(--heading-color);
+        }
+        #main-content {
+            margin-left: 320px;
+            padding: 40px;
+            width: calc(100% - 320px);
+        }
+        .section {
+            margin-bottom: 60px;
+            padding-top: 20px; /* Added padding for scroll spy offset */
+        }
+        .section h2 {
+            font-size: 28px;
+            color: var(--heading-color);
+            border-bottom: 2px solid var(--border-color);
             padding-bottom: 10px;
+            margin-bottom: 15px;
         }
-        code {
-            background-color: #2d2d2d;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: 'Courier New', Courier, monospace;
-        }
-        pre {
-            background-color: #2d2d2d;
-            color: #f8f8f2;
-            padding: 15px;
-            border-radius: 4px;
-            overflow-x: auto;
+        .section > p {
+            font-size: 16px;
+            line-height: 1.7;
+            margin-bottom: 30px;
         }
         .endpoint {
-            border: 1px solid #444;
-            border-radius: 5px;
-            padding: 20px;
-            margin-bottom: 20px;
-            background-color: #252525;
+            background-color: var(--content-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 30px;
+            overflow: hidden;
         }
-        .endpoint .method {
-            font-weight: bold;
-            padding: 5px 10px;
-            border-radius: 3px;
-            color: white;
-            display: inline-block;
-            margin-right: 10px;
-            min-width: 60px;
+        .endpoint-header {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .method {
+            font-family: 'Fira Code', monospace;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 5px;
+            color: #fff;
+            font-size: 14px;
+            min-width: 70px;
             text-align: center;
         }
-        .post { background-color: #27ae60; }
-        .get { background-color: #2980b9; }
-        .put, .patch { background-color: #f39c12; }
-        .delete { background-color: #c0392b; }
-
-        .tab-container {
-            display: flex;
-            border-bottom: 2px solid #4a90e2;
+        .GET { background-color: var(--method-get); }
+        .POST { background-color: var(--method-post); }
+        .PUT { background-color: var(--method-put); }
+        .PATCH { background-color: var(--method-patch); }
+        .DELETE { background-color: var(--method-delete); }
+        .endpoint-path {
+            font-family: 'Fira Code', monospace;
+            font-size: 16px;
+            color: var(--heading-color);
+        }
+        .badge {
+            background-color: var(--badge-bg);
+            color: var(--badge-text);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .badge.admin {
+            background-color: var(--badge-admin-bg);
+            color: var(--badge-admin-text);
+        }
+        .endpoint-details {
+            padding: 20px;
+        }
+        .endpoint-details h4 {
+            font-size: 18px;
+            color: var(--heading-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+        .endpoint-details p {
             margin-bottom: 20px;
         }
-        .tab {
-            padding: 10px 20px;
+        .code-block {
+            position: relative;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #3a3f4c;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 5px 10px;
+            border-radius: 5px;
             cursor: pointer;
-            background-color: #2d2d2d;
+            font-size: 12px;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        .copy-btn:hover { opacity: 1; }
+        .code-tabs {
+            display: flex;
+            margin-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .code-tab {
+            background: none;
             border: none;
-            color: #f1f1f1;
-            font-size: 16px;
-            margin-right: 5px;
-            border-radius: 5px 5px 0 0;
+            color: var(--text-color);
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 14px;
+            border-bottom: 2px solid transparent;
         }
-        .tab.active {
-            background-color: #4a90e2;
-            color: #fff;
+        .code-tab.active {
+            color: var(--accent-color);
+            border-bottom-color: var(--accent-color);
         }
-        .tab-content {
-            display: none;
+        pre {
+            background-color: var(--pre-bg);
+            color: var(--code-text);
+            padding: 20px;
+            border-radius: 5px;
+            margin: 0;
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
-        .tab-content.active {
-            display: block;
+        .code-content { display: none; }
+        .code-content.active { display: block; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        th {
+            background-color: #2a2a2a;
+            font-weight: 600;
+        }
+        td code {
+            background-color: var(--pre-bg);
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-family: 'Fira Code', monospace;
         }
     </style>
 </head>
 <body>
 
-    <h1>API Documentation</h1>
-    <p>This documentation outlines the API endpoints and usage for different user roles within the dxLeaveApp system.</p>
-
-    <div class="tab-container">
-        <button class="tab active" onclick="openTab(event, 'Member')">Member (Employee)</button>
-        <button class="tab" onclick="openTab(event, 'Approver')">Approver</button>
-        <button class="tab" onclick="openTab(event, 'SuperAdmin')">Super Admin</button>
+    <div id="sidebar">
+        <h1>DXLeave API</h1>
+        <ul>
+            <li><a href="#introduction" class="active">Introduction</a></li>
+            <li><a href="#auth">Authentication</a></li>
+            <li><a href="#data-models">Data Models</a></li>
+            <li><a href="#user">User Profile</a></li>
+            <li><a href="#leave-requests">Leave Requests</a></li>
+            <li><a href="#approvals">Approvals</a></li>
+            <li><a href="#admin-dashboard">Admin: Dashboard</a></li>
+            <li><a href="#admin-master">Admin: Master Data</a></li>
+        </ul>
     </div>
 
-    <!-- =================================================================== -->
-    <!-- ===================== ROLE: MEMBER (EMPLOYEE) ===================== -->
-    <!-- =================================================================== -->
-    <div id="Member" class="tab-content active">
-        <h2>Role: Member (Employee)</h2>
-        <p>Endpoints available for standard employees.</p>
+    <div id="main-content">
+        <!-- Sections from previous response go here... -->
+        <!-- ======================= INTRODUCTION ======================== -->
+        <section id="introduction" class="section">
+            <h2>Introduction</h2>
+            <p>Welcome to the DXLeave API documentation. This API provides endpoints for managing leave requests, users, and other core data for the DXLeave application.</p>
+            <h4>Base URL</h4>
+            <div class="code-block"><pre><code>https://your-domain.com</code></pre><button class="copy-btn">Copy</button></div>
+            <h4>Authentication</h4>
+            <p>Most endpoints require authentication using a Sanctum bearer token. Include it in the `Authorization` header.</p>
+            <div class="code-block"><pre><code>Authorization: Bearer &lt;your_sanctum_token&gt;</code></pre><button class="copy-btn">Copy</button></div>
+            <h4>Error Responses</h4>
+            <p>Errors are returned using standard HTTP status codes with a JSON body.</p>
+            <div class="code-block"><pre><code>// Example: 422 Unprocessable Entity
+{
+    "message": "The given data was invalid.",
+    "errors": {
+        "field_name": [
+            "A specific error message for this field."
+        ]
+    }
+}</code></pre><button class="copy-btn">Copy</button></div>
+        </section>
 
-        <div class="endpoint">
-            <h3><span class="method post">POST</span> <code>/api/register</code></h3>
-            <p><strong>Description:</strong> Register a new user account.</p>
-            <h4>Request Body:</h4>
-            <pre><code>{
+        <!-- ======================= AUTHENTICATION ======================== -->
+        <section id="auth" class="section">
+            <h2>Authentication</h2>
+            <p>Public endpoints for user registration, login, and password recovery.</p>
+            <div class="endpoint"><div class="endpoint-header"><span class="method POST">POST</span><span class="endpoint-path">/api/register</span></div><div class="endpoint-details"><p>Creates a new user account.</p></div></div>
+            <div class="endpoint"><div class="endpoint-header"><span class="method POST">POST</span><span class="endpoint-path">/api/login</span></div><div class="endpoint-details"><p>Authenticates a user and returns a Sanctum token.</p></div></div>
+            <div class="endpoint"><div class="endpoint-header"><span class="method POST">POST</span><span class="endpoint-path">/api/forgot-password</span></div><div class="endpoint-details"><p>Sends a password reset link to the user's email.</p></div></div>
+            <div class="endpoint"><div class="endpoint-header"><span class="method POST">POST</span><span class="endpoint-path">/api/reset-password</span></div><div class="endpoint-details"><p>Resets the user's password using the token from the email.</p></div></div>
+        </section>
+
+        <!-- ======================= DATA MODELS ======================== -->
+        <section id="data-models" class="section">
+            <h2>Data Models</h2>
+            <p>Core data structures used in the API.</p>
+            <h4>User Model</h4>
+            <table><tr><th>Field</th><th>Type</th><th>Description</th></tr><tr><td><code>id</code></td><td>integer</td><td>Unique user ID.</td></tr><tr><td><code>name</code></td><td>string</td><td>User's full name.</td></tr><tr><td><code>employee_code</code></td><td>string</td><td>Unique employee code.</td></tr><tr><td><code>email</code></td><td>string</td><td>User's email address.</td></tr><tr><td><code>hire_date</code></td><td>date</td><td>Hire date (YYYY-MM-DD).</td></tr><tr><td><code>department</code></td><td>object</td><td>Nested Department model.</td></tr><tr><td><code>manager</code></td><td>object</td><td>Nested User model for the manager.</td></tr></table>
+            <h4>LeaveRequest Model</h4>
+            <table><tr><th>Field</th><th>Type</th><th>Description</th></tr><tr><td><code>id</code></td><td>integer</td><td>Unique leave request ID.</td></tr><tr><td><code>leave_type</code></td><td>object</td><td>Nested LeaveType model.</td></tr><tr><td><code>start_date</code></td><td>date</td><td>Start date of leave (YYYY-MM-DD).</td></tr><tr><td><code>end_date</code></td><td>date</td><td>End date of leave (YYYY-MM-DD).</td></tr><tr><td><code>reason</code></td><td>string</td><td>Reason for the leave.</td></tr><tr><td><code>current_status</code></td><td>string</td><td>Status: `Draft`, `Pending`, `Approved`, `Rejected`.</td></tr></table>
+        </section>
+
+        <!-- ======================= USER PROFILE ======================== -->
+        <section id="user" class="section">
+            <h2>User Profile</h2>
+            <p>Manage the authenticated user's profile.</p>
+            <div class="endpoint"><div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/api/user</span><span class="badge">Auth Required</span></div><div class="endpoint-details"><p>Fetches the profile of the authenticated user.</p><h4>Response (200 OK)</h4><div class="code-block"><pre><code>// Returns a User model object
+{
+    "id": 1,
     "name": "John Doe",
-    "employee_code": "EMP12345",
     "email": "john.doe@example.com",
-    "password": "password123",
-    "password_confirmation": "password123",
-    "department_id": 1,
-    "manager_id": 2,
-    "hire_date": "2023-01-15"
-}</code></pre>
-        </div>
+    ...
+}</code></pre><button class="copy-btn">Copy</button></div></div></div>
+            <div class="endpoint"><div class="endpoint-header"><span class="method POST">POST</span><span class="endpoint-path">/api/logout</span><span class="badge">Auth Required</span></div><div class="endpoint-details"><p>Invalidates the user's current token.</p><h4>Response (200 OK)</h4><div class="code-block"><pre><code>{
+    "message": "Logged out successfully."
+}</code></pre><button class="copy-btn">Copy</button></div></div></div>
+        </section>
 
-        <div class="endpoint">
-            <h3><span class="method post">POST</span> <code>/api/login</code></h3>
-            <p><strong>Description:</strong> Login to get an authentication token.</p>
-            <h4>Request Body:</h4>
-            <pre><code>{
-    "identifier": "john.doe@example.com", // or "EMP12345"
-    "password": "password123"
-}</code></pre>
-        </div>
-
-        <div class="endpoint">
-            <h3><span class="method get">GET</span> <code>/api/user</code></h3>
-            <p><strong>Description:</strong> Fetch own user profile.</p>
-        </div>
-
-        <div class="endpoint">
-            <h3><span class="method post">POST</span> <code>/api/leave-requests</code></h3>
-            <p><strong>Description:</strong> Submit a new leave request. The request starts in 'Draft' status.</p>
-            <h4>Request Body:</h4>
-            <pre><code>{
+        <!-- ======================= LEAVE REQUESTS ======================== -->
+        <section id="leave-requests" class="section">
+            <h2>Leave Requests</h2>
+            <p>Endpoints for employees to manage their own leave requests.</p>
+            <div class="endpoint"><div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/api/leave-requests</span><span class="badge">Auth Required</span></div><div class="endpoint-details"><p>Retrieves a list of the user's own leave requests.</p><h4>Response (200 OK)</h4><div class="code-block"><pre><code>{
+    "data": [
+        // Array of LeaveRequest model objects
+    ]
+}</code></pre><button class="copy-btn">Copy</button></div></div></div>
+            <div class="endpoint"><div class="endpoint-header"><span class="method POST">POST</span><span class="endpoint-path">/api/leave-requests</span><span class="badge">Auth Required</span></div><div class="endpoint-details"><p>Submits a new leave request (created in "Draft" status).</p><h4>Request Body</h4><div class="code-block"><pre><code>{
     "leave_type_id": 1,
-    "start_date": "2025-12-20",
-    "end_date": "2025-12-22",
-    "reason": "Holiday vacation"
-}</code></pre>
-        </div>
-
-        <div class="endpoint">
-            <h3><span class="method get">GET</span> <code>/api/leave-requests</code></h3>
-            <p><strong>Description:</strong> View own leave request history.</p>
-        </div>
-
-        <div class="endpoint">
-            <h3><span class="method patch">PATCH</span> <code>/api/leave-requests/{leaveRequest}</code></h3>
-            <p><strong>Description:</strong> Update a leave request that is in 'Draft' status. To submit for approval, set <code>current_status</code> to 'Pending'.</p>
-            <h4>Request Body (Example for submitting):</h4>
-            <pre><code>{
-    "leave_type_id": 1,
-    "start_date": "2025-12-20",
-    "end_date": "2025-12-22",
-    "reason": "Holiday vacation",
+    "start_date": "2025-12-24",
+    "end_date": "2025-12-26",
+    "reason": "Christmas break"
+}</code></pre><button class="copy-btn">Copy</button></div><h4>Response (201 Created)</h4><div class="code-block"><pre><code>{
+    "message": "Leave request created successfully in Draft status.",
+    "data": { ... } // LeaveRequest model object
+}</code></pre><button class="copy-btn">Copy</button></div></div></div>
+            <div class="endpoint"><div class="endpoint-header"><span class="method PATCH">PATCH</span><span class="endpoint-path">/api/leave-requests/{leaveRequest}</span><span class="badge">Auth Required</span></div><div class="endpoint-details"><p>Updates a `Draft` request. To submit for approval, set `current_status` to `Pending`.</p><h4>Request Body</h4><div class="code-block"><pre><code>{
+    "reason": "Updated reason for Christmas break",
     "current_status": "Pending"
-}</code></pre>
-        </div>
+}</code></pre><button class="copy-btn">Copy</button></div><h4>Response (200 OK)</h4><div class="code-block"><pre><code>{
+    "message": "Leave request status updated to Pending.",
+    "data": { ... } // Updated LeaveRequest model object
+}</code></pre><button class="copy-btn">Copy</button></div></div></div>
+        </section>
 
-        <div class="endpoint">
-            <h3><span class="method post">POST</span> <code>/api/logout</code></h3>
-            <p><strong>Description:</strong> Logout and invalidate the token.</p>
-        </div>
-    </div>
-
-    <!-- =================================================================== -->
-    <!-- ========================= ROLE: APPROVER ========================== -->
-    <!-- =================================================================== -->
-    <div id="Approver" class="tab-content">
-        <h2>Role: Approver (SPV, SL, ASMEN, TL, Manager)</h2>
-        <p>Approvers have all Member permissions, plus the ability to approve or reject leave requests.</p>
-
-        <div class="endpoint">
-            <h3><span class="method get">GET</span> <code>/api/leave-requests</code></h3>
-            <p><strong>Description:</strong> View pending leave requests that require their approval.</p>
-        </div>
-
-        <div class="endpoint">
-            <h3><span class="method patch">PATCH</span> <code>/api/leave-requests/{leaveRequest}/approve</code></h3>
-            <p><strong>Description:</strong> Approve or reject a leave request.</p>
-            <h4>Request Body:</h4>
-            <pre><code>{
+        <!-- ======================= APPROVALS ======================== -->
+        <section id="approvals" class="section">
+            <h2>Approvals</h2>
+            <p>Endpoints for managers to approve or reject leave requests.</p>
+            <div class="endpoint"><div class="endpoint-header"><span class="method PATCH">PATCH</span><span class="endpoint-path">/api/leave-requests/{leaveRequest}/approve</span><span class="badge">Manager/Approver Role</span></div><div class="endpoint-details"><p>Approves or rejects a pending leave request.</p><h4>Request Body</h4><div class="code-block"><pre><code>{
     "action": "Approved", // or "Rejected"
-    "comments": "Enjoy your vacation!"
-}</code></pre>
-        </div>
-    </div>
+    "comments": "Enjoy your time off!"
+}</code></pre><button class="copy-btn">Copy</button></div><h4>Response (200 OK)</h4><div class="code-block"><pre><code>{
+    "message": "Leave request has been Approved.",
+    "data": { ... } // Updated LeaveRequest model object
+}</code></pre><button class="copy-btn">Copy</button></div></div></div>
+        </section>
 
-    <!-- =================================================================== -->
-    <!-- ======================= ROLE: SUPER ADMIN ========================= -->
-    <!-- =================================================================== -->
-    <div id="SuperAdmin" class="tab-content">
-        <h2>Role: Super Admin</h2>
-        <p>The Super Admin has full access to the system for managing master data.</p>
-        <h3>All endpoints are prefixed with <code>/api/admin/master</code></h3>
+        <!-- ======================= ADMIN: DASHBOARD ======================== -->
+        <section id="admin-dashboard" class="section">
+            <h2>Admin: Dashboard</h2>
+            <p>Dashboard endpoints for a high-level overview of the system.</p>
+            <div class="endpoint"><div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/api/admin/dashboard/stats</span><span class="badge admin">Super Admin</span></div><div class="endpoint-details"><p>Get key statistics (total users, pending requests, etc.).</p></div></div>
+            <div class="endpoint"><div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/api/admin/dashboard/recent-activity</span><span class="badge admin">Super Admin</span></div><div class="endpoint-details"><p>Get a feed of recent system activities.</p></div></div>
+            <div class="endpoint"><div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/api/admin/dashboard/upcoming-leaves</span><span class="badge admin">Super Admin</span></div><div class="endpoint-details"><p>Get a list of approved, upcoming leave requests across the organization.</p></div></div>
+        </section>
 
-        <div class="endpoint">
-            <h3><span class="method get">GET</span> <code>/users</code></h3>
-            <p><strong>Description:</strong> Get a list of all users.</p>
-        </div>
-        <div class="endpoint">
-            <h3><span class="method post">POST</span> <code>/users</code></h3>
-            <p><strong>Description:</strong> Create a new user and assign roles.</p>
-            <h4>Request Body:</h4>
-            <pre><code>{
-    "name": "Jane Doe",
-    "employee_code": "EMP67890",
-    "email": "jane.doe@example.com",
-    "password": "password123",
-    "department_id": 2,
-    "manager_id": 1,
-    "hire_date": "2024-02-01",
-    "status": "Active",
-    "roles": ["Employee", "Manager"]
-}</code></pre>
-        </div>
-        <div class="endpoint">
-            <h3><span class="method get">GET</span> <code>/users/{user}</code></h3>
-            <p><strong>Description:</strong> Get details of a specific user, including their roles.</p>
-        </div>
-        <div class="endpoint">
-            <h3><span class="method put">PUT/PATCH</span> <code>/users/{user}</code></h3>
-            <p><strong>Description:</strong> Update a user's information and roles. To change roles, provide the <code>roles</code> array. This will replace all existing roles with the new ones provided.</p>
-            <h4>Request Body (Example):</h4>
-            <pre><code>{
-    "name": "Jane Doe Updated",
-    "roles": ["Employee"]
-}</code></pre>
-        </div>
-        <div class="endpoint">
-            <h3><span class="method delete">DELETE</span> <code>/users/{user}</code></h3>
-            <p><strong>Description:</strong> Delete a user.</p>
-        </div>
+        <!-- ======================= ADMIN: MASTER DATA ======================== -->
+        <section id="admin-master" class="section">
+            <h2>Admin: Master Data (CRUD)</h2>
+            <p>Full CRUD endpoints for managing core system data. All are prefixed with <code>/api/admin/master</code>.</p>
+            <div class="endpoint"><div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/roles</span><span class="badge admin">Super Admin</span></div><div class="endpoint-details"><p>Get a list of all available roles.</p></div></div>
+            <div class="endpoint"><div class="endpoint-header"><span class="method">apiResource</span><span class="endpoint-path">/users</span><span class="badge admin">Super Admin</span></div><div class="endpoint-details"><p>Manage users. Supports GET (list), POST, GET/{id}, PUT/PATCH/{id}, DELETE/{id}.</p></div></div>
+            <div class="endpoint"><div class="endpoint-header"><span class="method">apiResource</span><span class="endpoint-path">/departments</span><span class="badge admin">Super Admin</span></div><div class="endpoint-details"><p>Manage departments.</p></div></div>
+            <div class="endpoint"><div class="endpoint-header"><span class="method">apiResource</span><span class="endpoint-path">/leave-types</span><span class="badge admin">Super Admin</span></div><div class="endpoint-details"><p>Manage leave types.</p></div></div>
+            <div class="endpoint"><div class="endpoint-header"><span class="method">apiResource</span><span class="endpoint-path">/public-holidays</span><span class="badge admin">Super Admin</span></div><div class="endpoint-details"><p>Manage public holidays.</p></div></div>
+            <div class="endpoint"><div class="endpoint-header"><span class="method">apiResource</span><span class="endpoint-path">/employee-entitlements</span><span class="badge admin">Super Admin</span></div><div class="endpoint-details"><p>Manage employee leave entitlements.</p></div></div>
+            <div class="endpoint"><div class="endpoint-header"><span class="method">apiResource</span><span class="endpoint-path">/leave-requests</span><span class="badge admin">Super Admin</span></div><div class="endpoint-details"><p>Full admin access to all leave requests.</p></div></div>
+        </section>
 
-        <div class="endpoint">
-            <h3>Role Management</h3>
-            <p>The <code>roles</code> attribute in the user creation and update endpoints accepts an array of role names. Providing this array will sync the user's roles, removing any they no longer have and adding new ones.</p>
-            <p><strong>Available Roles:</strong></p>
-            <ul>
-                <li><code>Super Admin</code></li>
-                <li><code>SL</code></li>
-                <li><code>SPV</code></li>
-                <li><code>ASMEN</code></li>
-                <li><code>TL</code></li>
-                <li><code>Manager</code></li>
-                <li><code>Employee</code></li>
-            </ul>
-        </div>
-
-        <hr>
-
-        <div class="endpoint">
-            <h3>CRUD: <code>/departments</code>, <code>/leave-types</code>, <code>/public-holidays</code>, <code>/employee-entitlements</code>, <code>/leave-requests</code></h3>
-            <p>These endpoints support full Create, Read, Update, and Delete operations. The required fields for creation/update generally correspond to the model's database columns.</p>
-            <p>For example, to create a department:</p>
-            <h4>POST <code>/departments</code></h4>
-            <pre><code>{
-    "name": "Human Resources",
-    "description": "HR Department"
-}</code></pre>
-        </div>
     </div>
 
     <script>
-        function openTab(evt, roleName) {
-            var i, tabcontent, tablinks;
-            tabcontent = document.getElementsByClassName("tab-content");
-            for (i = 0; i < tabcontent.length; i++) {
-                tabcontent[i].style.display = "none";
-            }
-            tablinks = document.getElementsByClassName("tab");
-            for (i = 0; i < tablinks.length; i++) {
-                tablinks[i].className = tablinks[i].className.replace(" active", "");
-            }
-            document.getElementById(roleName).style.display = "block";
-            evt.currentTarget.className += " active";
-        }
+        document.addEventListener('DOMContentLoaded', function () {
+            const sections = document.querySelectorAll('.section');
+            const sidebarLinks = document.querySelectorAll('#sidebar a');
+
+            // Function to update active link based on scroll
+            const updateActiveLink = () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 60) { // 60 is an offset
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                sidebarLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').includes(current)) {
+                        link.classList.add('active');
+                    }
+                });
+            };
+
+            // Listen for scroll events
+            window.addEventListener('scroll', updateActiveLink);
+
+            // Click handling for smooth scroll
+            sidebarLinks.forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    // No preventDefault to allow hash change
+                });
+            });
+
+            // Code tabs
+            document.querySelectorAll('.code-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const parent = this.closest('.endpoint-details');
+                    parent.querySelectorAll('.code-tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    parent.querySelectorAll('.code-content').forEach(c => c.classList.remove('active'));
+                    parent.querySelector('#' + this.dataset.target).classList.add('active');
+                });
+            });
+
+            // Copy button
+            document.querySelectorAll('.copy-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const pre = this.closest('.code-block').querySelector('pre');
+                    navigator.clipboard.writeText(pre.innerText).then(() => {
+                        this.innerText = 'Copied!';
+                        setTimeout(() => { this.innerText = 'Copy'; }, 2000);
+                    });
+                });
+            });
+            
+            // Initial check
+            updateActiveLink();
+        });
     </script>
 
 </body>
