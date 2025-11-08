@@ -11,18 +11,22 @@
     <style>
         :root {
             --sidebar-width: 290px;
+            --code-sidebar-width: 420px;
             /* Dark Mode (Default) */
             --bg-color: #121212;
             --sidebar-bg: #1A1A1A;
             --content-bg: #1E1E1E;
             --text-color: #E0E0E0;
             --heading-color: #FFFFFF;
-            --accent-color: #FD610D;
+            --accent-color: #0d6efd;
             --border-color: #333333;
             --pre-bg: #282C34;
             --code-text: #ABB2BF;
+            --comment-color: #5c6370;
             --copy-btn-bg: #3a3f4c;
             --copy-btn-text: #E0E0E0;
+            --input-bg: #2c2c2c;
+            --input-text: #e0e0e0;
             --method-get: #61AFEF;
             --method-post: #98C379;
             --method-put: #E5C07B;
@@ -37,27 +41,25 @@
 
         .light-mode {
             /* Light Mode (Glassmorphism) */
-            --bg-color: #f0f2f5;
             --sidebar-bg: rgba(255, 255, 255, 0.5);
             --content-bg: rgba(255, 255, 255, 0.65);
             --text-color: #333333;
             --heading-color: #111111;
-            --accent-color: #FD610D;
+            --accent-color: #0056b3;
             --border-color: rgba(0, 0, 0, 0.1);
             --pre-bg: #F5F5F5;
             --code-text: #333;
+            --comment-color: #6a737d;
             --copy-btn-bg: #e9e9e9;
             --copy-btn-text: #333;
+            --input-bg: rgba(255, 255, 255, 0.8);
+            --input-text: #111;
             --badge-bg: #e9e9e9;
             --badge-text: #555;
-            --badge-admin-bg: #8e44ad;
-            --badge-admin-text: #ffffff;
             --switcher-bg: #e9e9e9;
         }
 
-        html {
-            scroll-behavior: smooth;
-        }
+        html { scroll-behavior: smooth; }
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-color);
@@ -67,242 +69,92 @@
             transition: background-color 0.3s, color 0.3s;
             background-attachment: fixed;
         }
-        .light-mode {
+        body.light-mode {
              background-image: url('data:image/svg+xml,%3Csvg width="100%25" height="100%25" xmlns="http://www.w3.org/2000/svg"%3E%3Cdefs%3E%3ClinearGradient id="g" x1="0%25" y1="0%25" x2="0%25" y2="100%25"%3E%3Cstop offset="0%25" stop-color="%23d9e7ff" /%3E%3Cstop offset="100%25" stop-color="%23f0f2f5" /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width="100%25" height="100%25" fill="url(%23g)" /%3E%3C/svg%3E');
              background-size: cover;
         }
 
-        #theme-switcher {
-            position: fixed;
-            top: 20px;
-            right: 40px;
-            z-index: 1000;
-            background: var(--switcher-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        #theme-switcher svg {
-            width: 20px;
-            height: 20px;
-            fill: var(--heading-color);
-            transition: fill 0.3s;
-        }
+        .top-right-controls { position: fixed; top: 20px; right: 20px; z-index: 1001; display: flex; gap: 10px; }
+        .control-btn { background: var(--switcher-bg); border: 1px solid var(--border-color); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background-color 0.3s; }
+        .control-btn svg { width: 20px; height: 20px; fill: var(--heading-color); transition: fill 0.3s; }
         .light-mode #moon-icon { display: block; }
         .light-mode #sun-icon { display: none; }
         #moon-icon { display: none; }
         #sun-icon { display: block; }
+        #show-code-btn { display: none; }
 
-        #sidebar {
-            width: var(--sidebar-width);
-            background-color: var(--sidebar-bg);
-            height: 100vh;
-            position: fixed;
-            padding: 20px;
-            overflow-y: auto;
-            border-right: 1px solid var(--border-color);
-            transition: background-color 0.3s, border-color 0.3s;
-        }
-        .light-mode #sidebar {
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-        }
-        #sidebar h1 {
-            font-size: 24px;
-            color: var(--heading-color);
-            margin-bottom: 20px;
-        }
-        #sidebar ul {
-            list-style: none;
-            padding: 0;
-        }
-        #sidebar ul li a {
-            display: block;
-            color: var(--text-color);
-            text-decoration: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            margin-bottom: 5px;
-            transition: background-color 0.2s ease, color 0.2s ease;
-            font-size: 15px;
-        }
-        #sidebar ul li a:hover, #sidebar ul li a.active {
-            background-color: var(--accent-color);
-            color: #fff;
-        }
-        #main-content {
-            margin-left: calc(var(--sidebar-width) + 40px);
-            padding: 40px;
-            width: calc(100% - var(--sidebar-width) - 80px);
-        }
-        .section {
-            margin-bottom: 60px;
-            padding-top: 20px;
-        }
-        .section h2 {
-            font-size: 28px;
-            color: var(--heading-color);
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 10px;
-            margin-bottom: 15px;
-        }
-        .section > p {
-            font-size: 16px;
-            line-height: 1.7;
-            margin-bottom: 30px;
-        }
-        .endpoint {
-            background-color: var(--content-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            margin-bottom: 30px;
-            overflow: hidden;
-            transition: background-color 0.3s, border-color 0.3s;
-        }
-        .light-mode .endpoint {
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-        }
-        .endpoint-header {
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            border-bottom: 1px solid var(--border-color);
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        .method {
-            font-family: 'Fira Code', monospace;
-            font-weight: 700;
-            padding: 6px 12px;
-            border-radius: 5px;
-            color: #fff;
-            font-size: 14px;
-            min-width: 70px;
-            text-align: center;
-        }
+        #sidebar { width: var(--sidebar-width); background-color: var(--sidebar-bg); height: 100vh; position: fixed; left: 0; top: 0; padding: 20px; overflow-y: auto; border-right: 1px solid var(--border-color); transition: background-color 0.3s, border-color 0.3s; z-index: 1000; }
+        .light-mode #sidebar { backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+
+        #code-sidebar { width: var(--code-sidebar-width); background-color: var(--sidebar-bg); height: 100vh; position: fixed; right: 0; top: 0; padding: 20px; overflow-y: auto; border-left: 1px solid var(--border-color); transition: transform 0.4s ease, background-color 0.3s, border-color 0.3s; z-index: 999; }
+        .light-mode #code-sidebar { backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+        #code-sidebar.hidden { transform: translateX(100%); }
+        #code-sidebar h3 { color: var(--heading-color); margin-top: 40px; padding: 0 15px; display: flex; justify-content: space-between; align-items: center; }
+        #hide-code-btn { background: none; border: none; color: var(--text-color); cursor: pointer; font-size: 24px; opacity: 0.7; }
+        #hide-code-btn:hover { opacity: 1; }
+
+        #main-content { margin-left: var(--sidebar-width); margin-right: var(--code-sidebar-width); padding: 60px; width: calc(100% - var(--sidebar-width) - var(--code-sidebar-width)); transition: margin-right 0.4s ease; }
+        body.code-sidebar-hidden #main-content { margin-right: 50px; }
+        body.code-sidebar-hidden #show-code-btn { display: flex; }
+
+        #base-url-input { width: calc(100% - 30px); background-color: var(--input-bg); color: var(--input-text); border: 1px solid var(--border-color); border-radius: 5px; padding: 8px 15px; margin-top: 10px; margin-bottom: 20px; font-family: 'Fira Code', monospace; }
+
+        .endpoint { cursor: pointer; }
+        .endpoint:hover { background-color: rgba(255,255,255,0.05); }
+        .light-mode .endpoint:hover { background-color: rgba(0,0,0,0.05); }
+        #sidebar h1 { font-size: 24px; color: var(--heading-color); margin-bottom: 10px; }
+        #sidebar ul { list-style: none; padding: 0; }
+        #sidebar ul li a { display: block; color: var(--text-color); text-decoration: none; padding: 10px 15px; border-radius: 5px; margin-bottom: 5px; transition: background-color 0.2s ease, color 0.2s ease; font-size: 15px; }
+        #sidebar ul li a:hover, #sidebar ul li a.active { background-color: var(--accent-color); color: #fff; }
+        .section { margin-bottom: 60px; padding-top: 20px; }
+        .section h2 { font-size: 28px; color: var(--heading-color); border-bottom: 2px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px; }
+        .section > p { font-size: 16px; line-height: 1.7; margin-bottom: 30px; }
+        .endpoint { background-color: var(--content-bg); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 30px; overflow: hidden; transition: background-color 0.3s, border-color 0.3s; }
+        .light-mode .endpoint { backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+        .endpoint-header { padding: 20px; display: flex; align-items: center; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; gap: 15px; }
+        .method { font-family: 'Fira Code', monospace; font-weight: 700; padding: 6px 12px; border-radius: 5px; color: #fff; font-size: 14px; min-width: 70px; text-align: center; }
         .GET { background-color: var(--method-get); }
         .POST { background-color: var(--method-post); }
         .PUT { background-color: var(--method-put); }
         .PATCH { background-color: var(--method-patch); }
         .DELETE { background-color: var(--method-delete); }
-        .endpoint-path {
-            font-family: 'Fira Code', monospace;
-            font-size: 16px;
-            color: var(--heading-color);
-        }
-        .badge {
-            background-color: var(--badge-bg);
-            color: var(--badge-text);
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-        .badge.admin {
-            background-color: var(--badge-admin-bg);
-            color: var(--badge-admin-text);
-        }
-        .endpoint-details {
-            padding: 20px;
-        }
-        .endpoint-details h4 {
-            font-size: 18px;
-            color: var(--heading-color);
-            margin-top: 25px;
-            margin-bottom: 15px;
-        }
-        .endpoint-details p {
-            margin-bottom: 20px;
-        }
-        .code-block {
-            position: relative;
-        }
-        .copy-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: var(--copy-btn-bg);
-            border: 1px solid var(--border-color);
-            color: var(--copy-btn-text);
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 12px;
-            opacity: 0.7;
-            transition: opacity 0.2s, background-color 0.3s, color 0.3s;
-        }
+        .endpoint-path { font-family: 'Fira Code', monospace; font-size: 16px; color: var(--heading-color); }
+        .badge { background-color: var(--badge-bg); color: var(--badge-text); padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+        .badge.admin { background-color: var(--badge-admin-bg); color: var(--badge-admin-text); }
+        .endpoint-details { padding: 20px; }
+        .endpoint-details h4 { font-size: 18px; color: var(--heading-color); margin-top: 25px; margin-bottom: 15px; }
+        .endpoint-details p { margin-bottom: 20px; }
+        .code-block { position: relative; }
+        .copy-btn { position: absolute; top: 10px; right: 10px; background: var(--copy-btn-bg); border: 1px solid var(--border-color); color: var(--copy-btn-text); padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; opacity: 0.7; transition: opacity 0.2s, background-color 0.3s, color 0.3s; }
         .copy-btn:hover { opacity: 1; }
-        .code-tabs {
-            display: flex;
-            margin-bottom: 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .code-tab {
-            background: none;
-            border: none;
-            color: var(--text-color);
-            padding: 10px 15px;
-            cursor: pointer;
-            font-size: 14px;
-            border-bottom: 2px solid transparent;
-            margin-bottom: -1px;
-        }
-        .code-tab.active {
-            color: var(--accent-color);
-            border-bottom-color: var(--accent-color);
-        }
-        pre {
-            background-color: var(--pre-bg);
-            color: var(--code-text);
-            padding: 20px;
-            border-radius: 0 0 5px 5px;
-            margin: 0;
-            font-family: 'Fira Code', monospace;
-            font-size: 14px;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
+        .code-tabs { display: flex; margin-bottom: 0; border-bottom: 1px solid var(--border-color); }
+        .code-tab { background: none; border: none; color: var(--text-color); padding: 10px 15px; cursor: pointer; font-size: 14px; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+        .code-tab.active { color: var(--accent-color); border-bottom-color: var(--accent-color); }
+        pre { background-color: var(--pre-bg); color: var(--code-text); padding: 20px; border-radius: 0 0 5px 5px; margin: 0; font-family: 'Fira Code', monospace; font-size: 14px; white-space: pre-wrap; word-wrap: break-word; }
         .code-content { display: none; }
         .code-content.active { display: block; }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-        }
-        th {
-            background-color: var(--content-bg);
-            font-weight: 600;
-        }
-        td code {
-            background-color: var(--pre-bg);
-            padding: 3px 6px;
-            border-radius: 4px;
-            font-family: 'Fira Code', monospace;
-        }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border-color); }
+        th { background-color: var(--content-bg); font-weight: 600; }
+        td code { background-color: var(--pre-bg); padding: 3px 6px; border-radius: 4px; font-family: 'Fira Code', monospace; }
+        .comment { color: var(--comment-color); }
     </style>
 </head>
-<body class="dark-mode bg">
+<body class="dark-mode">
 
-    <div id="theme-switcher" title="Toggle Theme">
-        <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.64 5.64c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41l1.41 1.41c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L5.64 5.64zm12.73 12.73c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41l1.41 1.41c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41l-1.41-1.41zM4.22 18.36l1.41-1.41c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0l-1.41 1.41c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0zm14.14-14.14l-1.41 1.41c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.41-1.41c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0z"/></svg>
-        <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12.3 4.9c.4-.2.6-.7.4-1.1-.2-.4-.7-.6-1.1-.4C7.2 5.4 4 8.9 4 13c0 4.4 3.6 8 8 8 3.5 0 6.5-2.2 7.6-5.3.2-.4 0-.9-.4-1.1-.4-.2-.9 0-1.1.4-1 2.5-3.5 4.4-6.1 4.4-3.3 0-6-2.7-6-6 0-2.9 2.1-5.4 5-5.9z"/></svg>
+    <div class="top-right-controls">
+        <button id="show-code-btn" class="control-btn" title="Show Code Examples">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>
+        </button>
+        <button id="theme-switcher" class="control-btn" title="Toggle Theme">
+            <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.64 5.64c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41l1.41 1.41c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L5.64 5.64zm12.73 12.73c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41l1.41 1.41c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41l-1.41-1.41zM4.22 18.36l1.41-1.41c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0l-1.41 1.41c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0zm14.14-14.14l-1.41 1.41c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.41-1.41c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0z"/></svg>
+            <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12.3 4.9c.4-.2.6-.7.4-1.1-.2-.4-.7-.6-1.1-.4C7.2 5.4 4 8.9 4 13c0 4.4 3.6 8 8 8 3.5 0 6.5-2.2 7.6-5.3.2-.4 0-.9-.4-1.1-.4-.2-.9 0-1.1.4-1 2.5-3.5 4.4-6.1 4.4-3.3 0-6-2.7-6-6 0-2.9 2.1-5.4 5-5.9z"/></svg>
+        </button>
     </div>
 
     <div id="sidebar">
         <h1>DXLeave API</h1>
+        <input type="text" id="base-url-input" title="Enter your API Base URL">
         <ul>
             <li><a href="#introduction" class="active">Introduction</a></li>
             <li><a href="#auth">Authentication</a></li>
@@ -315,382 +167,460 @@
     </div>
 
     <div id="main-content">
-        <!-- CONTENT FROM PREVIOUS STEP -->
         <section id="introduction" class="section">
             <h2>Introduction</h2>
             <p>Welcome to the DXLeave API documentation. This API provides endpoints for managing leave requests, users, and other core data for the DXLeave application. All responses follow a consistent structure defined by our <code>ResponseFormatter</code>.</p>
             <h4>Base URL</h4>
-            <div class="code-block"><pre><code>https://your-domain.com</code></pre><button class="copy-btn">Copy</button></div>
-            
-            <h4>Authentication</h4>
-            <p>Most endpoints require authentication using a Sanctum bearer token. Include it in the <code>Authorization</code> header.</p>
-            <div class="code-block" style="border-radius: 5px;"><pre><code>Authorization: Bearer &lt;your_sanctum_token&gt;</code></pre><button class="copy-btn">Copy</button></div>
-
-            <h4 style="margin-top: 30px;">Response Structure</h4>
-            <p>The API returns JSON responses with a predictable structure for both successful and failed requests.</p>
-
-            <div class="code-tabs">
-                <button class="code-tab active" data-target="intro-success-response">Success Response</button>
-                <button class="code-tab" data-target="intro-failed-response">Failed Response</button>
-            </div>
-            <div id="intro-success-response" class="code-content active">
-                <div class="code-block"><pre><code>{
-    "meta": {
-        "code": 200,
-        "status": "success",
-        "message": "Operation was successful."
-    },
-    "data": { ... }
-}</code></pre><button class="copy-btn">Copy</button></div>
-            </div>
-            <div id="intro-failed-response" class="code-content">
-                <div class="code-block"><pre><code>{
-    "meta": {
-        "code": 4xx/5xx,
-        "status": "error",
-        "message": "A specific error message."
-    },
-    "data": null
-}</code></pre><button class="copy-btn">Copy</button></div>
-            </div>
+            <p>You can set your API's base URL in the input box in the left sidebar. It will be used to generate the code examples.</p>
         </section>
-
+        
         <section id="auth" class="section">
             <h2>Authentication</h2>
             <p>Public endpoints for user registration, login, and password management.</p>
-
-            <!-- REGISTER -->
-            <div class="endpoint">
+            <div class="endpoint" data-path="/register">
                 <div class="endpoint-header"><span class="method POST">POST</span><span class="endpoint-path">/api/register</span></div>
-                <div class="endpoint-details">
-                    <p>Creates a new user account. By default, the user is assigned the 'Employee' role and an annual leave entitlement is created.</p>
-                    <h4>Parameters</h4>
-                    <table>
-                        <tr><th>Field</th><th>Type</th><th>Description</th></tr>
-                        <tr><td><code>name</code></td><td>string</td><td>Required. The full name of the user.</td></tr>
-                        <tr><td><code>employee_code</code></td><td>string</td><td>Required. Unique code for the employee.</td></tr>
-                        <tr><td><code>email</code></td><td>string</td><td>Required. A valid and unique email address.</td></tr>
-                        <tr><td><code>password</code></td><td>string</td><td>Required. Minimum 8 characters.</td></tr>
-                        <tr><td><code>password_confirmation</code></td><td>string</td><td>Required. Must match the password field.</td></tr>
-                        <tr><td><code>department_id</code></td><td>integer</td><td>Optional. The ID of the department the user belongs to.</td></tr>
-                        <tr><td><code>manager_id</code></td><td>integer</td><td>Optional. The ID of the user's manager.</td></tr>
-                        <tr><td><code>hire_date</code></td><td>date</td><td>Optional. The date the user was hired (YYYY-MM-DD).</td></tr>
-                    </table>
-                </div>
+                <div class="endpoint-details"></div>
             </div>
-
-            <!-- LOGIN -->
-            <div class="endpoint">
+            <div class="endpoint" data-path="/login">
                 <div class="endpoint-header"><span class="method POST">POST</span><span class="endpoint-path">/api/login</span></div>
-                <div class="endpoint-details">
-                    <p>Authenticates a user and returns a Sanctum token.</p>
-                    <h4>Parameters</h4>
-                    <table>
-                        <tr><th>Field</th><th>Type</th><th>Description</th></tr>
-                        <tr><td><code>identifier</code></td><td>string</td><td>Required. Can be the user's email or employee_code.</td></tr>
-                        <tr><td><code>password</code></td><td>string</td><td>Required. The user's password.</td></tr>
-                    </table>
-                </div>
+                <div class="endpoint-details"></div>
             </div>
-
-            <!-- LOGOUT -->
-            <div class="endpoint">
+            <div class="endpoint" data-path="/logout">
                 <div class="endpoint-header"><span class="method POST">POST</span><span class="endpoint-path">/api/logout</span><span class="badge">Auth Required</span></div>
-                <div class="endpoint-details"><p>Invalidates the user's current Sanctum token, effectively logging them out.</p></div>
+                <div class="endpoint-details"></div>
             </div>
-
-            <!-- FORGOT PASSWORD -->
-            <div class="endpoint">
+            <div class="endpoint" data-path="/forgot-password">
                 <div class="endpoint-header"><span class="method POST">POST</span><span class="endpoint-path">/api/forgot-password</span></div>
-                <div class="endpoint-details">
-                    <p>Sends a password reset token to the user's email if the user is found.</p>
-                    <h4>Parameters</h4>
-                    <table>
-                        <tr><th>Field</th><th>Type</th><th>Description</th></tr>
-                        <tr><td><code>identifier</code></td><td>string</td><td>Required. The user's email or employee_code.</td></tr>
-                    </table>
-                </div>
+                <div class="endpoint-details"></div>
             </div>
-
-            <!-- RESET PASSWORD -->
-            <div class="endpoint">
+            <div class="endpoint" data-path="/reset-password">
                 <div class="endpoint-header"><span class="method POST">POST</span><span class="endpoint-path">/api/reset-password</span></div>
-                <div class="endpoint-details">
-                    <p>Resets the user's password using the token sent to their email.</p>
-                    <h4>Parameters</h4>
-                    <table>
-                        <tr><th>Field</th><th>Type</th><th>Description</th></tr>
-                        <tr><td><code>email</code></td><td>string</td><td>Required. The user's email address.</td></tr>
-                        <tr><td><code>token</code></td><td>string</td><td>Required. The token received from the forgot-password step.</td></tr>
-                        <tr><td><code>password</code></td><td>string</td><td>Required. The new password (min 8 characters).</td></tr>
-                        <tr><td><code>password_confirmation</code></td><td>string</td><td>Required. Must match the new password.</td></tr>
-                    </table>
-                </div>
+                <div class="endpoint-details"></div>
             </div>
         </section>
 
         <section id="user" class="section">
             <h2>User Profile</h2>
             <p>Endpoint for the authenticated user.</p>
-            <div class="endpoint">
+            <div class="endpoint" data-path="/user">
                 <div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/api/user</span><span class="badge">Auth Required</span></div>
-                <div class="endpoint-details"><p>Fetches the profile of the authenticated user.</p></div>
+                <div class="endpoint-details"></div>
             </div>
         </section>
 
         <section id="leave-requests" class="section">
             <h2>Leave Requests</h2>
             <p>Endpoints for employees to manage their own leave requests.</p>
-            <div class="endpoint">
+            <div class="endpoint" data-path="/leave-requests">
                 <div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/api/leave-requests</span><span class="badge">Auth Required</span></div>
-                <div class="endpoint-details"><p>Retrieves a list of the user's own leave requests. Managers with 'approve leave request' permission will see requests pending their approval.</p></div>
+                <div class="endpoint-details"></div>
             </div>
-            <div class="endpoint">
+            <div class="endpoint" data-path="/leave-requests-create">
                 <div class="endpoint-header"><span class="method POST">POST</span><span class="endpoint-path">/api/leave-requests</span><span class="badge">Auth Required</span></div>
-                <div class="endpoint-details">
-                    <p>Submits a new leave request. The request is created with a 'Draft' status.</p>
-                    <h4>Parameters</h4>
-                    <table>
-                        <tr><th>Field</th><th>Type</th><th>Description</th></tr>
-                        <tr><td><code>leave_type_id</code></td><td>integer</td><td>Required. The ID of the leave type.</td></tr>
-                        <tr><td><code>start_date</code></td><td>date</td><td>Required. Start date of the leave (YYYY-MM-DD).</td></tr>
-                        <tr><td><code>end_date</code></td><td>date</td><td>Required. End date of the leave (YYYY-MM-DD).</td></tr>
-                        <tr><td><code>reason</code></td><td>string</td><td>Required. A brief reason for the leave.</td></tr>
-                    </table>
-                </div>
+                <div class="endpoint-details"></div>
             </div>
-            <div class="endpoint">
+            <div class="endpoint" data-path="/leave-requests/{id}">
                 <div class="endpoint-header"><span class="method PATCH">PATCH</span><span class="endpoint-path">/api/leave-requests/{id}</span><span class="badge">Auth Required</span></div>
-                <div class="endpoint-details">
-                    <p>Updates a leave request that is still in 'Draft' status. To submit for approval, change <code>current_status</code> to 'Pending'.</p>
-                    <h4>Parameters</h4>
-                     <table>
-                        <tr><th>Field</th><th>Type</th><th>Description</th></tr>
-                        <tr><td><code>leave_type_id</code></td><td>integer</td><td>Optional.</td></tr>
-                        <tr><td><code>start_date</code></td><td>date</td><td>Optional.</td></tr>
-                        <tr><td><code>end_date</code></td><td>date</td><td>Optional.</td></tr>
-                        <tr><td><code>reason</code></td><td>string</td><td>Optional.</td></tr>
-                        <tr><td><code>current_status</code></td><td>string</td><td>Optional. Set to "Pending" to submit.</td></tr>
-                    </table>
-                </div>
+                <div class="endpoint-details"></div>
             </div>
         </section>
         
         <section id="approvals" class="section">
             <h2>Approvals</h2>
             <p>Endpoints for managers to approve or reject leave requests.</p>
-            <div class="endpoint">
-                <div class="endpoint-header"><span class="method PATCH">PATCH</span><span class="endpoint-path">/api/leave-requests/{id}/approve</span><span class="badge">Manager/Approver Role</span></div>
-                <div class="endpoint-details">
-                    <p>Approves or rejects a pending leave request.</p>
-                    <h4>Parameters</h4>
-                    <table>
-                        <tr><th>Field</th><th>Type</th><th>Description</th></tr>
-                        <tr><td><code>action</code></td><td>string</td><td>Required. Either "Approved" or "Rejected".</td></tr>
-                        <tr><td><code>comments</code></td><td>string</td><td>Optional. Comments regarding the decision.</td></tr>
-                    </table>
-                </div>
+            <div class="endpoint" data-path="/leave-requests/{id}/approve">
+                <div class="endpoint-header"><span class="method PATCH">PATCH</span><span class="endpoint-path">/api/leave-requests/{leaveRequest}/approve</span><span class="badge">Manager/Approver Role</span></div>
+                <div class="endpoint-details"></div>
             </div>
         </section>
 
         <section id="admin-master" class="section">
-            <h2>Admin: Master Data (CRUD)</h2>
-            <p>Full CRUD endpoints for managing core system data. All are prefixed with <code>/api/admin/master</code> and require Super Admin role.</p>
+            <h2>Admin: Master Data</h2>
+            <p>Full CRUD endpoints for managing core system data. All require Super Admin role.</p>
             
-            <!-- Admin Users -->
-            <div class="endpoint">
-                <div class="endpoint-header"><span class="method badge admin">apiResource</span><span class="endpoint-path">/users</span><span class="badge admin">Super Admin</span></div>
-                <div class="endpoint-details">
-                    <p>Manage users. Supports GET (list, with search & sort), POST, GET/{id}, PUT/PATCH/{id}, DELETE/{id}.</p>
-                    <h4>POST /users</h4>
-                    <table>
-                        <tr><th>Field</th><th>Type</th><th>Description</th></tr>
-                        <tr><td><code>name</code></td><td>string</td><td>Required.</td></tr>
-                        <tr><td><code>employee_code</code></td><td>string</td><td>Required, unique.</td></tr>
-                        <tr><td><code>email</code></td><td>string</td><td>Required, unique, valid email.</td></tr>
-                        <tr><td><code>password</code></td><td>string</td><td>Required, min 8 characters.</td></tr>
-                        <tr><td><code>roles</code></td><td>array</td><td>Optional. Array of role names.</td></tr>
-                    </table>
-                    <h4>PUT/PATCH /users/{id}</h4>
-                    <table>
-                        <tr><th>Field</th><th>Type</th><th>Description</th></tr>
-                        <tr><td><code>name</code></td><td>string</td><td>Optional.</td></tr>
-                        <tr><td><code>employee_code</code></td><td>string</td><td>Optional, unique.</td></tr>
-                        <tr><td><code>email</code></td><td>string</td><td>Optional, unique, valid email.</td></tr>
-                        <tr><td><code>password</code></td><td>string</td><td>Optional, min 8 characters.</td></tr>
-                        <tr><td><code>roles</code></td><td>array</td><td>Optional. Array of role names to sync.</td></tr>
-                    </table>
-                </div>
+            <h4>Users</h4>
+            <div class="endpoint" data-path="/admin/users">
+                <div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/api/admin/master/users</span><span class="badge admin">Super Admin</span></div>
+                <div class="endpoint-details"></div>
+            </div>
+            <div class="endpoint" data-path="/admin/users-create">
+                <div class="endpoint-header"><span class="method POST">POST</span><span class="endpoint-path">/api/admin/master/users</span><span class="badge admin">Super Admin</span></div>
+                <div class="endpoint-details"></div>
+            </div>
+            <div class="endpoint" data-path="/admin/users/{id}">
+                <div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/api/admin/master/users/{id}</span><span class="badge admin">Super Admin</span></div>
+                <div class="endpoint-details"></div>
+            </div>
+            <div class="endpoint" data-path="/admin/users/{id}-update">
+                <div class="endpoint-header"><span class="method PUT">PUT</span><span class="endpoint-path">/api/admin/master/users/{id}</span><span class="badge admin">Super Admin</span></div>
+                <div class="endpoint-details"></div>
+            </div>
+            <div class="endpoint" data-path="/admin/users/{id}-delete">
+                <div class="endpoint-header"><span class="method DELETE">DELETE</span><span class="endpoint-path">/api/admin/master/users/{id}</span><span class="badge admin">Super Admin</span></div>
+                <div class="endpoint-details"></div>
             </div>
 
-            <!-- Admin Departments -->
-            <div class="endpoint">
-                <div class="endpoint-header"><span class="method badge admin">apiResource</span><span class="endpoint-path">/departments</span><span class="badge admin">Super Admin</span></div>
-                <div class="endpoint-details">
-                    <p>Manage departments.</p>
-                    <h4>POST & PUT/PATCH</h4>
-                     <table>
-                        <tr><th>Field</th><th>Type</th><th>Description</th></tr>
-                        <tr><td><code>name</code></td><td>string</td><td>Required. The name of the department.</td></tr>
-                    </table>
-                </div>
+            <h4>Departments</h4>
+            <div class="endpoint" data-path="/admin/departments">
+                <div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/api/admin/master/departments</span><span class="badge admin">Super Admin</span></div>
+                <div class="endpoint-details"></div>
+            </div>
+            <div class="endpoint" data-path="/admin/departments-create">
+                <div class="endpoint-header"><span class="method POST">POST</span><span class="endpoint-path">/api/admin/master/departments</span><span class="badge admin">Super Admin</span></div>
+                <div class="endpoint-details"></div>
+            </div>
+            
+            <h4>Leave Types</h4>
+            <div class="endpoint" data-path="/admin/leave-types">
+                <div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/api/admin/master/leave-types</span><span class="badge admin">Super Admin</span></div>
+                <div class="endpoint-details"></div>
+            </div>
+            
+            <h4>Public Holidays</h4>
+            <div class="endpoint" data-path="/admin/public-holidays">
+                <div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/api/admin/master/public-holidays</span><span class="badge admin">Super Admin</span></div>
+                <div class="endpoint-details"></div>
             </div>
 
-            <!-- Admin Leave Types -->
-            <div class="endpoint">
-                <div class="endpoint-header"><span class="method badge admin">apiResource</span><span class="endpoint-path">/leave-types</span><span class="badge admin">Super Admin</span></div>
-                <div class="endpoint-details">
-                    <p>Manage leave types.</p>
-                    <h4>POST & PUT/PATCH</h4>
-                     <table>
-                        <tr><th>Field</th><th>Type</th><th>Description</th></tr>
-                        <tr><td><code>name</code></td><td>string</td><td>Required. The name of the leave type.</td></tr>
-                        <tr><td><code>is_paid</code></td><td>boolean</td><td>Optional. Default: true.</td></tr>
-                        <tr><td><code>is_annual_leave</code></td><td>boolean</td><td>Optional. Default: false.</td></tr>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Admin Public Holidays -->
-            <div class="endpoint">
-                <div class="endpoint-header"><span class="method badge admin">apiResource</span><span class="endpoint-path">/public-holidays</span><span class="badge admin">Super Admin</span></div>
-                <div class="endpoint-details">
-                    <p>Manage public holidays.</p>
-                    <h4>POST & PUT/PATCH</h4>
-                     <table>
-                        <tr><th>Field</th><th>Type</th><th>Description</th></tr>
-                        <tr><td><code>name</code></td><td>string</td><td>Required. The name of the holiday.</td></tr>
-                        <tr><td><code>date</code></td><td>date</td><td>Required. The date of the holiday (YYYY-MM-DD).</td></tr>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Admin Employee Entitlements -->
-            <div class="endpoint">
-                <div class="endpoint-header"><span class="method badge admin">apiResource</span><span class="endpoint-path">/employee-entitlements</span><span class="badge admin">Super Admin</span></div>
-                 <div class="endpoint-details">
-                    <p>Manage employee leave entitlements.</p>
-                    <h4>POST & PUT/PATCH</h4>
-                     <table>
-                        <tr><th>Field</th><th>Type</th><th>Description</th></tr>
-                        <tr><td><code>user_id</code></td><td>integer</td><td>Required.</td></tr>
-                        <tr><td><code>leave_type_id</code></td><td>integer</td><td>Required.</td></tr>
-                        <tr><td><code>year</code></td><td>integer</td><td>Required.</td></tr>
-                        <tr><td><code>initial_balance</code></td><td>integer</td><td>Required.</td></tr>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Admin Leave Requests -->
-            <div class="endpoint">
-                <div class="endpoint-header"><span class="method badge admin">apiResource</span><span class="endpoint-path">/leave-requests</span><span class="badge admin">Super Admin</span></div>
-                <div class="endpoint-details"><p>Full admin access to all leave requests (GET, POST, PUT/PATCH, DELETE).</p></div>
-            </div>
-
-            <!-- Admin Roles -->
-            <div class="endpoint">
-                <div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/roles</span><span class="badge admin">Super Admin</span></div>
-                <div class="endpoint-details"><p>Get a list of all available roles in the system.</p></div>
+            <h4>Employee Entitlements</h4>
+            <div class="endpoint" data-path="/admin/employee-entitlements">
+                <div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/api/admin/master/employee-entitlements</span><span class="badge admin">Super Admin</span></div>
+                <div class="endpoint-details"></div>
             </div>
         </section>
-
+        
         <section id="admin-dashboard" class="section">
             <h2>Admin: Dashboard</h2>
-            <p>Dashboard endpoints for a high-level overview of the system.</p>
-            <div class="endpoint">
+            <p>Endpoints for fetching aggregated data for the admin dashboard.</p>
+            <div class="endpoint" data-path="/admin/dashboard/stats">
                 <div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/api/admin/dashboard/stats</span><span class="badge admin">Super Admin</span></div>
-                <div class="endpoint-details"><p>Get key statistics like total users, pending requests, etc.</p></div>
+                <div class="endpoint-details"></div>
             </div>
-            <div class="endpoint">
+            <div class="endpoint" data-path="/admin/dashboard/recent-activity">
                 <div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/api/admin/dashboard/recent-activity</span><span class="badge admin">Super Admin</span></div>
-                <div class="endpoint-details"><p>Get a feed of recent system activities.</p></div>
+                <div class="endpoint-details"></div>
             </div>
-            <div class="endpoint">
+            <div class="endpoint" data-path="/admin/dashboard/upcoming-leaves">
                 <div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/api/admin/dashboard/upcoming-leaves</span><span class="badge admin">Super Admin</span></div>
-                <div class="endpoint-details"><p>Get a list of approved, upcoming leave requests.</p></div>
+                <div class="endpoint-details"></div>
             </div>
         </section>
+    </div>
 
+    <div id="code-sidebar">
+        <h3>
+            <span>Code Examples</span>
+            <button id="hide-code-btn" title="Hide Code Examples">&times;</button>
+        </h3>
+        <div class="code-tabs" id="language-tabs">
+            <button class="code-tab active" data-lang="curl">cURL</button>
+            <button class="code-tab" data-lang="php">PHP</button>
+            <button class="code-tab" data-lang="js">JavaScript</button>
+        </div>
+        <div id="code-examples">
+            <div class="code-content active" data-lang-content="curl"><div class="code-block"><pre>Click an endpoint to see an example.</pre><button class="copy-btn">Copy</button></div></div>
+            <div class="code-content" data-lang-content="php"><div class="code-block"><pre>Click an endpoint to see an example.</pre><button class="copy-btn">Copy</button></div></div>
+            <div class="code-content" data-lang-content="js"><div class="code-block"><pre>Click an endpoint to see an example.</pre><button class="copy-btn">Copy</button></div></div>
+        </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const themeSwitcher = document.getElementById('theme-switcher');
-            const body = document.body;
+    document.addEventListener('DOMContentLoaded', function () {
+        const body = document.body;
+        const themeSwitcher = document.getElementById('theme-switcher');
+        const codeSidebar = document.getElementById('code-sidebar');
+        const hideCodeBtn = document.getElementById('hide-code-btn');
+        const showCodeBtn = document.getElementById('show-code-btn');
+        const baseUrlInput = document.getElementById('base-url-input');
+        const languageTabs = document.getElementById('language-tabs');
 
-            const applyTheme = (theme) => {
-                if (theme === 'light') {
-                    body.classList.add('light-mode');
-                    body.classList.remove('dark-mode');
-                } else {
-                    body.classList.add('dark-mode');
-                    body.classList.remove('light-mode');
-                }
-            };
-
-            const savedTheme = localStorage.getItem('api_theme') || 'dark';
-            applyTheme(savedTheme);
-
-            themeSwitcher.addEventListener('click', () => {
-                const isLight = body.classList.contains('light-mode');
-                if (isLight) {
-                    localStorage.setItem('api_theme', 'dark');
-                    applyTheme('dark');
-                } else {
-                    localStorage.setItem('api_theme', 'light');
-                    applyTheme('light');
-                }
-            });
-
-            const sections = document.querySelectorAll('.section');
-            const sidebarLinks = document.querySelectorAll('#sidebar a');
-
-            const updateActiveLink = () => {
-                let current = '';
-                sections.forEach(section => {
-                    const sectionTop = section.offsetTop;
-                    if (pageYOffset >= sectionTop - 60) {
-                        current = section.getAttribute('id');
-                    }
-                });
-
-                sidebarLinks.forEach(link => {
-                    link.classList.remove('active');
-                    if (link.getAttribute('href').includes(current)) {
-                        link.classList.add('active');
-                    }
-                });
-            };
-
-            window.addEventListener('scroll', updateActiveLink);
+        const endpointsData = {
+            '/register': { 
+                method: 'POST',
+                description: 'Creates a new user account.',
+                params: [ { name: 'name', required: true, example: 'Jane Doe' }, { name: 'employee_code', required: true, example: 'EMP003' }, { name: 'email', required: true, example: 'jane.doe@example.com' }, { name: 'password', required: true, example: 'password123' }, { name: 'password_confirmation', required: true, example: 'password123' } ],
+                successResponse: `{
+    "meta": { "code": 200, "status": "success", "message": "User registered successfully" },
+    "data": { "access_token": "...", "user": { ... } }
+}`,
+                errorResponse: `{
+    "meta": { "code": 422, "status": "error", "message": "The email has already been taken." },
+    "data": { "email": ["The email has already been taken."] }
+}`
+            },
+            '/login': { 
+                method: 'POST',
+                description: 'Authenticates a user and returns a Sanctum token.',
+                params: [ { name: 'identifier', required: true, example: 'jane.doe@example.com' }, { name: 'password', required: true, example: 'password123' } ],
+                successResponse: `{
+    "meta": { "code": 200, "status": "success", "message": "Login successful" },
+    "data": { "access_token": "...", "user": { ... } }
+}`,
+                errorResponse: `{
+    "meta": { "code": 401, "status": "error", "message": "Invalid credentials" },
+    "data": null
+}`
+            },
+            '/logout': { 
+                method: 'POST',
+                description: 'Invalidates the user\'s current Sanctum token.',
+                params: [],
+                successResponse: `{
+    "meta": { "code": 200, "status": "success", "message": "Logout successful" },
+    "data": null
+}`
+            },
+             '/forgot-password': {
+                method: 'POST',
+                description: 'Sends a password reset link to the user\'s email.',
+                params: [{ name: 'identifier', required: true, example: 'jane.doe@example.com' }],
+                successResponse: `{
+    "meta": { "code": 200, "status": "success", "message": "Password reset link sent" },
+    "data": null
+}`
+            },
+            '/reset-password': {
+                method: 'POST',
+                description: 'Resets the user password with a valid token.',
+                params: [ { name: 'email', required: true, example: 'jane.doe@example.com' }, { name: 'token', required: true, example: 'xxxxxxxx' }, { name: 'password', required: true, example: 'newSecurePassword' }, { name: 'password_confirmation', required: true, example: 'newSecurePassword' } ],
+                successResponse: `{
+    "meta": { "code": 200, "status": "success", "message": "Password has been reset" },
+    "data": null
+}`
+            },
+            '/user': { 
+                method: 'GET',
+                description: 'Fetches the profile of the authenticated user.',
+                params: [],
+                successResponse: `{
+    "meta": { "code": 200, "status": "success", "message": "User fetched successfully" },
+    "data": { "id": 1, "name": "John Doe", "email": "john@example.com", ... }
+}`
+            },
+            '/leave-requests': {
+                method: 'GET',
+                description: 'Retrieves a list of the user\'s own leave requests.',
+                params: [],
+                successResponse: `{
+    "meta": { "code": 200, "status": "success", "message": "Leave requests fetched" },
+    "data": [ { "id": 1, "leave_type": "Annual", ... }, ... ]
+}`
+            },
+            '/leave-requests-create': {
+                method: 'POST',
+                path: '/leave-requests',
+                description: 'Submits a new leave request.',
+                params: [ { name: 'leave_type_id', required: true, example: 1 }, { name: 'start_date', required: true, example: '2025-12-24' }, { name: 'end_date', required: true, example: '2025-12-26' }, { name: 'reason', required: true, example: 'Holiday trip.' } ],
+                successResponse: `{
+    "meta": { "code": 201, "status": "success", "message": "Leave request created" },
+    "data": { "id": 5, "status": "Draft", ... }
+}`,
+                errorResponse: `{
+    "meta": { "code": 422, "status": "error", "message": "Insufficient leave balance." },
+    "data": null
+}`
+            },
+            '/leave-requests/{id}': {
+                method: 'PATCH',
+                description: 'Updates a draft leave request, e.g., to submit it for approval.',
+                params: [ { name: 'current_status', required: true, example: 'Pending' } ],
+                successResponse: `{
+    "meta": { "code": 200, "status": "success", "message": "Leave request updated" },
+    "data": { "id": 5, "status": "Pending", ... }
+}`
+            },
+            '/leave-requests/{id}/approve': {
+                method: 'PATCH',
+                path: '/leave-requests/{leaveRequest}/approve',
+                description: 'Allows a manager to approve or reject a leave request.',
+                params: [ { name: 'action', required: true, example: 'Approved' }, { name: 'comments', required: false, example: 'Enjoy!' } ],
+                successResponse: `{
+    "meta": { "code": 200, "status": "success", "message": "Leave request has been Approved" },
+    "data": { "id": 5, "status": "Approved", ... }
+}`
+            },
             
-            sidebarLinks.forEach(anchor => {
-                anchor.addEventListener('click', function (e) { /* Let browser handle scroll */ });
-            });
+            // Admin Users
+            '/admin/users': { method: 'GET', path: '/admin/master/users', description: 'Retrieves a paginated list of all users.', params: [], successResponse: `{"meta":..., "data":[...]}` },
+            '/admin/users-create': { method: 'POST', path: '/admin/master/users', description: 'Creates a new user.', params: [ { name: 'name', required: true, example: 'Admin Doe' }, { name: 'email', required: true, example: 'admin@example.com' } ], successResponse: `{"meta":..., "data":{...}}`, errorResponse: `{"meta":..., "data":{"email": ["..."]}}` },
+            '/admin/users/{id}': { method: 'GET', path: '/admin/master/users/{id}', description: 'Retrieves a single user by ID.', params: [], successResponse: `{"meta":..., "data":{...}}` },
+            '/admin/users/{id}-update': { method: 'PUT', path: '/admin/master/users/{id}', description: 'Updates a user\'s details.', params: [ { name: 'name', required: false, example: 'Admin Doe Updated' } ], successResponse: `{"meta":..., "data":{...}}` },
+            '/admin/users/{id}-delete': { method: 'DELETE', path: '/admin/master/users/{id}', description: 'Deletes a user.', params: [], successResponse: `{"meta":..., "data":null}` },
 
-            document.querySelectorAll('.code-tab').forEach(tab => {
-                tab.addEventListener('click', function() {
-                    const parent = this.closest('.endpoint-details');
-                    parent.querySelectorAll('.code-tab').forEach(t => t.classList.remove('active'));
-                    this.classList.add('active');
-                    parent.querySelectorAll('.code-content').forEach(c => c.classList.remove('active'));
-                    parent.querySelector('#' + this.dataset.target).classList.add('active');
-                });
-            });
+            // Admin Others
+            '/admin/departments': { method: 'GET', path: '/admin/master/departments', description: 'Retrieves a list of all departments.', params: [], successResponse: `{"meta":..., "data":[...]}` },
+            '/admin/departments-create': { method: 'POST', path: '/admin/master/departments', description: 'Creates a new department.', params: [{ name: 'name', required: true, example: 'New Department' }], successResponse: `{"meta":..., "data":{...}}` },
+            '/admin/leave-types': { method: 'GET', path: '/admin/master/leave-types', description: 'Retrieves a list of all leave types.', params: [], successResponse: `{"meta":..., "data":[...]}` },
+            '/admin/public-holidays': { method: 'GET', path: '/admin/master/public-holidays', description: 'Retrieves a list of all public holidays.', params: [], successResponse: `{"meta":..., "data":[...]}` },
+            '/admin/employee-entitlements': { method: 'GET', path: '/admin/master/employee-entitlements', description: 'Retrieves a list of all employee entitlements.', params: [], successResponse: `{"meta":..., "data":[...]}` },
 
-            document.querySelectorAll('.copy-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const pre = this.closest('.code-block').querySelector('pre');
-                    navigator.clipboard.writeText(pre.innerText.trim()).then(() => {
-                        this.innerText = 'Copied!';
-                        setTimeout(() => { this.innerText = 'Copy'; }, 2000);
-                    });
+            // Admin Dashboard
+            '/admin/dashboard/stats': { method: 'GET', path: '/admin/dashboard/stats', description: 'Retrieves key statistics for the dashboard.', params: [], successResponse: `{"meta":..., "data":{...}}` },
+            '/admin/dashboard/recent-activity': { method: 'GET', path: '/admin/dashboard/recent-activity', description: 'Gets a feed of recent activities.', params: [], successResponse: `{"meta":..., "data":[...]}` },
+            '/admin/dashboard/upcoming-leaves': { method: 'GET', path: '/admin/dashboard/upcoming-leaves', description: 'Gets a list of upcoming approved leaves.', params: [], successResponse: `{"meta":..., "data":[...]}` },
+        };
+
+        const applyTheme = (theme) => { body.className = theme + '-mode'; if (localStorage.getItem('code_sidebar_hidden') === 'true') { body.classList.add('code-sidebar-hidden'); } };
+        const applySidebarState = (isHidden) => { body.classList.toggle('code-sidebar-hidden', isHidden); codeSidebar.classList.toggle('hidden', isHidden); };
+        const applyBaseUrl = (url) => { baseUrlInput.value = url; };
+
+        applyTheme(localStorage.getItem('api_theme') || 'dark');
+        applySidebarState(localStorage.getItem('code_sidebar_hidden') === 'true');
+        applyBaseUrl(localStorage.getItem('api_base_url') || 'http://127.0.0.1:8000');
+
+        themeSwitcher.addEventListener('click', () => { const newTheme = body.classList.contains('light-mode') ? 'dark' : 'light'; localStorage.setItem('api_theme', newTheme); applyTheme(newTheme); });
+        hideCodeBtn.addEventListener('click', () => { localStorage.setItem('code_sidebar_hidden', 'true'); applySidebarState(true); });
+        showCodeBtn.addEventListener('click', () => { localStorage.setItem('code_sidebar_hidden', 'false'); applySidebarState(false); });
+        baseUrlInput.addEventListener('input', () => { localStorage.setItem('api_base_url', baseUrlInput.value); });
+
+        languageTabs.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                const lang = e.target.dataset.lang;
+                languageTabs.querySelector('.active').classList.remove('active');
+                e.target.classList.add('active');
+                document.querySelectorAll('#code-examples .code-content').forEach(content => {
+                    content.classList.toggle('active', content.dataset.langContent === lang);
                 });
-            });
-            
-            updateActiveLink();
+            }
         });
-    </script>
 
+        document.querySelectorAll('.endpoint').forEach(endpointEl => {
+            endpointEl.addEventListener('click', () => {
+                const path = endpointEl.dataset.path;
+                const endpointData = endpointsData[path];
+                if (!endpointData) { console.warn(`No data for path: ${path}`); return; }
+
+                // Populate details view
+                const detailsContainer = endpointEl.querySelector('.endpoint-details');
+                if(detailsContainer) {
+                    let html = '';
+                    if (endpointData.description) {
+                        html += `<p>${endpointData.description}</p>`;
+                    }
+
+                    if (endpointData.params && endpointData.params.length > 0) {
+                        html += `<h4>Parameters</h4><table>`;
+                        html += `<tr><th>Field</th><th>Type</th><th>Required</th></tr>`;
+                        endpointData.params.forEach(p => {
+                            html += `<tr><td><code>${p.name}</code></td><td>${p.type || 'string'}</td><td>${p.required ? 'Yes' : 'No'}</td></tr>`;
+                        });
+                        html += `</table>`;
+                    }
+
+                    if (endpointData.successResponse) {
+                        html += `<h4>Success Response (200 OK)</h4><div class="code-block"><pre><code>${endpointData.successResponse.trim()}</code></pre></div>`;
+                    }
+                    if (endpointData.errorResponse) {
+                        html += `<h4>Error Response (e.g., 422)</h4><div class="code-block"><pre><code>${endpointData.errorResponse.trim()}</code></pre></div>`;
+                    }
+                    detailsContainer.innerHTML = html;
+                }
+
+
+                // Generate code for right sidebar
+                const baseUrl = baseUrlInput.value;
+                const finalPath = endpointData.path || path;
+                const fullUrl = `${baseUrl}/api${finalPath}`;
+
+                const examples = {
+                    curl: generateCurl(endpointData.method, fullUrl, endpointData.params),
+                    php: generatePhp(endpointData.method, `/api${finalPath}`, endpointData.params),
+                    js: generateJs(endpointData.method, fullUrl, endpointData.params)
+                };
+
+                document.querySelector('[data-lang-content="curl"] pre').innerHTML = examples.curl;
+                document.querySelector('[data-lang-content="php"] pre').innerHTML = examples.php;
+                document.querySelector('[data-lang-content="js"] pre').innerHTML = examples.js;
+            });
+        });
+
+        function formatCode(code) { return code.replace(/(\/\/ required|\/\/ optional)/g, '<span class="comment">$1</span>'); }
+        function generateCurl(method, path, params) {
+            let curl = `curl --location --request ${method} '${path}' \\`;
+            let headers = { 'Accept': 'application/json', 'Authorization': 'Bearer <YOUR_AUTH_TOKEN>' };
+            if (method !== 'GET' && params.length > 0) { headers['Content-Type'] = 'application/json'; }
+            for(const [key, value] of Object.entries(headers)){ curl += `\n--header '${key}: ${value}' \\`; }
+            if (method !== 'GET' && params.length > 0) {
+                const bodyLines = params.map(p => `    "${p.name}": "${p.example}" ${p.required ? '// required' : '// optional'}`);
+                curl += `\n--data-raw '{\n${bodyLines.join(',\n')}\n}'`;
+            }
+            return formatCode(curl.trim().replace(/ \\$/, ''));
+        }
+        function generatePhp(method, path, params) {
+            let php = `use Illuminate\\Support\\Facades\\Http;\n\n`;
+            php += `$baseUrl = "${baseUrlInput.value}";\n`;
+            php += `$response = Http::withToken(<YOUR_AUTH_TOKEN>)->acceptJson()`;
+            const bodyLines = params.map(p => `        '${p.name}' => '${p.example}', ${p.required ? '// required' : '// optional'}`);
+            const bodyString = params.length > 0 ? `[\n${bodyLines.join('\n')}\n    ]` : '';
+            switch (method.toLowerCase()) {
+                case 'get': php += `->get($baseUrl . '${path}');`; break;
+                case 'post': php += `->post($baseUrl . '${path}', ${bodyString});`; break;
+                case 'put': php += `->put($baseUrl . '${path}', ${bodyString});`; break;
+                case 'patch': php += `->patch($baseUrl . '${path}', ${bodyString});`; break;
+                case 'delete': php += `->delete($baseUrl . '${path}');`; break;
+            }
+            return formatCode(php + `\n\n// ...`);
+        }
+        function generateJs(method, path, params) {
+            let js = `const url = '${path}';\n\n`;
+            
+            let bodyObject = {};
+            params.forEach(p => {
+                bodyObject[p.name] = p.example;
+            });
+
+            const bodyLines = params.map(p => `        "${p.name}": "${p.example}" ${p.required ? '// required' : '// optional'}`);
+            const bodyStringForDisplay = params.length > 0 ? `{\n${bodyLines.join(',\n')}\n    }` : null;
+
+            js += `const options = {\n`;
+            js += `    method: '${method}',\n`;
+            js += `    headers: {\n`;
+            js += `        'Accept': 'application/json',\n`;
+            js += `        'Authorization': 'Bearer <YOUR_AUTH_TOKEN>'`;
+            if (params.length > 0) {
+                 js += `,\n        'Content-Type': 'application/json'`;
+            }
+            js += `\n    }`;
+            if (params.length > 0) {
+                js += `,\n    body: JSON.stringify(${JSON.stringify({}, null, 4)})\n`;
+            }
+            js += `\n};\n\nfetch(url, options).then(...)`;
+            
+            // Replace the stringified body with the one with comments for display
+            if (bodyStringForDisplay) {
+                js = js.replace(JSON.stringify({}, null, 4), bodyStringForDisplay);
+            }
+
+            return formatCode(js);
+        }
+        
+        document.querySelectorAll('.copy-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const pre = this.closest('.code-block').querySelector('pre');
+                navigator.clipboard.writeText(pre.innerText.trim()).then(() => {
+                    this.innerText = 'Copied!';
+                    setTimeout(() => { this.innerText = 'Copy'; }, 2000);
+                });
+            });
+        });
+
+        const sections = document.querySelectorAll('.section');
+        const sidebarLinks = document.querySelectorAll('#sidebar a');
+        const updateActiveLink = () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (pageYOffset >= sectionTop - 60) { current = section.getAttribute('id'); }
+            });
+            sidebarLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').includes(current)) { link.classList.add('active'); }
+            });
+        };
+        window.addEventListener('scroll', updateActiveLink);
+        updateActiveLink();
+    });
+    </script>
 </body>
 </html>
