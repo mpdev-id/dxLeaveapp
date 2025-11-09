@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\User;
 use App\Models\LeaveRequest;
 use App\Models\ApprovalHistory;
+use App\Notifications\LeaveRequestStatusUpdated;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -73,5 +74,10 @@ class LeaveRequestService
                 }
             }
         });
+
+        // 3. KIRIM NOTIFIKASI KE PENGGUNA
+        // Muat ulang model untuk mendapatkan status terbaru sebelum mengirim notifikasi
+        $leaveRequest = $request->fresh();
+        $leaveRequest->user->notify(new LeaveRequestStatusUpdated($leaveRequest));
     }
 }

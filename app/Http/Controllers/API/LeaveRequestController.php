@@ -9,6 +9,7 @@ use App\Models\LeaveRequest;
 use App\Models\Workflow;
 use App\Services\LeaveRequestService;
 use App\Services\EntitlementService;
+use App\Services\WorkflowService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -16,17 +17,21 @@ use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
+use App\Notifications\LeaveRequestStatusUpdated;
+use App\Notifications\NewLeaveRequestForApprover;
 
 class LeaveRequestController extends Controller
 {
     protected $leaveRequestService;
     protected $entitlementService;
+    protected $workflowService;
 
-    // Injeksi dependensi (Dependency Injection) LeaveRequestService dan EntitlementService
-    public function __construct(LeaveRequestService $leaveRequestService, EntitlementService $entitlementService)
+    // Injeksi dependensi
+    public function __construct(LeaveRequestService $leaveRequestService, EntitlementService $entitlementService, WorkflowService $workflowService)
     {
         $this->leaveRequestService = $leaveRequestService;
         $this->entitlementService = $entitlementService;
+        $this->workflowService = $workflowService;
     }
 
     /**
@@ -234,9 +239,25 @@ class LeaveRequestController extends Controller
             // Set ID langkah alur kerja saat ini ke langkah pertama
             $validatedData['current_workflow_step_id'] = $firstStep->id;
             Log::info('Setting current_workflow_step_id to first step', ['step_id' => $firstStep->id]);
+            
+            // Lakukan pembaruan DULUAN agar status 'Pending' tersimpan sebelum notif
+            $leaveRequest->update($validatedData);
+            $updatedLeaveRequest = $leaveRequest->fresh();
+
+            // Kirim notifikasi ke karyawan
+            $updatedLeaveRequest->user->notify(new LeaveRequestStatusUpdated($updatedLeaveRequest));
+
+            // Kirim notifikasi ke approver
+            $approver = $this->workflowService->findApproverForStep($updatedLeaveRequest->user, $firstStep);
+            if ($approver) {
+                $approver->notify(new NewLeaveRequestForApprover($updatedLeaveRequest));
+                Log::info('Approver notification sent', ['approver_id' => $approver->id]);
+            }
+
+            return ResponseFormatter::success($updatedLeaveRequest, 'Leave request submitted successfully');
         }
 
-        // Lakukan pembaruan
+        // Lakukan pembaruan untuk perubahan selain submit (misal, hanya simpan draft)
         $leaveRequest->update($validatedData);
         Log::info('Leave request updated successfully', ['leave_request_id' => $leaveRequest->id]);
 

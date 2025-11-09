@@ -25,6 +25,7 @@ class User extends Authenticatable
         'name',
         'employee_code',
         'email',
+        'phone_number',
         'password',
         'department_id',
         'manager_id',
@@ -106,5 +107,16 @@ class User extends Authenticatable
     public function approvalsGiven(): HasMany
     {
         return $this->hasMany(ApprovalHistory::class, 'approver_user_id');
+    }
+
+    /**
+     * Route notifications for the WhatsApp channel.
+     *
+     * @param  \Illuminate\Notifications\Notification  $notification
+     * @return string|null
+     */
+    public function routeNotificationForWhatsApp($notification)
+    {
+        return $this->phone_number;
     }
 }
