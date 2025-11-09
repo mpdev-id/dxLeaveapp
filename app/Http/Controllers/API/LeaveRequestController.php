@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Helpers\ResponseFormatter;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\LeaveRequestResource;
 use App\Models\LeaveRequest;
 use App\Models\Workflow;
 use App\Services\LeaveRequestService;
@@ -35,26 +36,40 @@ class LeaveRequestController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $query = LeaveRequest::with(['user', 'leaveType', 'workflow']);
+        // Eager load relationships for efficiency and for the resource
+        $query = LeaveRequest::with(['user.department', 'leaveType', 'currentStep.approverRole', 'workflow.steps.approverRole', 'approvals.approver']);
 
-        // Jika pengguna adalah Admin/Manajer dan memiliki izin 'approve leave request'
+        // Base query for user's own requests
+        $ownRequestsQuery = (clone $query)->where('user_id', $user->id);
+
+        // If user has permission to approve, they will also see requests they need to approve.
         if ($user->hasPermissionTo('approve leave request')) {
-            // Logika untuk Manajer: Tampilkan permintaan yang perlu dia setujui.
-            // Di sini Anda perlu mengimplementasikan logika kompleks untuk filter:
-            // 1. Dapatkan langkah workflow yang peran-nya adalah peran si manajer.
-            // 2. Filter LeaveRequest yang statusnya 'Pending' atau 'In Progress' dan
-            //    approver-nya adalah user saat ini.
-            // Untuk kesederhanaan, kita hanya menampilkan semua yang Pending atau In Progress saat ini.
-            
-            // TODO: Implementasikan filter yang lebih ketat menggunakan WorkflowService.
-            $requests = $query->whereIn('current_status', ['Pending'])->get();
+            // Get user roles
+            $userRoles = $user->getRoleNames();
 
+            // Get workflow steps the user can approve based on their roles
+            $approvableStepIds = DB::table('workflow_steps as ws')
+                ->join('roles', 'ws.approver_role_id', '=', 'roles.id')
+                ->whereIn('roles.name', $userRoles)
+                ->pluck('ws.id');
+
+            // Get requests waiting at those steps, excluding the user's own requests
+            $requestsToApproveQuery = (clone $query)
+                ->whereIn('current_workflow_step_id', $approvableStepIds)
+                ->where('user_id', '!=', $user->id);
+            
+            // Get both sets of requests
+            $ownRequests = $ownRequestsQuery->get();
+            $requestsToApprove = $requestsToApproveQuery->get();
+
+            // Merge, ensure uniqueness, and re-index.
+            $requests = $ownRequests->merge($requestsToApprove)->unique('id')->values();
         } else {
-            // Logika untuk Karyawan: Tampilkan permintaan miliknya sendiri.
-            $requests = $query->where('user_id', $user->id)->get();
+            // Regular users only see their own requests
+            $requests = $ownRequestsQuery->get();
         }
 
-        return ResponseFormatter::success($requests, 'Leave requests retrieved successfully');
+        return ResponseFormatter::success(LeaveRequestResource::collection($requests), 'Leave requests retrieved successfully');
     }
 
     /**
@@ -143,7 +158,7 @@ class LeaveRequestController extends Controller
             );
         }
 
-        // Jika status diubah ke 'Pending', pastikan semua field yang diperlukan sudah ada.
+        // Jika status diubah ke 'Pending', pastikan semua field yang diperlukan sudah ada dan set langkah workflow pertama.
         if (isset($validatedData['current_status']) && $validatedData['current_status'] === 'Pending') {
             Log::info('Attempting to change status to Pending');
             try {
@@ -158,6 +173,22 @@ class LeaveRequestController extends Controller
                 Log::error('Validation for Pending status failed', ['errors' => $e->errors()]);
                 throw $e;
             }
+
+            // Cari langkah pertama dari alur kerja yang terkait
+            $workflow = $leaveRequest->workflow;
+            if (!$workflow) {
+                return ResponseFormatter::error(null, 'Workflow not found for this leave request.', 500);
+            }
+
+            $firstStep = $workflow->steps()->orderBy('step_number', 'asc')->first();
+
+            if (!$firstStep) {
+                return ResponseFormatter::error(null, 'Workflow is not configured correctly. No steps found.', 500);
+            }
+
+            // Set ID langkah alur kerja saat ini ke langkah pertama
+            $validatedData['current_workflow_step_id'] = $firstStep->id;
+            Log::info('Setting current_workflow_step_id to first step', ['step_id' => $firstStep->id]);
         }
 
 
