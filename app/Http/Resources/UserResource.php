@@ -51,9 +51,10 @@ class UserResource extends JsonResource
                 return [
                     'id' => $leaveRequest->id,
                     'leave_type' => $leaveRequest->leaveType->name,
-                    'start_date' => $leaveRequest->start_date,
-                    'end_date' => $leaveRequest->end_date,
-                    'status' => $leaveRequest->status,
+                    'start_date' => $leaveRequest->start_date->format('Y-m-d'),
+                    'end_date' => $leaveRequest->end_date->format('Y-m-d'),
+                    'created_at' => $leaveRequest->created_at->format('Y-m-d'),
+                    'status' => $leaveRequest->current_status,
                 ];
             })->values()->all(),
           
