@@ -58,6 +58,7 @@ class NewLeaveRequestForApprover extends Notification implements ShouldQueue
         $message .= "Employee: *{$employee->name}*\n";
         $message .= "Type: *{$leaveType}*\n";
         $message .= "Date: *{$startDate}* to *{$endDate}*\n\n";
+        $message .= "Reason: *{$this->leaveRequest->reason}*\n";
         $message .= "Please log in to the DXLeave system to approve or reject this request.";
 
         return $message;

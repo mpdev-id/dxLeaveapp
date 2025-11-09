@@ -57,6 +57,7 @@ class LeaveRequestStatusUpdated extends Notification implements ShouldQueue
         $message .= "There is an update on your leave request:\n\n";
         $message .= "Type: *{$leaveType}*\n";
         $message .= "Date: *{$startDate}* to *{$endDate}*\n";
+        $message .= "Reason: *{$this->leaveRequest->reason}*\n";
         $message .= "Status: *{$status}*\n\n";
 
         switch ($status) {
