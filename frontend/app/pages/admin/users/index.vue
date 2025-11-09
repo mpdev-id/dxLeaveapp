@@ -31,13 +31,11 @@
             <th class="py-3 px-6 text-left cursor-pointer" @click="handleSort('name')">
               <span class="inline-flex items-center">
                 Name
-                <Icon v-if="sortBy === 'name'" :name="sortDir === 'asc' ? 'heroicons:chevron-up' : 'heroicons:chevron-down'" class="w-4 h-4 ml-1" />
               </span>
             </th>
             <th class="py-3 px-6 text-left cursor-pointer" @click="handleSort('email')">
               <span class="inline-flex items-center">
                 Email
-                <Icon v-if="sortBy === 'email'" :name="sortDir === 'asc' ? 'heroicons:chevron-up' : 'heroicons:chevron-down'" class="w-4 h-4 ml-1" />
               </span>
             </th>
             <th class="py-3 px-6 text-center">Roles</th>
@@ -63,7 +61,7 @@
             </td>
             <td class="py-3 px-6 text-center">
               <nuxt-link :to="`/admin/users/${user.id}`" class="p-2 rounded-lg hover:bg-slate-200">
-                <Icon name="heroicons:pencil-square" class="w-5 h-5 text-slate-600" />
+                <span>Edit</span>
               </nuxt-link>
             </td>
           </tr>
@@ -99,8 +97,6 @@ const searchQuery = ref('');
 const sortBy = ref('created_at');
 const sortDir = ref('desc');
 const page = ref(1);
-
-console.log('Users data:', users.value);
 
 const { data: users, pending, error, refresh } = await useAsyncData(
   'users',

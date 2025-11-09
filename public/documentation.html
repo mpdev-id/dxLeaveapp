@@ -409,8 +409,14 @@
             '/leave-requests-create': {
                 method: 'POST',
                 path: '/leave-requests',
-                description: 'Submits a new leave request.',
-                params: [ { name: 'leave_type_id', required: true, example: 1 }, { name: 'start_date', required: true, example: '2025-12-24' }, { name: 'end_date', required: true, example: '2025-12-26' }, { name: 'reason', required: true, example: 'Holiday trip.' } ],
+                description: 'Submits a new leave request. For half-day leaves, `start_date` and `end_date` must be the same.',
+                params: [ 
+                    { name: 'leave_type_id', required: true, example: 1 }, 
+                    { name: 'start_date', required: true, example: '2025-12-24' }, 
+                    { name: 'end_date', required: true, example: '2025-12-24' }, 
+                    { name: 'reason', required: true, example: 'Personal day.' },
+                    { name: 'leave_period', required: true, example: 'half_day_morning', type: "enum('full_day', 'half_day_morning', 'half_day_afternoon')" }
+                ],
                 successResponse: `{
     "meta": { "code": 201, "status": "success", "message": "Leave request created" },
     "data": { "id": 5, "status": "Draft", ... }
@@ -423,7 +429,10 @@
             '/leave-requests/{id}': {
                 method: 'PATCH',
                 description: 'Updates a draft leave request, e.g., to submit it for approval.',
-                params: [ { name: 'current_status', required: true, example: 'Pending' } ],
+                params: [ 
+                    { name: 'current_status', required: false, example: 'Pending' },
+                    { name: 'leave_period', required: false, example: 'full_day', type: "enum('full_day', 'half_day_morning', 'half_day_afternoon')" }
+                ],
                 successResponse: `{
     "meta": { "code": 200, "status": "success", "message": "Leave request updated" },
     "data": { "id": 5, "status": "Pending", ... }

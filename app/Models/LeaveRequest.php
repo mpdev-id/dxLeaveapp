@@ -17,6 +17,7 @@ class LeaveRequest extends Model
         'leave_type_id',
         'start_date',
         'end_date',
+        'leave_period',
         'duration_days',
         'reason',
         'supporting_attachment_path',

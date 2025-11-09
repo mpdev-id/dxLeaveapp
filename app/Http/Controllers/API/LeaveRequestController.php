@@ -15,6 +15,7 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 
 class LeaveRequestController extends Controller
 {
@@ -83,36 +84,54 @@ class LeaveRequestController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'reason' => 'required|string|max:500',
+            'leave_period' => [
+                'required',
+                Rule::in(['full_day', 'half_day_morning', 'half_day_afternoon']),
+            ],
         ]);
 
-        // 2. Cari Alur Kerja yang Sesuai
-        // Kita asumsikan ada logika untuk menentukan workflow, misal berdasarkan LeaveType
-        $workflow = Workflow::where('applicable_model', LeaveRequest::class)->first();
+        // Validasi kustom: Cuti setengah hari hanya boleh untuk satu hari.
+        if (in_array($validatedData['leave_period'], ['half_day_morning', 'half_day_afternoon'])) {
+            if ($validatedData['start_date'] !== $validatedData['end_date']) {
+                throw ValidationException::withMessages([
+                    'leave_period' => 'Half-day leave can only be requested for a single day.',
+                ]);
+            }
+        }
 
+        // 2. Hitung Durasi Cuti
+        $startDate = Carbon::parse($validatedData['start_date']);
+        $endDate = Carbon::parse($validatedData['end_date']);
+        $duration = 0;
+        if (in_array($validatedData['leave_period'], ['half_day_morning', 'half_day_afternoon'])) {
+            $duration = 0.5;
+        } else {
+            $duration = $startDate->diffInDays($endDate) + 1;
+        }
+
+        // 3. Cek Jatah Cuti
+        if (!$this->entitlementService->hasSufficientBalance(Auth::user(), $validatedData['leave_type_id'], $duration)) {
+            throw ValidationException::withMessages(['leave' => 'Insufficient leave balance.']);
+        }
+
+        // 4. Cari Alur Kerja yang Sesuai
+        $workflow = Workflow::where('applicable_model', LeaveRequest::class)->first();
         if (!$workflow) {
             return ResponseFormatter::error(null, 'Leave workflow not found.', 500);
         }
 
-        // 3. Cek Jatah Cuti
-        $startDate = Carbon::parse($validatedData['start_date']);
-        $endDate = Carbon::parse($validatedData['end_date']);
-        $daysNeeded = $startDate->diffInDays($endDate) + 1;
-
-        if (!$this->entitlementService->hasSufficientBalance(Auth::user(), $validatedData['leave_type_id'], $daysNeeded)) {
-            throw ValidationException::withMessages(['leave' => 'Insufficient leave balance.']);
-        }
-
-        // 4. Buat Permintaan Cuti
+        // 5. Buat Permintaan Cuti
         try {
-            $leaveRequest = DB::transaction(function() use ($validatedData, $workflow) {
+            $leaveRequest = DB::transaction(function() use ($validatedData, $workflow, $duration) {
                 return LeaveRequest::create([
                     'user_id' => Auth::id(),
                     'leave_type_id' => $validatedData['leave_type_id'],
                     'workflow_id' => $workflow->id,
                     'start_date' => $validatedData['start_date'],
                     'end_date' => $validatedData['end_date'],
+                    'leave_period' => $validatedData['leave_period'],
                     'reason' => $validatedData['reason'],
-                    'duration_days' => Carbon::parse($validatedData['start_date'])->diffInDays(Carbon::parse($validatedData['end_date'])) + 1 ,
+                    'duration_days' => $duration,
                     'supporting_attachment_path' => null,
                     'current_status' => 'Draft', // Selalu mulai dari Draft
                 ]);
@@ -141,6 +160,11 @@ class LeaveRequestController extends Controller
                 'end_date' => 'sometimes|required|date|after_or_equal:start_date',
                 'reason' => 'sometimes|required|string|max:500',
                 'current_status' => 'sometimes|required|in:Draft,Pending', // Izinkan perubahan status
+                'leave_period' => [
+                    'sometimes',
+                    'required',
+                    Rule::in(['full_day', 'half_day_morning', 'half_day_afternoon']),
+                ],
             ]);
             Log::info('Validation successful', ['validated_data' => $validatedData]);
         } catch (ValidationException $e) {
@@ -158,20 +182,43 @@ class LeaveRequestController extends Controller
             );
         }
 
-        // Jika status diubah ke 'Pending', pastikan semua field yang diperlukan sudah ada dan set langkah workflow pertama.
+        // Hitung ulang durasi jika ada perubahan terkait tanggal atau periode cuti
+        if (isset($validatedData['start_date']) || isset($validatedData['end_date']) || isset($validatedData['leave_period'])) {
+            $startDate = Carbon::parse($validatedData['start_date'] ?? $leaveRequest->start_date);
+            $endDate = Carbon::parse($validatedData['end_date'] ?? $leaveRequest->end_date);
+            $leavePeriod = $validatedData['leave_period'] ?? $leaveRequest->leave_period;
+
+            if (in_array($leavePeriod, ['half_day_morning', 'half_day_afternoon'])) {
+                if ($startDate->notEqualTo($endDate)) {
+                    throw ValidationException::withMessages([
+                        'leave_period' => 'Half-day leave can only be requested for a single day.',
+                    ]);
+                }
+                $validatedData['duration_days'] = 0.5;
+            } else {
+                $validatedData['duration_days'] = $startDate->diffInDays($endDate) + 1;
+            }
+        }
+
+        // Jika status diubah ke 'Pending', lakukan validasi penuh dan mulai alur kerja
         if (isset($validatedData['current_status']) && $validatedData['current_status'] === 'Pending') {
             Log::info('Attempting to change status to Pending');
-            try {
-                $request->validate([
-                    'leave_type_id' => 'required|exists:leave_types,id',
-                    'start_date' => 'required|date',
-                    'end_date' => 'required|date|after_or_equal:start_date',
-                    'reason' => 'required|string|max:500',
-                ]);
-                Log::info('Validation for Pending status successful');
-            } catch (ValidationException $e) {
-                Log::error('Validation for Pending status failed', ['errors' => $e->errors()]);
-                throw $e;
+            
+            // Validasi field yang wajib ada saat submit
+            $submitData = array_merge($leaveRequest->toArray(), $validatedData);
+            validator($submitData, [
+                'leave_type_id' => 'required|exists:leave_types,id',
+                'start_date' => 'required|date',
+                'end_date' => 'required|date|after_or_equal:start_date',
+                'reason' => 'required|string|max:500',
+                'leave_period' => 'required',
+            ])->validate();
+
+            // Cek kembali jatah cuti dengan durasi final
+            $finalDuration = $validatedData['duration_days'] ?? $leaveRequest->duration_days;
+            $finalLeaveTypeId = $validatedData['leave_type_id'] ?? $leaveRequest->leave_type_id;
+            if (!$this->entitlementService->hasSufficientBalance(Auth::user(), $finalLeaveTypeId, $finalDuration)) {
+                throw ValidationException::withMessages(['leave' => 'Insufficient leave balance.']);
             }
 
             // Cari langkah pertama dari alur kerja yang terkait
@@ -179,9 +226,7 @@ class LeaveRequestController extends Controller
             if (!$workflow) {
                 return ResponseFormatter::error(null, 'Workflow not found for this leave request.', 500);
             }
-
             $firstStep = $workflow->steps()->orderBy('step_number', 'asc')->first();
-
             if (!$firstStep) {
                 return ResponseFormatter::error(null, 'Workflow is not configured correctly. No steps found.', 500);
             }
@@ -189,14 +234,6 @@ class LeaveRequestController extends Controller
             // Set ID langkah alur kerja saat ini ke langkah pertama
             $validatedData['current_workflow_step_id'] = $firstStep->id;
             Log::info('Setting current_workflow_step_id to first step', ['step_id' => $firstStep->id]);
-        }
-
-
-        // Hitung ulang durasi jika tanggal berubah
-        if (isset($validatedData['start_date']) || isset($validatedData['end_date'])) {
-            $startDate = Carbon::parse($validatedData['start_date'] ?? $leaveRequest->start_date);
-            $endDate = Carbon::parse($validatedData['end_date'] ?? $leaveRequest->end_date);
-            $validatedData['duration_days'] = $startDate->diffInDays($endDate) + 1;
         }
 
         // Lakukan pembaruan
