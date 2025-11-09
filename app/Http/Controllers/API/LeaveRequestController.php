@@ -19,6 +19,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use App\Notifications\LeaveRequestStatusUpdated;
 use App\Notifications\NewLeaveRequestForApprover;
+use App\Jobs\SendLeaveRequestNotification;
+use App\Jobs\SendLeaveRequestStatusUpdatedNotification;
 
 class LeaveRequestController extends Controller
 {
@@ -142,7 +144,7 @@ class LeaveRequestController extends Controller
                 ]);
             });
 
-            return ResponseFormatter::success($leaveRequest->load('leaveType'), 'Leave request submitted successfully');
+            return ResponseFormatter::success(new LeaveRequestResource($leaveRequest->load('leaveType')), 'Leave request submitted successfully');
         } catch (\Exception $e) {
             return ResponseFormatter::error(null, 'Failed to submit leave request: ' . $e->getMessage(), 500);
         }
@@ -245,23 +247,24 @@ class LeaveRequestController extends Controller
             $updatedLeaveRequest = $leaveRequest->fresh();
 
             // Kirim notifikasi ke karyawan
-            $updatedLeaveRequest->user->notify(new LeaveRequestStatusUpdated($updatedLeaveRequest));
+            SendLeaveRequestStatusUpdatedNotification::dispatch($updatedLeaveRequest);
 
             // Kirim notifikasi ke approver
             $approver = $this->workflowService->findApproverForStep($updatedLeaveRequest->user, $firstStep);
+            // dd($approver);
             if ($approver) {
-                $approver->notify(new NewLeaveRequestForApprover($updatedLeaveRequest));
-                Log::info('Approver notification sent', ['approver_id' => $approver->id]);
+                SendLeaveRequestNotification::dispatch($approver, $updatedLeaveRequest);
+                Log::info('Approver notification queued', ['approver_id' => $approver->id]);
             }
 
-            return ResponseFormatter::success($updatedLeaveRequest, 'Leave request submitted successfully');
+            return ResponseFormatter::success(new LeaveRequestResource($updatedLeaveRequest), 'Leave request submitted successfully');
         }
 
         // Lakukan pembaruan untuk perubahan selain submit (misal, hanya simpan draft)
         $leaveRequest->update($validatedData);
         Log::info('Leave request updated successfully', ['leave_request_id' => $leaveRequest->id]);
 
-        return ResponseFormatter::success($leaveRequest->fresh(), 'Leave request updated successfully');
+        return ResponseFormatter::success(new LeaveRequestResource($leaveRequest->fresh()), 'Leave request updated successfully');
     }
 
     /**
@@ -282,7 +285,7 @@ class LeaveRequestController extends Controller
             // Panggil Service Layer yang memegang semua logika sequential check.
             $this->leaveRequestService->processApproval($leaveRequest, $approver, $action, $comments);
 
-            return ResponseFormatter::success($leaveRequest->fresh()->current_status, 'Approval action recorded successfully.');
+            return ResponseFormatter::success(new LeaveRequestResource($leaveRequest->fresh()), 'Approval action recorded successfully.');
 
         } catch (ValidationException $e) {
             // Menangkap kesalahan validasi, termasuk batasan urutan (sequential check)

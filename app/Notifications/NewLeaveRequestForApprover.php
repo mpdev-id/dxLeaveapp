@@ -52,14 +52,16 @@ class NewLeaveRequestForApprover extends Notification implements ShouldQueue
         $startDate = $this->leaveRequest->start_date->format('d M Y');
         $endDate = $this->leaveRequest->end_date->format('d M Y');
         $leaveType = $this->leaveRequest->leaveType->name;
+        $approverLevel = $this->leaveRequest->currentStep->approverRole->name;    
 
         $message = "Hi {$notifiable->name},\n\n";
-        $message .= "You have a new leave request to review:\n\n";
+        $message .= "You have a new leave request to review as a {$approverLevel}:\n\n";
         $message .= "Employee: *{$employee->name}*\n";
         $message .= "Type: *{$leaveType}*\n";
-        $message .= "Date: *{$startDate}* to *{$endDate}*\n\n";
-        $message .= "Reason: *{$this->leaveRequest->reason}*\n";
-        $message .= "Please log in to the DXLeave system to approve or reject this request.";
+        $message .= "Date: *{$startDate}* to *{$endDate}*\n";
+        $message .= "Reason: *" . ucfirst($this->leaveRequest->reason) . "*\n\n";
+        $message .= "Please log in to the DXLeave system to *Approve* or *Reject* this request.";
+        $message .= "\n\nThank you,\nDXLeave System";
 
         return $message;
     }
