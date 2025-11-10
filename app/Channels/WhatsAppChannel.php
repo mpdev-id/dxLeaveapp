@@ -18,7 +18,7 @@ class WhatsAppChannel
     public function send($notifiable, Notification $notification)
     {
         // Get the message payload from the notification class
-        $message = $notification->toWhatsApp($notifiable);
+        $payload = $notification->toWhatsApp($notifiable);
 
         // Get the recipient's phone number from the 'routeNotificationFor' method in the User model
         $to = $notifiable->routeNotificationFor('whatsapp', $notification);
@@ -37,12 +37,20 @@ class WhatsAppChannel
             return;
         }
 
-        $response = Http::get($url, [
+        // Build the request data
+        $requestData = [
             'appkey' => $appKey,
             'authkey' => $authKey,
             'to' => $to,
-            'message' => $message,
-        ]);
+        ];
+
+        if (is_array($payload)) {
+            $requestData = array_merge($requestData, $payload);
+        } else {
+            $requestData['message'] = $payload;
+        }
+
+        $response = Http::get($url, $requestData);
 
         if ($response->failed()) {
             Log::error('WhatsApp notification failed.', [

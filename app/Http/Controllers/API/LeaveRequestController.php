@@ -16,6 +16,7 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use App\Notifications\LeaveRequestStatusUpdated;
 use App\Notifications\NewLeaveRequestForApprover;
@@ -95,7 +96,15 @@ class LeaveRequestController extends Controller
                 'required',
                 Rule::in(['full_day', 'half_day_morning', 'half_day_afternoon']),
             ],
+            'supporting_document' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
+
+        // Handle file upload
+        $attachmentPath = null;
+        if ($request->hasFile('supporting_document')) {
+            // Store in 'storage/app/public/attachments' and get the relative path
+            $attachmentPath = $request->file('supporting_document')->store('attachments', 'public');
+        }
 
         // Validasi kustom: Cuti setengah hari hanya boleh untuk satu hari.
         if (in_array($validatedData['leave_period'], ['half_day_morning', 'half_day_afternoon'])) {
@@ -129,7 +138,7 @@ class LeaveRequestController extends Controller
 
         // 5. Buat Permintaan Cuti
         try {
-            $leaveRequest = DB::transaction(function() use ($validatedData, $workflow, $duration) {
+            $leaveRequest = DB::transaction(function() use ($validatedData, $workflow, $duration, $attachmentPath) {
                 return LeaveRequest::create([
                     'user_id' => Auth::id(),
                     'leave_type_id' => $validatedData['leave_type_id'],
@@ -139,7 +148,7 @@ class LeaveRequestController extends Controller
                     'leave_period' => $validatedData['leave_period'],
                     'reason' => $validatedData['reason'],
                     'duration_days' => $duration,
-                    'supporting_attachment_path' => null,
+                    'supporting_attachment_path' => $attachmentPath,
                     'current_status' => 'Draft', // Selalu mulai dari Draft
                 ]);
             });
@@ -172,6 +181,7 @@ class LeaveRequestController extends Controller
                     'required',
                     Rule::in(['full_day', 'half_day_morning', 'half_day_afternoon']),
                 ],
+                'supporting_document' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             ]);
             Log::info('Validation successful', ['validated_data' => $validatedData]);
         } catch (ValidationException $e) {
@@ -187,6 +197,18 @@ class LeaveRequestController extends Controller
                 'This leave request cannot be edited because it is already being processed.',
                 403
             );
+        }
+
+        // Handle file upload
+        if ($request->hasFile('supporting_document')) {
+            // Hapus file lama jika ada
+            if ($leaveRequest->getRawOriginal('supporting_attachment_path')) {
+                Storage::disk('public')->delete($leaveRequest->getRawOriginal('supporting_attachment_path'));
+            }
+            
+            // Store in 'storage/app/public/attachments' and get the relative path
+            $path = $request->file('supporting_document')->store('attachments', 'public');
+            $validatedData['supporting_attachment_path'] = $path;
         }
 
         // Hitung ulang durasi jika ada perubahan terkait tanggal atau periode cuti

@@ -54,9 +54,12 @@ class NewLeaveRequestForApprover extends Notification implements ShouldQueue
         $leaveType = $this->leaveRequest->leaveType->name;
         $approverLevel = $this->leaveRequest->currentStep->approverRole->name;    
 
-        $message = "[Leave Request Attention]\n\n";
+        $message = "[Leave Request - *" . str_replace('_', ' ', ucwords(str_replace('_', ' ', $this->leaveRequest->leave_period))) . "*]\n\n";
         $message .= "Hi {$notifiable->name} as {$approverLevel},\n";
+
+
         $message .= "You have a new leave request to review:\n\n";
+        $message .= "NIK: *{$employee->employee_code}*\n";
         $message .= "Employee: *{$employee->name}*\n";
         $message .= "Type: *{$leaveType}*\n";
         $message .= "Date: *{$startDate}* to *{$endDate}*\n";
@@ -64,6 +67,13 @@ class NewLeaveRequestForApprover extends Notification implements ShouldQueue
         $message .= "Please log in to the DXLeave system to *Approve* or *Reject* this request.";
         $message .= "\n\nThank you,\nDXLeave System";
 
-        return $message;
+        $payload = ['message' => $message];
+
+        // The accessor on LeaveRequest will provide the full URL.
+        if ($this->leaveRequest->supporting_attachment_path) {
+            $payload['file'] = $this->leaveRequest->supporting_attachment_path;
+        }
+
+        return $payload;
     }
 }

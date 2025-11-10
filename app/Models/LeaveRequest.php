@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class LeaveRequest extends Model
 {
@@ -69,5 +70,23 @@ class LeaveRequest extends Model
     public function approvals(): MorphMany
     {
         return $this->morphMany(ApprovalHistory::class, 'approvable');
+    }
+
+    /**
+     * Accessor for supporting_attachment_path.
+     *
+     * @param  string|null  $value
+     * @return string|null
+     */
+    public function getSupportingAttachmentPathAttribute($value)
+    {
+        if ($value) {
+            // Check if the value is already a full URL
+            if (filter_var($value, FILTER_VALIDATE_URL)) {
+                return $value;
+            }
+            return Storage::disk('public')->url($value);
+        }
+        return null;
     }
 }
