@@ -52,6 +52,7 @@ class LeaveRequestStatusUpdated extends Notification implements ShouldQueue
         $startDate = $this->leaveRequest->start_date->format('d M Y');
         $endDate = $this->leaveRequest->end_date->format('d M Y');
         $leaveType = $this->leaveRequest->leaveType->name;
+        $approverLevel = $this->leaveRequest->currentStep->approverRole->name; 
 
         $message = "Hi {$notifiable->name},\n\n";
         $message .= "There is an update on your leave request:\n\n";
@@ -65,13 +66,13 @@ class LeaveRequestStatusUpdated extends Notification implements ShouldQueue
                 $message .= "Your leave has been approved. Enjoy your time off!";
                 break;
             case 'Rejected':
-                $message .= "Unfortunately, your leave request has been rejected. Please contact your manager for details.";
+                $message .= "Unfortunately, your leave request has been rejected. Please contact your *{$approverLevel}* or check your dashboard for details.";
                 break;
             case 'Pending':
                 $message .= "Your leave request has been successfully submitted and is now pending approval.";
                 break;
             default:
-                $message .= "The status of your leave request has been updated to '{$status}'.";
+                $message .= "the status of your leave request has been updated to '*{$status}*' by your '*{$approverLevel}*'.";
                 break;
         }
 

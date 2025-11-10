@@ -54,8 +54,9 @@ class NewLeaveRequestForApprover extends Notification implements ShouldQueue
         $leaveType = $this->leaveRequest->leaveType->name;
         $approverLevel = $this->leaveRequest->currentStep->approverRole->name;    
 
-        $message = "Hi {$notifiable->name},\n\n";
-        $message .= "You have a new leave request to review as a {$approverLevel}:\n\n";
+        $message = "[Leave Request Attention]\n\n";
+        $message .= "Hi {$notifiable->name} as {$approverLevel},\n";
+        $message .= "You have a new leave request to review:\n\n";
         $message .= "Employee: *{$employee->name}*\n";
         $message .= "Type: *{$leaveType}*\n";
         $message .= "Date: *{$startDate}* to *{$endDate}*\n";
