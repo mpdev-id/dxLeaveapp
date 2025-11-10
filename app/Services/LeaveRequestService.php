@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Jobs\SendLeaveRequestNotification;
 use App\Models\User;
 use App\Models\LeaveRequest;
 use App\Models\ApprovalHistory;
@@ -71,6 +72,13 @@ class LeaveRequestService
                         'current_status' => 'In Progress',
                         'current_workflow_step_id' => $nextStep->id,
                     ]);
+
+                    // KIRIM NOTIFIKASI KE APPROVER BERIKUTNYA
+                    $nextApprover = $this->workflowService->findApproverForStep($request->user, $nextStep);
+                    if ($nextApprover) {
+                        // Menggunakan job untuk pengiriman notifikasi
+                        SendLeaveRequestNotification::dispatch($nextApprover, $request->fresh());
+                    }
                 }
             }
         });
