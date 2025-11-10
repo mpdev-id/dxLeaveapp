@@ -58,7 +58,8 @@ class LeaveRequestService
                     'current_workflow_step_id' => null, // Hentikan alur kerja
                 ]);
             } elseif ($action === 'Approved') {
-                if (!$nextStep) {
+                // Cek apakah ini adalah langkah terakhir
+                if ($currentStep->is_final_step || !$nextStep) {
                     // Langkah terakhir, alur kerja selesai
                     $request->update([
                         'current_status' => 'Approved',
