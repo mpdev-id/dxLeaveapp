@@ -24,7 +24,7 @@ class LeaveRequestStatusUpdated extends Notification implements ShouldQueue
      *
      * @param \App\Models\LeaveRequest $leaveRequest
      */
-    public function __construct(LeaveRequest $leaveRequest)
+    public function __construct(LeaveRequest $leaveRequest, public ?string $reason = null)
     {
         $this->leaveRequest = $leaveRequest;
     }
@@ -52,13 +52,12 @@ class LeaveRequestStatusUpdated extends Notification implements ShouldQueue
         $startDate = $this->leaveRequest->start_date->format('d M Y');
         $endDate = $this->leaveRequest->end_date->format('d M Y');
         $leaveType = $this->leaveRequest->leaveType->name;
-        $approverLevel = $this->leaveRequest->currentStep->approverRole->name; 
 
         $message = "Hi {$notifiable->name},\n\n";
         $message .= "There is an update on your leave request:\n\n";
         $message .= "Type: *{$leaveType}*\n";
         $message .= "Date: *{$startDate}* to *{$endDate}*\n";
-        $message .= "Reason: *{$this->leaveRequest->reason}*\n";
+        $message .= "Your Reason: *{$this->leaveRequest->reason}*\n";
         $message .= "Status: *{$status}*\n\n";
 
         switch ($status) {
@@ -66,13 +65,26 @@ class LeaveRequestStatusUpdated extends Notification implements ShouldQueue
                 $message .= "Your leave has been approved. Enjoy your time off!";
                 break;
             case 'Rejected':
-                $message .= "Unfortunately, your leave request has been rejected. Please contact your *{$approverLevel}* or check your dashboard for details.";
+                $message .= "Unfortunately, your leave request has been rejected.";
+                if ($this->reason) {
+                    $message .= "\nReason for Rejection: *{$this->reason}*";
+                }
+                break;
+            case 'In Progress':
+                $approverLevel = $this->leaveRequest->currentStep->approverRole->name;
+                $message .= "Your request has been approved by the previous approver and is now pending approval from the *{$approverLevel}*.";
                 break;
             case 'Pending':
                 $message .= "Your leave request has been successfully submitted and is now pending approval.";
                 break;
             default:
-                $message .= "the status of your leave request has been updated to '*{$status}*' by your '*{$approverLevel}*'.";
+                // Fallback for other statuses
+                if ($this->leaveRequest->currentStep) {
+                    $approverLevel = $this->leaveRequest->currentStep->approverRole->name;
+                    $message .= "The status of your leave request has been updated to '*{$status}*' by your '*{$approverLevel}*'.";
+                } else {
+                    $message .= "The status of your leave request has been updated to '*{$status}*'.";
+                }
                 break;
         }
 

@@ -87,6 +87,7 @@ class LeaveRequestService
         // 3. KIRIM NOTIFIKASI KE PENGGUNA
         // Muat ulang model untuk mendapatkan status terbaru sebelum mengirim notifikasi
         $leaveRequest = $request->fresh();
-        $leaveRequest->user->notify(new LeaveRequestStatusUpdated($leaveRequest));
+        $reason = ($action === 'Rejected') ? $comments : null;
+        $leaveRequest->user->notify(new LeaveRequestStatusUpdated($leaveRequest, $reason));
     }
 }
