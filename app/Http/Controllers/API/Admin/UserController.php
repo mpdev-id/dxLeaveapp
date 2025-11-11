@@ -16,41 +16,46 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::with('roles');
+        $query = User::with('roles')->get();
 
         // Search functionality
-        if ($request->filled('search')) {
-            $search = $request->input('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', '%' . $search . '%')
-                  ->orWhere('email', 'like', '%' . $search . '%');
-            });
-        }
+        // if ($request->filled('search')) {
+        //     $search = $request->input('search');
+        //     $query->where(function ($q) use ($search) {
+        //         $q->where('name', 'like', '%' . $search . '%')
+        //           ->orWhere('email', 'like', '%' . $search . '%');
+        //     });
+        // }
 
-        // Sorting functionality
-        if ($request->filled('sort_by')) {
-            $sortBy = $request->input('sort_by');
-            $sortDir = $request->input('sort_dir', 'asc');
+        // // Sorting functionality
+        // if ($request->filled('sort_by')) {
+        //     $sortBy = $request->input('sort_by');
+        //     $sortDir = $request->input('sort_dir', 'asc');
             
-            // Whitelist columns to prevent arbitrary sorting
-            $allowedSorts = ['name', 'email', 'created_at'];
-            if (in_array($sortBy, $allowedSorts)) {
-                $query->orderBy($sortBy, $sortDir);
-            }
-        }
+        //     // Whitelist columns to prevent arbitrary sorting
+        //     $allowedSorts = ['name', 'email', 'created_at'];
+        //     if (in_array($sortBy, $allowedSorts)) {
+        //         $query->orderBy($sortBy, $sortDir);
+        //     }
+        // }
 
-        $users = $query->paginate($request->input('per_page', 10));
-
-        return ResponseFormatter::success($users, 'Users retrieved successfully');
+        // $users = $query->paginate($request->input('per_page', 10));
+        
+        return ResponseFormatter::success($query, 'Users retrieved successfully');
     }
 
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'name' => ['required', 'string', 'max:255'],
-            'employee_code' => ['required', 'string', 'max:255', 'unique:users'],
+            'employee_code' => ['nullable', 'string', 'max:255', 'unique:users'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'phone_number' => ['nullable', 'string', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8'],
+            'department_id' => ['nullable', 'exists:departments,id'],
+            'manager_id' => ['nullable', 'exists:users,id'],
+            'status' => ['nullable', 'string', 'max:255'],
+            'hire_date' => ['nullable', 'date'],
             'roles' => ['array'],
         ]);
 
@@ -58,18 +63,36 @@ class UserController extends Controller
             return ResponseFormatter::error(['errors' => $validator->errors()], 'Validation failed', 422);
         }
 
-        $user = User::create([
-            'name' => $request->name,
-            'employee_code' => $request->employee_code,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+        try {
+            $user = DB::transaction(function () use ($request) {
+                // 1. Create the user
+                $newUser = User::create([
+                    'name' => $request->name,
+                    'employee_code' => $request->employee_code,
+                    'email' => $request->email,
+                    'phone_number' => $request->phone_number,
+                    'password' => Hash::make($request->password),
+                    'department_id' => $request->department_id,
+                    'manager_id' => $request->manager_id,
+                    'status' => $request->status,
+                    'hire_date' => $request->hire_date,
+                ]);
 
-        if ($request->has('roles')) {
-            $user->assignRole($request->roles);
+                if ($request->has('roles')) {
+                    $newUser->syncRoles($request->roles);
+                }
+
+                return $newUser;
+            });
+            
+           return ResponseFormatter::success(new UserResource($user), 'User created successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error([
+                'message' => 'Something went wrong during user creation.',
+                'error' => $e->getMessage(),
+            ], 'User Creation Failed', 500);
         }
 
-        return ResponseFormatter::success(new UserResource($user), 'User created successfully');
     }
 
     public function show(User $user)
@@ -83,7 +106,12 @@ class UserController extends Controller
             'name' => ['string', 'max:255'],
             'employee_code' => ['string', 'max:255', 'unique:users,employee_code,' . $user->id],
             'email' => ['string', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'phone_number' => ['nullable', 'string', 'max:255', 'unique:users,phone_number,' . $user->id],
             'password' => ['nullable', 'string', 'min:8'],
+            'department_id' => ['nullable', 'exists:departments,id'],
+            'manager_id' => ['nullable', 'exists:users,id'],
+            'status' => ['nullable', 'string', 'max:255'],
+            'hire_date' => ['nullable', 'date'],
             'roles' => ['array'],
         ]);
 
