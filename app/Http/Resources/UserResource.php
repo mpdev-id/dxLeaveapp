@@ -20,9 +20,13 @@ class UserResource extends JsonResource
             'name'       => $this->name,
             'email'      => $this->email,
             'employee_code' => $this->employee_code,
+            'phone_number' => $this->phone_number,
             'role'       => $this->roles->pluck('name'), // Assuming Spatie Roles are used
             'status'     => $this->status,
-            'manager_name' => $this->manager ? $this->manager->name : null,
+            'manager' => $this->manager ? [
+                'id' => $this->manager->id,
+                'name' => $this->manager->name,
+            ] : null,
             'members' => $this->subordinates->map(function ($subordinate) {
                 return [
                     'id'   => $subordinate->id,
@@ -38,7 +42,12 @@ class UserResource extends JsonResource
                     }),
                 ];
             })->values()->all(),
-            'department' => $this->department->name,
+            'department' => $this->department ? [
+                'id' => $this->department->id,
+                'name' => $this->department->name,
+            ] : null,
+            'department_id' => $this->department_id,
+            'manager_id' => $this->manager_id,
             'hire_date'  => $this->hire_date,
             'sisa_cuti' => $this->entitlements->mapWithKeys(function ($entitlement) {
                 return [
