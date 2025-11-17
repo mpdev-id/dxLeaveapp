@@ -13,7 +13,7 @@ class LeaveRequestController extends Controller
     public function index(Request $request)
     {
         $query = LeaveRequest::with(['user', 'leaveType'])
-                         ->select('leave_requests.*_’);
+                         ->select('leave_requests.*');
 
         // Search functionality
         if ($request->filled('search')) {
