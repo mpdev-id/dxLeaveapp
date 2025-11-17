@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-    <head>
+<head>
     <title>@yield('title')</title>
     @include('includes.header')
     @stack('styles')
@@ -20,13 +20,22 @@
                 </label>
                 <div class="px-4">@yield('title')</div>
             </nav>
-                <div class="p-4"> @yield('content')</div>
+            <div class="md:flex md:flex-2 md:columns-2 p-5 gap-3">
+                <div class="bg-base-300/60 w-3.5/5 p-5 rounded-4xl"> @yield('content')</div>
+                <div class="bg-base-300/60 min-h-100 w-1/5 p-5 md:absolute right-10 rounded-4xl max-h-10/12 overflow-hidden scroll-auto">
+                    <h3 class="font-medium text-2xl mb-2">Timeline Requests</h3>
+                    <hr class="my-2 border-gray-100 rounded-2xl">
+                    @include('includes.timeline')
+                </div>
+            </div>
+
         </div>
         {{-- nav menu --}}
         @include('includes.nav')
         {{-- nav menu --}}
+        @include('includes.footer')
     </div>
-    @include('includes.footer')
     @stack('scripts')
 </body>
 </html>
+
