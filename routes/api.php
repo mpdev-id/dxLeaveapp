@@ -34,6 +34,7 @@ Route::middleware('auth:sanctum')->group(function () {
         ->middleware('role_or_permission:manager|approve leave request'); 
 });
 
+Route::get('departments', [DepartmentController::class,'index'])->name('globalDepartments');
 // --- Rute Administrasi Data Master (Hanya untuk Admin) ---
 Route::middleware(['auth:sanctum', 'role:Super Admin'])->prefix('admin/master')->group(function () {
     Route::apiResource('users', AdminUserController::class);
