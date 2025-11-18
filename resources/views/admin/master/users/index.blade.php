@@ -103,7 +103,7 @@
                                 </div>
                             </td>
                             <td x-text="user.email"></td>
-                            <td x-text="user"></td>
+                            <td x-text="user.department.name"></td>
                             <td x-text="new Date(user.created_at).toLocaleDateString()"></td>
                             <td>
                                 <span class="badge badge-success">Active</span>
@@ -274,9 +274,9 @@
                         }
                     });
 
-                    const data = await response.json();
-                    if (!response.ok || data.meta.status !== 'success') {
-                        throw new Error(data.meta.message || 'Failed to delete user.');
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || 'Failed to delete user.');
                     }
 
                     this.fetchUsers();

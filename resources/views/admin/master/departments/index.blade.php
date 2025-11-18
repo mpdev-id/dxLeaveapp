@@ -130,7 +130,7 @@
                     }
 
                     const data = await response.json();
-                    this.departments = data.data;
+                    this.departments = data.data.data;
                 } catch (error) {
                     console.error('Error fetching departments:', error);
                 } finally {

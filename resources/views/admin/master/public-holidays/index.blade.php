@@ -134,7 +134,7 @@
                     }
 
                     const data = await response.json();
-                    this.publicHolidays = data.data;
+                    this.publicHolidays = data.data.data;
                 } catch (error) {
                     console.error('Error fetching public holidays:', error);
                 } finally {

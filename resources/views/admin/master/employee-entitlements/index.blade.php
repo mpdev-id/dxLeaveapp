@@ -96,7 +96,7 @@
                         <tr>
                             <td x-text="entitlement.user.name"></td>
                             <td x-text="entitlement.leave_type.name"></td>
-                            <td x-text="entitlement.days"></td>
+                            <td x-text="entitlement.initial_balance"></td>
                             <td x-text="entitlement.year"></td>
                             <td>
                                 <button class="btn btn-sm btn-info" @click="openEditModal(entitlement)">Edit</button>
@@ -162,7 +162,7 @@
                     }
 
                     const data = await response.json();
-                    this.entitlements = data.data;
+                    this.entitlements = data.data.data;
                 } catch (error) {
                     console.error('Error fetching entitlements:', error);
                 } finally {
@@ -196,7 +196,7 @@
                         }
                     });
                     const data = await response.json();
-                    this.leaveTypes = data.data;
+                    this.leaveTypes = data.data.data;
                 } catch (error) {
                     console.error('Error fetching leave types:', error);
                 }

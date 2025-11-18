@@ -6,7 +6,7 @@
     @stack('styles')
 </head>
 <body>
-    <div class="drawer lg:drawer-open">
+    <div class="drawer md:drawer-open">
         <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
         <div class="drawer-content">
             <!-- Navbar -->

@@ -75,7 +75,7 @@
                     <template x-for="leaveType in filteredLeaveTypes" :key="leaveType.id">
                         <tr>
                             <td x-text="leaveType.name"></td>
-                            <td x-text="leaveType.days"></td>
+                            <td x-text="parseFloat(leaveType.default_entitlement_days).toFixed(2)"> </td>
                             <td>
                                 <button class="btn btn-sm btn-info" @click="openEditModal(leaveType)">Edit</button>
                                 <button class="btn btn-sm btn-error" @click="openDeleteModal(leaveType.id)">Delete</button>
@@ -134,7 +134,7 @@
                     }
 
                     const data = await response.json();
-                    this.leaveTypes = data.data;
+                    this.leaveTypes = data.data.data;
                 } catch (error) {
                     console.error('Error fetching leave types:', error);
                 } finally {
