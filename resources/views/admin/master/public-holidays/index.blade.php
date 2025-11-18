@@ -11,8 +11,11 @@
         </div>
 
         <!-- Add/Edit Public Holiday Modal -->
-        <div x-show="showModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
+        <dialog id="publicholiday_modal" class="modal">
             <div class="modal-box">
+                <form method="dialog">
+                    <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                </form>
                 <h3 class="font-bold text-lg" x-text="isEdit ? 'Edit Public Holiday' : 'Add New Public Holiday'"></h3>
                 <form @submit.prevent="isEdit ? updatePublicHoliday() : addPublicHoliday()">
                     <div class="form-control">
@@ -25,23 +28,30 @@
                     </div>
                     <div class="modal-action">
                         <button type="submit" class="btn btn-primary" x-text="isEdit ? 'Update' : 'Create'"></button>
-                        <button type="button" class="btn" @click="showModal = false">Cancel</button>
+                        <form method="dialog">
+                            <button class="btn">Cancel</button>
+                        </form>
                     </div>
                 </form>
             </div>
-        </div>
+        </dialog>
 
         <!-- Delete Confirmation Modal -->
-        <div x-show="showDeleteModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
+        <dialog id="delete_modal" class="modal">
             <div class="modal-box">
+                <form method="dialog">
+                    <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                </form>
                 <h3 class="font-bold text-lg">Confirm Deletion</h3>
                 <p>Are you sure you want to delete this public holiday?</p>
                 <div class="modal-action">
                     <button class="btn btn-error" @click="deletePublicHoliday()">Delete</button>
-                    <button class="btn" @click="showDeleteModal = false">Cancel</button>
+                    <form method="dialog">
+                        <button class="btn">Cancel</button>
+                    </form>
                 </div>
             </div>
-        </div>
+        </dialog>
 
         <div class="my-4 flex justify-between items-center">
             <div class="flex items-center">
@@ -97,8 +107,6 @@
             loading: true,
             search: '',
             perPage: 10,
-            showModal: false,
-            showDeleteModal: false,
             isEdit: false,
             newPublicHoliday: {
                 id: null,
@@ -145,18 +153,18 @@
             openAddModal() {
                 this.isEdit = false;
                 this.newPublicHoliday = { id: null, name: '', date: '' };
-                this.showModal = true;
+                publicholiday_modal.showModal();
             },
 
             openEditModal(publicHoliday) {
                 this.isEdit = true;
                 this.newPublicHoliday = { ...publicHoliday };
-                this.showModal = true;
+                publicholiday_modal.showModal();
             },
 
             openDeleteModal(publicHolidayId) {
                 this.publicHolidayToDelete = publicHolidayId;
-                this.showDeleteModal = true;
+                delete_modal.showModal();
             },
 
             async addPublicHoliday() {
@@ -178,7 +186,7 @@
                     }
 
                     this.fetchPublicHolidays();
-                    this.showModal = false;
+                    publicholiday_modal.close();
                 } catch (error) {
                     console.error('Error adding public holiday:', error);
                     alert(error.message);
@@ -204,7 +212,7 @@
                     }
 
                     this.fetchPublicHolidays();
-                    this.showModal = false;
+                    publicholiday_modal.close();
                 } catch (error) {
                     console.error('Error updating public holiday:', error);
                     alert(error.message);
@@ -228,7 +236,7 @@
                     }
 
                     this.fetchPublicHolidays();
-                    this.showDeleteModal = false;
+                    delete_modal.close();
                 } catch (error) {
                     console.error('Error deleting public holiday:', error);
                     alert(error.message);

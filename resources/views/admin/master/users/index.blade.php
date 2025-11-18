@@ -11,8 +11,11 @@
         </div>
         
         <!-- Add/Edit User Modal -->
-        <div x-show="showModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
+        <dialog id="user_modal" class="modal">
             <div class="modal-box">
+                <form method="dialog">
+                    <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                </form>
                 <h3 class="font-bold text-lg" x-text="isEdit ? 'Edit User' : 'Add New User'"></h3>
                 <form @submit.prevent="isEdit ? updateUser() : addUser()">
                     <div class="form-control">
@@ -38,23 +41,30 @@
                     </div>
                     <div class="modal-action">
                         <button type="submit" class="btn btn-primary" x-text="isEdit ? 'Update' : 'Create'"></button>
-                        <button type="button" class="btn" @click="showModal = false">Cancel</button>
+                        <form method="dialog">
+                            <button class="btn">Cancel</button>
+                        </form>
                     </div>
                 </form>
             </div>
-        </div>
+        </dialog>
 
         <!-- Delete Confirmation Modal -->
-        <div x-show="showDeleteModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
+        <dialog id="delete_modal" class="modal">
             <div class="modal-box">
+                <form method="dialog">
+                    <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                </form>
                 <h3 class="font-bold text-lg">Confirm Deletion</h3>
                 <p>Are you sure you want to delete this user?</p>
                 <div class="modal-action">
                     <button class="btn btn-error" @click="deleteUser()">Delete</button>
-                    <button class="btn" @click="showDeleteModal = false">Cancel</button>
+                    <form method="dialog">
+                        <button class="btn">Cancel</button>
+                    </form>
                 </div>
             </div>
-        </div>
+        </dialog>
 
         <div class="my-4 flex justify-between items-center">
             <div class="flex items-center">
@@ -104,7 +114,7 @@
                             </td>
                             <td x-text="user.email"></td>
                             <td x-text="user.department.name"></td>
-                            <td x-text="new Date(user.created_at).toLocaleDateString()"></td>
+                            <td x-text="new Date(user.hire_date).toLocaleDateString()"></td>
                             <td>
                                 <span class="badge badge-success">Active</span>
                             </td>
@@ -130,8 +140,6 @@
             loading: true,
             search: '',
             perPage: 10,
-            showModal: false,
-            showDeleteModal: false,
             isEdit: false,
             newUser: {
                 id: null,
@@ -197,18 +205,18 @@
             openAddModal() {
                 this.isEdit = false;
                 this.newUser = { id: null, name: '', email: '', password: '', department_id: '' };
-                this.showModal = true;
+                user_modal.showModal();
             },
 
             openEditModal(user) {
                 this.isEdit = true;
-                this.newUser = { ...user };
-                this.showModal = true;
+                this.newUser = { ...user, department_id: user.department.id };
+                user_modal.showModal();
             },
 
             openDeleteModal(userId) {
                 this.userToDelete = userId;
-                this.showDeleteModal = true;
+                delete_modal.showModal();
             },
 
             async addUser() {
@@ -230,7 +238,7 @@
                     }
 
                     this.fetchUsers();
-                    this.showModal = false;
+                    user_modal.close();
                 } catch (error) {
                     console.error('Error adding user:', error);
                     alert(error.message);
@@ -256,7 +264,7 @@
                     }
 
                     this.fetchUsers();
-                    this.showModal = false;
+                    user_modal.close();
                 } catch (error) {
                     console.error('Error updating user:', error);
                     alert(error.message);
@@ -280,7 +288,7 @@
                     }
 
                     this.fetchUsers();
-                    this.showDeleteModal = false;
+                    delete_modal.close();
                 } catch (error) {
                     console.error('Error deleting user:', error);
                     alert(error.message);

@@ -11,8 +11,11 @@
         </div>
 
         <!-- Add/Edit Entitlement Modal -->
-        <div x-show="showModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
+        <dialog id="entitlement_modal" class="modal">
             <div class="modal-box">
+                <form method="dialog">
+                    <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                </form>
                 <h3 class="font-bold text-lg" x-text="isEdit ? 'Edit Entitlement' : 'Add New Entitlement'"></h3>
                 <form @submit.prevent="isEdit ? updateEntitlement() : addEntitlement()">
                     <div class="form-control">
@@ -43,23 +46,30 @@
                     </div>
                     <div class="modal-action">
                         <button type="submit" class="btn btn-primary" x-text="isEdit ? 'Update' : 'Create'"></button>
-                        <button type="button" class="btn" @click="showModal = false">Cancel</button>
+                        <form method="dialog">
+                            <button class="btn">Cancel</button>
+                        </form>
                     </div>
                 </form>
             </div>
-        </div>
+        </dialog>
 
         <!-- Delete Confirmation Modal -->
-        <div x-show="showDeleteModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
+        <dialog id="delete_modal" class="modal">
             <div class="modal-box">
+                <form method="dialog">
+                    <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                </form>
                 <h3 class="font-bold text-lg">Confirm Deletion</h3>
                 <p>Are you sure you want to delete this entitlement?</p>
                 <div class="modal-action">
                     <button class="btn btn-error" @click="deleteEntitlement()">Delete</button>
-                    <button class="btn" @click="showDeleteModal = false">Cancel</button>
+                    <form method="dialog">
+                        <button class="btn">Cancel</button>
+                    </form>
                 </div>
             </div>
-        </div>
+        </dialog>
 
         <div class="my-4 flex justify-between items-center">
             <div class="flex items-center">
@@ -121,8 +131,6 @@
             loading: true,
             search: '',
             perPage: 10,
-            showModal: false,
-            showDeleteModal: false,
             isEdit: false,
             newEntitlement: {
                 id: null,
@@ -205,18 +213,24 @@
             openAddModal() {
                 this.isEdit = false;
                 this.newEntitlement = { id: null, user_id: '', leave_type_id: '', days: '', year: new Date().getFullYear() };
-                this.showModal = true;
+                entitlement_modal.showModal();
             },
 
             openEditModal(entitlement) {
                 this.isEdit = true;
-                this.newEntitlement = { ...entitlement };
-                this.showModal = true;
+                this.newEntitlement = { 
+                    id: entitlement.id,
+                    user_id: entitlement.user.id,
+                    leave_type_id: entitlement.leave_type.id,
+                    days: entitlement.initial_balance,
+                    year: entitlement.year
+                };
+                entitlement_modal.showModal();
             },
 
             openDeleteModal(entitlementId) {
                 this.entitlementToDelete = entitlementId;
-                this.showDeleteModal = true;
+                delete_modal.showModal();
             },
 
             async addEntitlement() {
@@ -238,7 +252,7 @@
                     }
 
                     this.fetchEntitlements();
-                    this.showModal = false;
+                    entitlement_modal.close();
                 } catch (error) {
                     console.error('Error adding entitlement:', error);
                     alert(error.message);
@@ -264,7 +278,7 @@
                     }
 
                     this.fetchEntitlements();
-                    this.showModal = false;
+                    entitlement_modal.close();
                 } catch (error) {
                     console.error('Error updating entitlement:', error);
                     alert(error.message);
@@ -288,7 +302,7 @@
                     }
 
                     this.fetchEntitlements();
-                    this.showDeleteModal = false;
+                    delete_modal.close();
                 } catch (error) {
                     console.error('Error deleting entitlement:', error);
                     alert(error.message);
