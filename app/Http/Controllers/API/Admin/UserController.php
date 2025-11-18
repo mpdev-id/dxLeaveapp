@@ -41,7 +41,7 @@ class UserController extends Controller
 
         // $users = $query->paginate($request->input('per_page', 10));
         
-        return ResponseFormatter::success($query, 'Users retrieved successfully');
+        return ResponseFormatter::success(new UserResource($query), 'Users retrieved successfully');
     }
 
     public function store(Request $request)
