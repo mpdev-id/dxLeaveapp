@@ -18,30 +18,30 @@ class UserController extends Controller
     {
         $query = User::with('roles')->get();
 
-        // Search functionality
-        // if ($request->filled('search')) {
-        //     $search = $request->input('search');
-        //     $query->where(function ($q) use ($search) {
-        //         $q->where('name', 'like', '%' . $search . '%')
-        //           ->orWhere('email', 'like', '%' . $search . '%');
-        //     });
-        // }
+        // Filter by search
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query = $query->filter(function ($user) use ($search) {
+                return Str::contains($user->name, $search) || Str::contains($user->email, $search);
+            });
+        }
 
-        // // Sorting functionality
-        // if ($request->filled('sort_by')) {
-        //     $sortBy = $request->input('sort_by');
-        //     $sortDir = $request->input('sort_dir', 'asc');
-            
-        //     // Whitelist columns to prevent arbitrary sorting
-        //     $allowedSorts = ['name', 'email', 'created_at'];
-        //     if (in_array($sortBy, $allowedSorts)) {
-        //         $query->orderBy($sortBy, $sortDir);
-        //     }
-        // }
+        // Filter by sorting
+        if ($request->filled('sort_by')) {
+            $sortBy = $request->input('sort_by');
+            $sortDir = $request->input('sort_dir', 'asc');
 
-        // $users = $query->paginate($request->input('per_page', 10));
-        
-        return ResponseFormatter::success(new UserResource($query), 'Users retrieved successfully');
+            // Whitelist columns to prevent arbitrary sorting
+            $allowedSorts = ['name', 'email', 'created_at'];
+            if (in_array($sortBy, $allowedSorts)) {
+                $query = $query->sortBy($sortBy, $sortDir);
+            }
+        }
+
+        // Paginate the results
+        $users = $query->paginate($request->input('per_page', 10));
+
+        return ResponseFormatter::success(new UserResource($users), 'Users retrieved successfully');
     }
 
     public function store(Request $request)
