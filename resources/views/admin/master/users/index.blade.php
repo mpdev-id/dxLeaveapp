@@ -12,34 +12,72 @@
         
         <!-- Add/Edit User Modal -->
         <dialog id="user_modal" class="modal">
-            <div class="modal-box">
+            <div class="modal-box w-11/12 max-w-5xl">
                 <form method="dialog">
                     <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
                 </form>
                 <h3 class="font-bold text-lg" x-text="isEdit ? 'Edit User' : 'Add New User'"></h3>
                 <form @submit.prevent="isEdit ? updateUser() : addUser()">
-                    <div class="form-control">
-                        <label class="label">Name</label>
-                        <input type="text" x-model="newUser.name" class="input input-bordered" required>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="form-control">
+                            <label class="label">Name</label>
+                            <input type="text" x-model="newUser.name" class="input input-bordered" required>
+                        </div>
+                        <div class="form-control">
+                            <label class="label">Email</label>
+                            <input type="email" x-model="newUser.email" class="input input-bordered" required>
+                        </div>
+                        <div class="form-control">
+                            <label class="label">Employee Code</label>
+                            <input type="text" x-model="newUser.employee_code" class="input input-bordered">
+                        </div>
+                        <div class="form-control">
+                            <label class="label">Phone Number</label>
+                            <input type="text" x-model="newUser.phone_number" class="input input-bordered">
+                        </div>
+                        <div class="form-control">
+                            <label class="label">Password (leave blank if not changing)</label>
+                            <input type="password" x-model="newUser.password" class="input input-bordered">
+                        </div>
+                        <div class="form-control">
+                            <label class="label">Department</label>
+                            <select x-model="newUser.department_id" class="select select-bordered">
+                                <option value="">Select Department</option>
+                                <template x-for="department in departments" :key="department.id">
+                                    <option :value="department.id" x-text="department.name"></option>
+                                </template>
+                            </select>
+                        </div>
+                        <div class="form-control">
+                            <label class="label">Manager</label>
+                            <select x-model="newUser.manager_id" class="select select-bordered">
+                                <option value="">Select Manager</option>
+                                <template x-for="manager in users" :key="manager.id">
+                                    <option :value="manager.id" x-text="manager.name"></option>
+                                </template>
+                            </select>
+                        </div>
+                        <div class="form-control">
+                            <label class="label">Status</label>
+                            <select x-model="newUser.status" class="select select-bordered">
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+                        <div class="form-control">
+                            <label class="label">Hire Date</label>
+                            <input type="date" x-model="newUser.hire_date" class="input input-bordered">
+                        </div>
+                        <div class="form-control">
+                            <label class="label">Roles</label>
+                            <select x-model="newUser.roles" class="select select-bordered" multiple>
+                                <template x-for="role in roles" :key="role.id">
+                                    <option :value="role.name" x-text="role.name"></option>
+                                </template>
+                            </select>
+                        </div>
                     </div>
-                    <div class="form-control">
-                        <label class="label">Email</label>
-                        <input type="email" x-model="newUser.email" class="input input-bordered" required>
-                    </div>
-                    <div class="form-control">
-                        <label class="label">Password (leave blank if not changing)</label>
-                        <input type="password" x-model="newUser.password" class="input input-bordered">
-                    </div>
-                    <div class="form-control">
-                        <label class="label">Department</label>
-                        <select x-model="newUser.department_id" class="select select-bordered" required>
-                            <option value="">Select Department</option>
-                            <template x-for="department in departments" :key="department.id">
-                                <option :value="department.id" x-text="department.name"></option>
-                            </template>
-                        </select>
-                    </div>
-                    <div class="modal-action">
+                    <div class="modal-action mt-4">
                         <button type="submit" class="btn btn-primary" x-text="isEdit ? 'Update' : 'Create'"></button>
                         <form method="dialog">
                             <button class="btn">Cancel</button>
@@ -85,7 +123,7 @@
                         <th>Name</th>
                         <th>Email</th>
                         <th>Department</th>
-                        <th>Joined</th>
+                        <th>Hire Date</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
@@ -113,10 +151,10 @@
                                 </div>
                             </td>
                             <td x-text="user.email"></td>
-                            <td x-text="user.department.name"></td>
-                            <td x-text="new Date(user.hire_date).toLocaleDateString()"></td>
+                            <td x-text="user.department ? user.department.name : 'N/A'"></td>
+                            <td x-text="user.hire_date ? new Date(user.hire_date).toLocaleDateString() : 'N/A'"></td>
                             <td>
-                                <span class="badge badge-success">Active</span>
+                                <span class="badge" :class="user.status === 'active' ? 'badge-success' : 'badge-error'" x-text="user.status"></span>
                             </td>
                             <td>
                                 <button class="btn btn-sm btn-info" @click="openEditModal(user)">Edit</button>
@@ -137,6 +175,7 @@
         return {
             users: [],
             departments: [],
+            roles: [],
             loading: true,
             search: '',
             perPage: 10,
@@ -144,15 +183,22 @@
             newUser: {
                 id: null,
                 name: '',
+                employee_code: '',
                 email: '',
+                phone_number: '',
                 password: '',
-                department_id: ''
+                department_id: '',
+                manager_id: '',
+                status: 'active',
+                hire_date: '',
+                roles: []
             },
             userToDelete: null,
             
             init() {
                 this.fetchUsers();
                 this.fetchDepartments();
+                this.fetchRoles();
             },
 
             async fetchUsers() {
@@ -196,32 +242,80 @@
                         }
                     });
                     const data = await response.json();
-                    this.departments = data.data;
+                    this.departments = data.data.data;
                 } catch (error) {
                     console.error('Error fetching departments:', error);
                 }
             },
 
+            async fetchRoles() {
+                try {
+                    const token = localStorage.getItem('authToken');
+                    const response = await fetch('http://leaveapp.redirect.my.id/api/admin/master/roles', {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Accept': 'application/json'
+                        }
+                    });
+                    const data = await response.json();
+                    this.roles = data.data;
+                } catch (error) {
+                    console.error('Error fetching roles:', error);
+                }
+            },
+
             openAddModal() {
                 this.isEdit = false;
-                this.newUser = { id: null, name: '', email: '', password: '', department_id: '' };
-                user_modal.showModal();
+                this.newUser = {
+                    id: null,
+                    name: '',
+                    employee_code: '',
+                    email: '',
+                    phone_number: '',
+                    password: '',
+                    department_id: '',
+                    manager_id: '',
+                    status: 'active',
+                    hire_date: '',
+                    roles: []
+                };
+                document.getElementById('user_modal').showModal();
             },
 
             openEditModal(user) {
                 this.isEdit = true;
-                this.newUser = { ...user, department_id: user.department.id };
-                user_modal.showModal();
+                this.newUser = {
+                    id: user.id,
+                    name: user.name,
+                    employee_code: user.employee_code,
+                    email: user.email,
+                    phone_number: user.phone_number,
+                    password: '',
+                    department_id: user.department_id ? Number(user.department_id) : '',
+                    manager_id: user.manager_id ? Number(user.manager_id) : '',
+                    status: user.status || 'active',
+                    hire_date: user.hire_date || '',
+                    roles: user.roles ? user.roles.map(role => role.name) : []
+                };
+                document.getElementById('user_modal').showModal();
             },
 
             openDeleteModal(userId) {
                 this.userToDelete = userId;
-                delete_modal.showModal();
+                document.getElementById('delete_modal').showModal();
             },
 
             async addUser() {
                 try {
                     const token = localStorage.getItem('authToken');
+                    const userData = { ...this.newUser };
+
+                    for (const key in userData) {
+                        if (userData[key] === '') {
+                            userData[key] = null;
+                        }
+                    }
+
                     const response = await fetch('http://leaveapp.redirect.my.id/api/admin/master/users', {
                         method: 'POST',
                         headers: {
@@ -229,16 +323,21 @@
                             'Content-Type': 'application/json',
                             'Accept': 'application/json'
                         },
-                        body: JSON.stringify(this.newUser)
+                        body: JSON.stringify(userData)
                     });
 
                     const data = await response.json();
                     if (!response.ok || data.meta.status !== 'success') {
-                        throw new Error(data.meta.message || 'Failed to add user.');
+                        let errorMessage = data.meta.message || 'Failed to add user.';
+                        if (data.data && data.data.errors) {
+                            const errors = Object.values(data.data.errors).flat().join('\n');
+                            errorMessage += '\n' + errors;
+                        }
+                        throw new Error(errorMessage);
                     }
 
                     this.fetchUsers();
-                    user_modal.close();
+                    document.getElementById('user_modal').close();
                 } catch (error) {
                     console.error('Error adding user:', error);
                     alert(error.message);
@@ -248,6 +347,18 @@
             async updateUser() {
                 try {
                     const token = localStorage.getItem('authToken');
+                    const userData = { ...this.newUser };
+
+                    if (userData.password === '' || userData.password === null) {
+                        delete userData.password;
+                    }
+
+                    for (const key in userData) {
+                        if (userData[key] === '') {
+                            userData[key] = null;
+                        }
+                    }
+
                     const response = await fetch(`http://leaveapp.redirect.my.id/api/admin/master/users/${this.newUser.id}`, {
                         method: 'PUT',
                         headers: {
@@ -255,16 +366,21 @@
                             'Content-Type': 'application/json',
                             'Accept': 'application/json'
                         },
-                        body: JSON.stringify(this.newUser)
+                        body: JSON.stringify(userData)
                     });
 
                     const data = await response.json();
                     if (!response.ok || data.meta.status !== 'success') {
-                        throw new Error(data.meta.message || 'Failed to update user.');
+                        let errorMessage = data.meta.message || 'Failed to update user.';
+                        if (data.data && data.data.errors) {
+                            const errors = Object.values(data.data.errors).flat().join('\n');
+                            errorMessage += '\n' + errors;
+                        }
+                        throw new Error(errorMessage);
                     }
 
                     this.fetchUsers();
-                    user_modal.close();
+                    document.getElementById('user_modal').close();
                 } catch (error) {
                     console.error('Error updating user:', error);
                     alert(error.message);
@@ -288,7 +404,7 @@
                     }
 
                     this.fetchUsers();
-                    delete_modal.close();
+                    document.getElementById('delete_modal').close();
                 } catch (error) {
                     console.error('Error deleting user:', error);
                     alert(error.message);
