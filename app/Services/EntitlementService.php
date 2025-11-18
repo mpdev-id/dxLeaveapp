@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Http\Request;
 
 class EntitlementService
 {
@@ -17,13 +18,20 @@ class EntitlementService
         $query = EmployeeEntitlement::with(['user', 'leaveType'])
                     ->select('employee_entitlements.*');
 
+        // Filter by user if user_id is provided
+        if ($request->filled('user_id')) {
+            $query->where('user_id', $request->input('user_id'));
+        }
+
         // Search functionality
         if ($request->filled('search')) {
             $search = $request->input('search');
-            $query->whereHas('user', function ($q) use ($search) {
-                $q->where('name', 'like', '%' . $search . '%');
-            })->orWhereHas('leaveType', function ($q) use ($search) {
-                $q->where('name', 'like', '%' . $search . '%');
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('user', function ($subq) use ($search) {
+                    $subq->where('name', 'like', '%' . $search . '%');
+                })->orWhereHas('leaveType', function ($subq) use ($search) {
+                    $subq->where('name', 'like', '%' . $search . '%');
+                });
             });
         }
 
