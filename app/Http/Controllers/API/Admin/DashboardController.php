@@ -22,7 +22,7 @@ class DashboardController extends Controller
                                             ->count(),
         ];
 
-        return response()->json(['data' => $stats]);
+        return ResponseFormatter::success(['data' => $stats]);
     }
 
     public function getRecentActivity()
@@ -32,7 +32,7 @@ class DashboardController extends Controller
                                     ->take(5)
                                     ->get();
 
-        return response()->json(['data' => $recentActivity]);
+        return ResponseFormatter::success(['data' => $recentActivity]);
     }
 
     public function getUpcomingLeaves()
@@ -45,6 +45,6 @@ class DashboardController extends Controller
                                     ->take(5)
                                     ->get();
 
-        return response()->json(['data' => $upcomingLeaves]);
+        return ResponseFormatter::success(['data' => $upcomingLeaves]);
     }
 }

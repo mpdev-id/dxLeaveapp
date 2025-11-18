@@ -17,7 +17,7 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $query = User::with('roles')->get();
-
+        
         // Search functionality
         // if ($request->filled('search')) {
         //     $search = $request->input('search');
@@ -41,7 +41,7 @@ class UserController extends Controller
 
         // $users = $query->paginate($request->input('per_page', 10));
         
-        return ResponseFormatter::success($query, 'Users retrieved successfully');
+        return ResponseFormatter::success(UserResource::collection($query), 'Users retrieved successfully');
     }
 
     public function store(Request $request)
