@@ -16,7 +16,7 @@
           </span>
     </div>
 </div> --}}
-<div x-data="statsComponent()" x-init="ambilData()" class="stats shadow">
+<div x-data="statsComponent('{{ config('app.base_api') }}')" x-init="ambilData()" class="stats shadow">
 
     <template x-if="!loading">
         <ul>
@@ -64,7 +64,7 @@
 </div>
 
 {{-- users --}}
-<div x-data="fetchPengguna()" x-init="ambilData()">
+<div x-data="fetchPengguna('{{ config('app.base_api') }}')" x-init="ambilData()">
   <template x-if="loading">
     <p>Loading data...</p>
   </template>
@@ -84,13 +84,13 @@
 @push('scripts')
   
 <script>
-    function statsComponent() {
+    function statsComponent(baseApiUrl) {
       return {
         users: [],
         loading: true,
         async ambilData() {
           try {
-            const res = await fetch('https://leaveapp.redirect.my.id/api/admin/dashboard/');
+            const res = await fetch(`${baseApiUrl}/admin/dashboard/`);
             const data = await res.json();
             this.users = data;
           } catch (e) {
@@ -103,7 +103,7 @@
     }
   </script>
 <script>
-  function fetchPengguna() {
+  function fetchPengguna(baseApiUrl) {
     return {
       users: [],
       loading: true,

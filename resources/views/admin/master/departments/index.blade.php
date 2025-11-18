@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="container mx-auto px-4 sm:px-8">
-    <div class="py-8" x-data="departmentsTable()" x-init="init()">
+    <div class="py-8" x-data="departmentsTable('{{ config('app.base_api') }}')" x-init="init()">
         <div class="flex justify-between items-center">
             <h2 class="text-2xl font-semibold leading-tight">Departments</h2>
             <button class="btn btn-primary" @click="openAddModal()">Add Department</button>
@@ -98,7 +98,7 @@
 
 @push('scripts')
 <script>
-    function departmentsTable() {
+    function departmentsTable(baseApiUrl) {
         return {
             departments: [],
             loading: true,
@@ -124,7 +124,7 @@
                         return;
                     }
 
-                    const response = await fetch('http://leaveapp.redirect.my.id/api/admin/master/departments', {
+                    const response = await fetch(`${baseApiUrl}/admin/master/departments`, {
                         headers: {
                             'Authorization': `Bearer ${token}`,
                             'Accept': 'application/json'
@@ -166,7 +166,7 @@
             async addDepartment() {
                 try {
                     const token = localStorage.getItem('authToken');
-                    const response = await fetch('http://leaveapp.redirect.my.id/api/admin/master/departments', {
+                    const response = await fetch(`${baseApiUrl}/admin/master/departments`, {
                         method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${token}`,
@@ -192,7 +192,7 @@
             async updateDepartment() {
                 try {
                     const token = localStorage.getItem('authToken');
-                    const response = await fetch(`http://leaveapp.redirect.my.id/api/admin/master/departments/${this.newDepartment.id}`, {
+                    const response = await fetch(`${baseApiUrl}/admin/master/departments/${this.newDepartment.id}`, {
                         method: 'PUT',
                         headers: {
                             'Authorization': `Bearer ${token}`,
@@ -218,7 +218,7 @@
             async deleteDepartment() {
                 try {
                     const token = localStorage.getItem('authToken');
-                    const response = await fetch(`http://leaveapp.redirect.my.id/api/admin/master/departments/${this.departmentToDelete}`, {
+                    const response = await fetch(`${baseApiUrl}/admin/master/departments/${this.departmentToDelete}`, {
                         method: 'DELETE',
                         headers: {
                             'Authorization': `Bearer ${token}`,

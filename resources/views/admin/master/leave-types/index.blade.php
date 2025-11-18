@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="container mx-auto px-4 sm:px-8">
-    <div class="py-8" x-data="leaveTypesTable()" x-init="init()">
+    <div class="py-8" x-data="leaveTypesTable('{{ config('app.base_api') }}')" x-init="init()">
         <div class="flex justify-between items-center">
             <h2 class="text-2xl font-semibold leading-tight">Leave Types</h2>
             <button class="btn btn-primary" @click="openAddModal()">Add Leave Type</button>
@@ -101,7 +101,7 @@
 
 @push('scripts')
 <script>
-    function leaveTypesTable() {
+    function leaveTypesTable(baseApiUrl) {
         return {
             leaveTypes: [],
             loading: true,
@@ -128,7 +128,7 @@
                         return;
                     }
 
-                    const response = await fetch('http://leaveapp.redirect.my.id/api/admin/master/leave-types', {
+                    const response = await fetch(`${baseApiUrl}/admin/master/leave-types`, {
                         headers: {
                             'Authorization': `Bearer ${token}`,
                             'Accept': 'application/json'
@@ -170,7 +170,7 @@
             async addLeaveType() {
                 try {
                     const token = localStorage.getItem('authToken');
-                    const response = await fetch('http://leaveapp.redirect.my.id/api/admin/master/leave-types', {
+                    const response = await fetch(`${baseApiUrl}/admin/master/leave-types`, {
                         method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${token}`,
@@ -196,7 +196,7 @@
             async updateLeaveType() {
                 try {
                     const token = localStorage.getItem('authToken');
-                    const response = await fetch(`http://leaveapp.redirect.my.id/api/admin/master/leave-types/${this.newLeaveType.id}`, {
+                    const response = await fetch(`${baseApiUrl}/admin/master/leave-types/${this.newLeaveType.id}`, {
                         method: 'PUT',
                         headers: {
                             'Authorization': `Bearer ${token}`,
@@ -222,7 +222,7 @@
             async deleteLeaveType() {
                 try {
                     const token = localStorage.getItem('authToken');
-                    const response = await fetch(`http://leaveapp.redirect.my.id/api/admin/master/leave-types/${this.leaveTypeToDelete}`, {
+                    const response = await fetch(`${baseApiUrl}/admin/master/leave-types/${this.leaveTypeToDelete}`, {
                         method: 'DELETE',
                         headers: {
                             'Authorization': `Bearer ${token}`,

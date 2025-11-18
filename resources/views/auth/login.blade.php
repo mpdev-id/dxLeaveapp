@@ -1,50 +1,67 @@
-@extends('template.admin')
-
-@section('title', 'Login')
+@extends('template.auth')
 
 @section('content')
-<div class="hero min-h-screen bg-base-200">
-    <div class="hero-content flex-col lg:flex-row-reverse">
-        <div class="text-center lg:text-left">
-            <h1 class="text-5xl font-bold">Login now!</h1>
-            <p class="py-6">Provident cupiditate voluptatem et in. Quaerat fugiat ut assumenda excepturi exercitationem quasi. In deleniti eaque aut repudiandae et a id nisi.</p>
-        </div>
-        <div class="card shrink-0 w-full max-w-sm shadow-2xl bg-base-100">
-            <div x-data="loginForm()" x-init="init()">
-                <div x-show="errorMessage" x-text="errorMessage" class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg" role="alert">
-                </div>
-                <form class="card-body" @submit.prevent="submitForm">
-                    <div class="form-control">
-                        <label class="label" for="identifier">
-                            <span class="label-text">Email or Username</span>
-                        </label>
-                        <input type="text" id="identifier" x-model="formData.identifier" placeholder="email or username" class="input input-bordered" required />
-                    </div>
-                    <div class="form-control">
-                        <label class="label" for="password">
-                            <span class="label-text">Password</span>
-                        </label>
-                        <input type="password" id="password" x-model="formData.password" placeholder="password" class="input input-bordered" required />
-                        <label class="label">
-                            <a href="#" class="label-text-alt link link-hover">Forgot password?</a>
-                        </label>
-                    </div>
-                    <div class="form-control mt-6">
-                        <button type="submit" :disabled="loading" class="btn btn-primary">
-                            <span x-show="loading" class="loading loading-spinner"></span>
-                            <span x-show="!loading">Login</span>
-                        </button>
-                    </div>
-                </form>
+    <div x-data="loginForm('{{ config('app.base_api') }}')" x-init="init()">
+        
+        <!-- Session Status -->
+        @if (session('status'))
+            <div role="alert" class="alert alert-success mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <span>{{ session('status') }}</span>
             </div>
+        @endif
+
+        <!-- Error Message -->
+        <div x-show="errorMessage" role="alert" class="alert alert-error mb-4" style="display: none;">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <span x-text="errorMessage"></span>
         </div>
+
+        <form @submit.prevent="submitForm">
+            @csrf
+            <div class="form-control">
+                <label class="label" for="identifier">
+                    <span class="label-text">Email or Username</span>
+                </label>
+                <input type="text" id="identifier" x-model="formData.identifier" placeholder="email or username" class="input input-bordered w-full" required />
+            </div>
+            
+            <div class="form-control">
+                <label class="label" for="password">
+                    <span class="label-text">Password</span>
+                </label>
+                <input type="password" id="password" x-model="formData.password" placeholder="password" class="input input-bordered w-full" required />
+            </div>
+
+            <div class="flex items-center justify-between mt-4">
+                <div class="form-control">
+                    <label class="label cursor-pointer">
+                        <input type="checkbox" name="remember" class="checkbox checkbox-primary" />
+                        <span class="label-text ml-2">Remember me</span>
+                    </label>
+                </div>
+                <label class="label">
+                    <a href="{{ route('password.request') }}" class="label-text-alt link link-hover">Forgot password?</a>
+                </label>
+            </div>
+
+            <div class="form-control mt-6">
+                <button type="submit" class="btn btn-primary" :disabled="loading">
+                    <span x-show="loading" class="loading loading-spinner"></span>
+                    <span x-text="loading ? 'Processing...' : 'Login'"></span>
+                </button>
+            </div>
+            
+            <div class="text-center mt-4">
+                <a href="{{ route('register') }}" class="link">Don't have an account? Register</a>
+            </div>
+        </form>
     </div>
-</div>
 @endsection
 
 @push('scripts')
 <script>
-    function loginForm() {
+    function loginForm(baseApiUrl) {
         return {
             formData: {
                 identifier: '',
@@ -61,8 +78,7 @@
                 this.loading = true;
                 this.errorMessage = '';
                 try {
-                    // IMPORTANT: The API URL is a placeholder. Please replace with your actual API endpoint.
-                    const response = await fetch('http://leaveapp.redirect.my.id/api/login', {
+                    const response = await fetch(`${baseApiUrl}/login`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -74,20 +90,20 @@
                     const data = await response.json();
 
                     if (!response.ok) {
-                        throw new Error(data.message || 'Login failed.');
+                        const message = data.message || data.error || 'An unknown error occurred during login.';
+                        throw new Error(message);
                     }
 
-                    // Assuming the API returns a token, store it in local storage
                     if (data.data && data.data.access_token) {
                         localStorage.setItem('authToken', data.data.access_token);
-                        // Redirect to admin users page on successful login
                         window.location.href = '/admin/users';
                     } else {
-                        throw new Error(data.meta.message || 'Token not found in response.');
+                        const message = data.meta?.message || data.message || 'Login successful, but no token was provided.';
+                        throw new Error(message);
                     }
 
                 } catch (error) {
-                    this.errorMessage = error.message;
+                    this.errorMessage = error.message || 'Failed to connect to the server.';
                 } finally {
                     this.loading = false;
                 }

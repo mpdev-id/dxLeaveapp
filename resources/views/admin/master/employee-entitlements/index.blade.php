@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="container mx-auto px-4 sm:px-8">
-    <div class="py-8" x-data="employeeEntitlementsTable()" x-init="init()">
+    <div class="py-8" x-data="employeeEntitlementsTable('{{ config('app.base_api') }}')" x-init="init()">
         <div class="flex justify-between items-center">
             <h2 class="text-2xl font-semibold leading-tight">Employee Entitlements</h2>
             <button class="btn btn-primary" @click="openAddModal()">Add Entitlement</button>
@@ -123,7 +123,7 @@
 
 @push('scripts')
 <script>
-    function employeeEntitlementsTable() {
+    function employeeEntitlementsTable(baseApiUrl) {
         return {
             entitlements: [],
             users: [],
@@ -156,7 +156,7 @@
                         return;
                     }
 
-                    const response = await fetch('http://leaveapp.redirect.my.id/api/admin/master/employee-entitlements', {
+                    const response = await fetch(`${baseApiUrl}/admin/master/employee-entitlements`, {
                         headers: {
                             'Authorization': `Bearer ${token}`,
                             'Accept': 'application/json'
@@ -181,7 +181,7 @@
             async fetchUsers() {
                 try {
                     const token = localStorage.getItem('authToken');
-                    const response = await fetch('http://leaveapp.redirect.my.id/api/admin/master/users', {
+                    const response = await fetch(`${baseApiUrl}/admin/master/users`, {
                         headers: {
                             'Authorization': `Bearer ${token}`,
                             'Accept': 'application/json'
@@ -197,7 +197,7 @@
             async fetchLeaveTypes() {
                 try {
                     const token = localStorage.getItem('authToken');
-                    const response = await fetch('http://leaveapp.redirect.my.id/api/admin/master/leave-types', {
+                    const response = await fetch(`${baseApiUrl}/admin/master/leave-types`, {
                         headers: {
                             'Authorization': `Bearer ${token}`,
                             'Accept': 'application/json'
@@ -236,7 +236,7 @@
             async addEntitlement() {
                 try {
                     const token = localStorage.getItem('authToken');
-                    const response = await fetch('http://leaveapp.redirect.my.id/api/admin/master/employee-entitlements', {
+                    const response = await fetch(`${baseApiUrl}/admin/master/employee-entitlements`, {
                         method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${token}`,
@@ -262,7 +262,7 @@
             async updateEntitlement() {
                 try {
                     const token = localStorage.getItem('authToken');
-                    const response = await fetch(`http://leaveapp.redirect.my.id/api/admin/master/employee-entitlements/${this.newEntitlement.id}`, {
+                    const response = await fetch(`${baseApiUrl}/admin/master/employee-entitlements/${this.newEntitlement.id}`, {
                         method: 'PUT',
                         headers: {
                             'Authorization': `Bearer ${token}`,
@@ -288,7 +288,7 @@
             async deleteEntitlement() {
                 try {
                     const token = localStorage.getItem('authToken');
-                    const response = await fetch(`http://leaveapp.redirect.my.id/api/admin/master/employee-entitlements/${this.entitlementToDelete}`, {
+                    const response = await fetch(`${baseApiUrl}/admin/master/employee-entitlements/${this.entitlementToDelete}`, {
                         method: 'DELETE',
                         headers: {
                             'Authorization': `Bearer ${token}`,

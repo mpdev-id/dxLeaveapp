@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="container mx-auto px-4 sm:px-8">
-    <div class="py-8" x-data="publicHolidaysTable()" x-init="init()">
+    <div class="py-8" x-data="publicHolidaysTable('{{ config('app.base_api') }}')" x-init="init()">
         <div class="flex justify-between items-center">
             <h2 class="text-2xl font-semibold leading-tight">Public Holidays</h2>
             <button class="btn btn-primary" @click="openAddModal()">Add Public Holiday</button>
@@ -101,7 +101,7 @@
 
 @push('scripts')
 <script>
-    function publicHolidaysTable() {
+    function publicHolidaysTable(baseApiUrl) {
         return {
             publicHolidays: [],
             loading: true,
@@ -128,7 +128,7 @@
                         return;
                     }
 
-                    const response = await fetch('http://leaveapp.redirect.my.id/api/admin/master/public-holidays', {
+                    const response = await fetch(`${baseApiUrl}/admin/master/public-holidays`, {
                         headers: {
                             'Authorization': `Bearer ${token}`,
                             'Accept': 'application/json'
@@ -170,7 +170,7 @@
             async addPublicHoliday() {
                 try {
                     const token = localStorage.getItem('authToken');
-                    const response = await fetch('http://leaveapp.redirect.my.id/api/admin/master/public-holidays', {
+                    const response = await fetch(`${baseApiUrl}/admin/master/public-holidays`, {
                         method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${token}`,
@@ -196,7 +196,7 @@
             async updatePublicHoliday() {
                 try {
                     const token = localStorage.getItem('authToken');
-                    const response = await fetch(`http://leaveapp.redirect.my.id/api/admin/master/public-holidays/${this.newPublicHoliday.id}`, {
+                    const response = await fetch(`${baseApiUrl}/admin/master/public-holidays/${this.newPublicHoliday.id}`, {
                         method: 'PUT',
                         headers: {
                             'Authorization': `Bearer ${token}`,
@@ -222,7 +222,7 @@
             async deletePublicHoliday() {
                 try {
                     const token = localStorage.getItem('authToken');
-                    const response = await fetch(`http://leaveapp.redirect.my.id/api/admin/master/public-holidays/${this.publicHolidayToDelete}`, {
+                    const response = await fetch(`${baseApiUrl}/admin/master/public-holidays/${this.publicHolidayToDelete}`, {
                         method: 'DELETE',
                         headers: {
                             'Authorization': `Bearer ${token}`,
