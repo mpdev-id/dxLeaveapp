@@ -37,7 +37,7 @@ class UserController extends Controller
                 })
                 ->paginate($request->input('per_page', 10));
 
-            return ResponseFormatter::success(UserResource::collection($users->get()), 'Users retrieved successfully');
+            return ResponseFormatter::success($users, 'Users retrieved successfully');
         } catch (\Exception $e) {
             return ResponseFormatter::error(null, 'Failed to retrieve users: ' . $e->getMessage(), 500);
         }
