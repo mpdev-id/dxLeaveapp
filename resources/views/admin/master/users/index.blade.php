@@ -75,10 +75,8 @@
                         </div>
                     </div>
                     <div class="modal-action mt-4">
+                        <button type="button" class="btn" @click="user_modal.close()">Cancel</button>
                         <button type="submit" class="btn btn-primary" x-text="isEdit ? 'Update' : 'Create'"></button>
-                        <form method="dialog">
-                            <button class="btn">Cancel</button>
-                        </form>
                     </div>
                 </form>
             </div>

@@ -16,11 +16,11 @@
               <span class="is-drawer-close:hidden">Master Data</span>
             </summary>
             <ul>
-              <li><a href="{{ route('admin.users.index') }}">Users</a></li>
+              <li><a href="{{ route('admin.users.index') }}">Employees</a></li>
+              <li><a href="{{ route('admin.employee-entitlements.index') }}">Employee Entitlements</a></li>
               <li><a href="{{ route('admin.departments.index') }}">Departments</a></li>
               <li><a href="{{ route('admin.leave-types.index') }}">Leave Types</a></li>
-              <li><a href="{{ route('admin.public-holidays.index') }}">Public Holidays</a></li>
-              <li><a href="{{ route('admin.employee-entitlements.index') }}">Employee Entitlements</a></li>
+              {{-- <li><a href="{{ route('admin.public-holidays.index') }}">Public Holidays</a></li> --}}
             </ul>
           </details>
         </li>

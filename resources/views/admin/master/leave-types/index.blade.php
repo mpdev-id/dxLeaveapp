@@ -27,10 +27,8 @@
                         <input type="number" x-model="newLeaveType.days" class="input input-bordered" required>
                     </div>
                     <div class="modal-action">
+                        <button type="button" class="btn" @click="leavetype_modal.close()">Cancel</button>
                         <button type="submit" class="btn btn-primary" x-text="isEdit ? 'Update' : 'Create'"></button>
-                        <form method="dialog">
-                            <button class="btn">Cancel</button>
-                        </form>
                     </div>
                 </form>
             </div>

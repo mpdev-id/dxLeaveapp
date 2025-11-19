@@ -42,9 +42,7 @@
                         <input type="number" x-model="newEntitlement.year" class="input input-bordered" required>
                     </div>
                     <div class="modal-action">
-                        <form method="dialog">
-                            <button class="btn">Cancel</button>
-                        </form>
+                        <button type="button" class="btn" @click="entitlement_modal.close()">Cancel</button>
                         <button type="submit" class="btn btn-primary" x-text="isEdit ? 'Update' : 'Create'"></button>
                     </div>
                 </form>

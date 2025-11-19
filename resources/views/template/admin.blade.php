@@ -56,11 +56,11 @@
                             </summary>
 
                             <ul>
-                                <li><a href="{{ route('admin.users.index') }}">Users</a></li>
+                                <li><a href="{{ route('admin.users.index') }}">Employees</a></li>
+                                <li><a href="{{ route('admin.employee-entitlements.index') }}">Employee Entitlements</a></li>
                                 <li><a href="{{ route('admin.departments.index') }}">Departments</a></li>
                                 <li><a href="{{ route('admin.leave-types.index') }}">Leave Types</a></li>
-                                <li><a href="{{ route('admin.public-holidays.index') }}">Public Holidays</a></li>
-                                <li><a href="{{ route('admin.employee-entitlements.index') }}">Employee Entitlements</a></li>
+                                {{-- <li><a href="{{ route('admin.public-holidays.index') }}">Public Holidays</a></li> --}}
                             </ul>
                         </details>
                     </li>
@@ -152,19 +152,13 @@
                     'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                 }
             })
-            .then(response => {
-                if (!response.ok) {
-                    console.error('Logout failed with status:', response.status);
-                }
-                return response.json();
-            })
-            .then(data => {
+            .then(response => response.json())
+            .then(() => {
                 localStorage.removeItem('authToken');
                 window.location.href = '/login';
             })
             .catch(error => {
                 console.error('Error logging out:', error);
-                // Also clear token and redirect on network error
                 localStorage.removeItem('authToken');
                 window.location.href = '/login';
             });
