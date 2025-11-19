@@ -36,9 +36,9 @@ class DepartmentController extends Controller
             }
 
               if ($request->input('all') === 'true') {
-                $users = $query->get();
+                $departments =  $query->get();
             } else {
-                $users = $query->paginate($request->input('per_page', 10));
+                $departments = $query->paginate($request->input('per_page', 10));
             }
             
             return ResponseFormatter::success($departments, 'Departments retrieved successfully');
