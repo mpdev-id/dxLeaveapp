@@ -17,30 +17,25 @@ class UserController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = User::with('roles')->get();
+            $users = User::with('roles')
+                ->when($request->filled('search'), function ($query) use ($request) {
+                    $search = $request->input('search');
+                    return $query->where(function ($q) use ($search) {
+                        $q->where('name', 'like', '%' . $search . '%')
+                          ->orWhere('email', 'like', '%' . $search . '%');
+                    });
+                })
+                ->when($request->filled('sort_by'), function ($query) use ($request) {
+                    $sortBy = $request->input('sort_by');
+                    $sortDir = $request->input('sort_dir', 'asc');
 
-            // Search functionality
-            if ($request->filled('search')) {
-                $search = $request->input('search');
-                $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', '%' . $search . '%')
-                      ->orWhere('email', 'like', '%' . $search . '%');
-                });
-            }
-
-            // Sorting functionality
-            if ($request->filled('sort_by')) {
-                $sortBy = $request->input('sort_by');
-                $sortDir = $request->input('sort_dir', 'asc');
-
-                // Whitelist columns to prevent arbitrary sorting
-                $allowedSorts = ['name', 'email', 'created_at'];
-                if (in_array($sortBy, $allowedSorts)) {
-                    $query->orderBy($sortBy, $sortDir);
-                }
-            }
-
-            $users = $query->paginate($request->input('per_page', 10));
+                    // Whitelist columns to prevent arbitrary sorting
+                    $allowedSorts = ['name', 'email', 'created_at'];
+                    if (in_array($sortBy, $allowedSorts)) {
+                        return $query->orderBy($sortBy, $sortDir);
+                    }
+                })
+                ->paginate($request->input('per_page', 10));
 
             return ResponseFormatter::success(UserResource::collection($users), 'Users retrieved successfully');
         } catch (\Exception $e) {
