@@ -33,7 +33,7 @@
             {{-- Drawer Sidebar --}}
             <div class="drawer-side rounded-r-4xl">
                 <label for="my-drawer" @click="drawerOpen = false" aria-label="close sidebar" class="drawer-overlay"></label>
-                <ul class="menu p-4 w-80 min-h-full bg-base-200 text-base-content">
+                <ul class="menu p-4 w-60 min-h-full bg-base-200 text-base-content">
                     <li class="text-2xl font-bold p-4">{{ config('app.name', 'Laravel') }}</li>
                     <li>
                         <a href="{{ url('/') }}">
@@ -75,15 +75,13 @@
                                         <path style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(253 253 253); fill-rule: nonzero; opacity: 1;" transform=" translate(-24, -24)" d="M 15 15 L 7 15 L 7 7 L 15 7 L 15 15 z M 28 15 L 20 15 L 20 7 L 28 7 L 28 15 z M 41 15 L 33 15 L 33 7 L 41 7 L 41 15 z M 15 28 L 7 28 L 7 20 L 15 20 L 15 28 z M 28 28 L 20 28 L 20 20 L 28 20 L 28 28 z M 41 28 L 33 28 L 33 20 L 41 20 L 41 28 z M 15 41 L 7 41 L 7 33 L 15 33 L 15 41 z M 28 41 L 20 41 L 20 33 L 28 33 L 28 41 z M 41 41 L 33 41 L 33 33 L 41 33 L 41 41 z" stroke-linecap="round" />
                                     </g>
                                 </svg>
-                                Master Data
+                                Leave Pra-Request
                             </summary>
 
                             <ul>
-                                <li><a href="{{ route('admin.users.index') }}">Users</a></li>
-                                <li><a href="{{ route('admin.departments.index') }}">Departments</a></li>
-                                <li><a href="{{ route('admin.leave-types.index') }}">Leave Types</a></li>
-                                <li><a href="{{ route('admin.public-holidays.index') }}">Public Holidays</a></li>
-                                <li><a href="{{ route('admin.employee-entitlements.index') }}">Employee Entitlements</a></li>
+                                <li><a href="{{ route('admin.users.index') }}">Leave Request</a></li>
+                                <li><a href="{{ route('admin.departments.index') }}">Leave Log</a></li>
+                                <li><a href="{{ route('admin.leave-types.index') }}">Leave Print</a></li>
                             </ul>
                         </details>
                     </li>
@@ -104,6 +102,45 @@
     </div>
 
     @stack('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    @if (session('success'))
+        <script>
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: '{{ session('success') }}',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+        </script>
+    @endif
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.body.addEventListener('click', function (e) {
+                if (e.target.matches('.delete-button')) {
+                    e.preventDefault();
+                    const form = e.target.closest('form');
+                    if (form) {
+                        Swal.fire({
+                            title: 'Are you sure?',
+                            text: "You won't be able to revert this!",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#3085d6',
+                            cancelButtonColor: '#d33',
+                            confirmButtonText: 'Yes, delete it!'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                form.submit();
+                            }
+                        });
+                    }
+                }
+            });
+        });
+    </script>
     @push('scripts')
     <script>
         function logoutApi(event, baseApiUrl) {

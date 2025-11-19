@@ -36,222 +36,490 @@
             </div>
         </dialog>
 
-        <!-- Delete Confirmation Modal -->
-        <dialog id="delete_modal" class="modal">
-            <div class="modal-box">
-                <form method="dialog">
-                    <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
-                </form>
-                <h3 class="font-bold text-lg">Confirm Deletion</h3>
-                <p>Are you sure you want to delete this leave type?</p>
-                <div class="modal-action">
-                    <button class="btn btn-error" @click="deleteLeaveType()">Delete</button>
-                    <form method="dialog">
-                        <button class="btn">Cancel</button>
-                    </form>
+                <!-- Delete Confirmation Modal -->
+
+                {{-- <dialog id="delete_modal" class="modal">
+
+                    <div class="modal-box">
+
+                        <form method="dialog">
+
+                            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+
+                        </form>
+
+                        <h3 class="font-bold text-lg">Confirm Deletion</h3>
+
+                        <p>Are you sure you want to delete this leave type?</p>
+
+                        <div class="modal-action">
+
+                            <button class="btn btn-error" @click="deleteLeaveType()">Delete</button>
+
+                            <form method="dialog">
+
+                                <button class="btn">Cancel</button>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                </dialog> --}}
+
+        
+
+                <div class="my-4 flex justify-between items-center">
+
+                    <div class="flex items-center">
+
+                        <select x-model="perPage" class="select select-bordered w-full max-w-xs">
+
+                            <option>5</option>
+
+                            <option>10</option>
+
+                            <option>20</option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="relative">
+
+                        <input type="text" placeholder="Search" x-model="search" class="input input-bordered w-full max-w-xs" />
+
+                    </div>
+
                 </div>
-            </div>
-        </dialog>
 
-        <div class="my-4 flex justify-between items-center">
-            <div class="flex items-center">
-                <select x-model="perPage" class="select select-bordered w-full max-w-xs">
-                    <option>5</option>
-                    <option>10</option>
-                    <option>20</option>
-                </select>
+                <div class="overflow-x-auto">
+
+                    <table class="table table-zebra w-full">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>Name</th>
+
+                                <th>Days</th>
+
+                                <th>Actions</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            <template x-if="loading">
+
+                                <tr>
+
+                                    <td colspan="3" class="text-center py-10">
+
+                                        <span class="loading loading-spinner loading-lg"></span>
+
+                                    </td>
+
+                                </tr>
+
+                            </template>
+
+                            <template x-for="leaveType in filteredLeaveTypes" :key="leaveType.id">
+
+                                <tr>
+
+                                    <td x-text="leaveType.name"></td>
+
+                                    <td x-text="parseFloat(leaveType.default_entitlement_days).toFixed(2)"> </td>
+
+                                    <td>
+
+                                        <button class="btn btn-sm btn-info" @click="openEditModal(leaveType)">Edit</button>
+
+                                        <button class="btn btn-sm btn-error" @click="confirmDelete(leaveType.id)">Delete</button>
+
+                                    </td>
+
+                                </tr>
+
+                            </template>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
             </div>
-            <div class="relative">
-                <input type="text" placeholder="Search" x-model="search" class="input input-bordered w-full max-w-xs" />
-            </div>
+
         </div>
-        <div class="overflow-x-auto">
-            <table class="table table-zebra w-full">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Days</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <template x-if="loading">
-                        <tr>
-                            <td colspan="3" class="text-center py-10">
-                                <span class="loading loading-spinner loading-lg"></span>
-                            </td>
-                        </tr>
-                    </template>
-                    <template x-for="leaveType in filteredLeaveTypes" :key="leaveType.id">
-                        <tr>
-                            <td x-text="leaveType.name"></td>
-                            <td x-text="parseFloat(leaveType.default_entitlement_days).toFixed(2)"> </td>
-                            <td>
-                                <button class="btn btn-sm btn-info" @click="openEditModal(leaveType)">Edit</button>
-                                <button class="btn btn-sm btn-error" @click="openDeleteModal(leaveType.id)">Delete</button>
-                            </td>
-                        </tr>
-                    </template>
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-@endsection
 
-@push('scripts')
-<script>
-    function leaveTypesTable(baseApiUrl) {
-        return {
-            leaveTypes: [],
-            loading: true,
-            search: '',
-            perPage: 10,
-            isEdit: false,
-            newLeaveType: {
-                id: null,
-                name: '',
-                days: ''
-            },
-            leaveTypeToDelete: null,
-            
-            init() {
-                this.fetchLeaveTypes();
-            },
+        @endsection
 
-            async fetchLeaveTypes() {
-                this.loading = true;
-                try {
-                    const token = localStorage.getItem('authToken');
-                    if (!token) {
-                        window.location.href = '/login';
-                        return;
-                    }
+        
 
-                    const response = await fetch(`${baseApiUrl}/admin/master/leave-types`, {
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Accept': 'application/json'
+        @push('scripts')
+
+        <script>
+
+            function leaveTypesTable(baseApiUrl) {
+
+                return {
+
+                    leaveTypes: [],
+
+                    loading: true,
+
+                    search: '',
+
+                    perPage: 10,
+
+                    isEdit: false,
+
+                    newLeaveType: {
+
+                        id: null,
+
+                        name: '',
+
+                        days: ''
+
+                    },
+
+                    
+
+                    init() {
+
+                        this.fetchLeaveTypes();
+
+                    },
+
+        
+
+                    async fetchLeaveTypes() {
+
+                        this.loading = true;
+
+                        try {
+
+                            const token = localStorage.getItem('authToken');
+
+                            if (!token) {
+
+                                window.location.href = '/login';
+
+                                return;
+
+                            }
+
+        
+
+                            const response = await fetch(`${baseApiUrl}/admin/master/leave-types`, {
+
+                                headers: {
+
+                                    'Authorization': `Bearer ${token}`,
+
+                                    'Accept': 'application/json'
+
+                                }
+
+                            });
+
+        
+
+                            if(response.status === 401) {
+
+                                localStorage.removeItem('authToken');
+
+                                window.location.href = '/login';
+
+                                return;
+
+                            }
+
+        
+
+                            const data = await response.json();
+
+                            this.leaveTypes = data.data.data;
+
+                        } catch (error) {
+
+                            console.error('Error fetching leave types:', error);
+
+                        } finally {
+
+                            this.loading = false;
+
                         }
-                    });
 
-                    if(response.status === 401) {
-                        localStorage.removeItem('authToken');
-                        window.location.href = '/login';
-                        return;
-                    }
+                    },
 
-                    const data = await response.json();
-                    this.leaveTypes = data.data.data;
-                } catch (error) {
-                    console.error('Error fetching leave types:', error);
-                } finally {
-                    this.loading = false;
-                }
-            },
+        
 
-            openAddModal() {
-                this.isEdit = false;
-                this.newLeaveType = { id: null, name: '', days: '' };
-                leavetype_modal.showModal();
-            },
+                    showToast(message) {
 
-            openEditModal(leaveType) {
-                this.isEdit = true;
-                this.newLeaveType = { ...leaveType, days: parseFloat(leaveType.default_entitlement_days) };
-                leavetype_modal.showModal();
-            },
+                        Swal.fire({
 
-            openDeleteModal(leaveTypeId) {
-                this.leaveTypeToDelete = leaveTypeId;
-                delete_modal.showModal();
-            },
+                            toast: true,
 
-            async addLeaveType() {
-                try {
-                    const token = localStorage.getItem('authToken');
-                    const response = await fetch(`${baseApiUrl}/admin/master/leave-types`, {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify(this.newLeaveType)
-                    });
+                            position: 'top-end',
 
-                    const data = await response.json();
-                    if (!response.ok || data.meta.status !== 'success') {
-                        throw new Error(data.meta.message || 'Failed to add leave type.');
-                    }
+                            icon: 'success',
 
-                    this.fetchLeaveTypes();
-                    leavetype_modal.close();
-                } catch (error) {
-                    console.error('Error adding leave type:', error);
-                    alert(error.message);
-                }
-            },
+                            title: message,
 
-            async updateLeaveType() {
-                try {
-                    const token = localStorage.getItem('authToken');
-                    const response = await fetch(`${baseApiUrl}/admin/master/leave-types/${this.newLeaveType.id}`, {
-                        method: 'PUT',
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify(this.newLeaveType)
-                    });
+                            showConfirmButton: false,
 
-                    const data = await response.json();
-                    if (!response.ok || data.meta.status !== 'success') {
-                        throw new Error(data.meta.message || 'Failed to update leave type.');
-                    }
+                            timer: 3000,
 
-                    this.fetchLeaveTypes();
-                    leavetype_modal.close();
-                } catch (error) {
-                    console.error('Error updating leave type:', error);
-                    alert(error.message);
-                }
-            },
+                            timerProgressBar: true
 
-            async deleteLeaveType() {
-                try {
-                    const token = localStorage.getItem('authToken');
-                    const response = await fetch(`${baseApiUrl}/admin/master/leave-types/${this.leaveTypeToDelete}`, {
-                        method: 'DELETE',
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Accept': 'application/json'
+                        });
+
+                    },
+
+        
+
+                    openAddModal() {
+
+                        this.isEdit = false;
+
+                        this.newLeaveType = { id: null, name: '', days: '' };
+
+                        leavetype_modal.showModal();
+
+                    },
+
+        
+
+                    openEditModal(leaveType) {
+
+                        this.isEdit = true;
+
+                        this.newLeaveType = { ...leaveType, days: parseFloat(leaveType.default_entitlement_days) };
+
+                        leavetype_modal.showModal();
+
+                    },
+
+        
+
+                    async addLeaveType() {
+
+                        try {
+
+                            const token = localStorage.getItem('authToken');
+
+                            const response = await fetch(`${baseApiUrl}/admin/master/leave-types`, {
+
+                                method: 'POST',
+
+                                headers: {
+
+                                    'Authorization': `Bearer ${token}`,
+
+                                    'Content-Type': 'application/json',
+
+                                    'Accept': 'application/json'
+
+                                },
+
+                                body: JSON.stringify(this.newLeaveType)
+
+                            });
+
+        
+
+                            const data = await response.json();
+
+                            if (!response.ok || data.meta.status !== 'success') {
+
+                                throw new Error(data.meta.message || 'Failed to add leave type.');
+
+                            }
+
+        
+
+                            this.fetchLeaveTypes();
+
+                            this.showToast(data.meta.message);
+
+                            leavetype_modal.close();
+
+                        } catch (error) {
+
+                            console.error('Error adding leave type:', error);
+
+                            alert(error.message);
+
                         }
-                    });
 
-                    const data = await response.json();
-                    if (!response.ok || data.meta.status !== 'success') {
-                        throw new Error(data.meta.message || 'Failed to delete leave type.');
+                    },
+
+        
+
+                    async updateLeaveType() {
+
+                        try {
+
+                            const token = localStorage.getItem('authToken');
+
+                            const response = await fetch(`${baseApiUrl}/admin/master/leave-types/${this.newLeaveType.id}`, {
+
+                                method: 'PUT',
+
+                                headers: {
+
+                                    'Authorization': `Bearer ${token}`,
+
+                                    'Content-Type': 'application/json',
+
+                                    'Accept': 'application/json'
+
+                                },
+
+                                body: JSON.stringify(this.newLeaveType)
+
+                            });
+
+        
+
+                            const data = await response.json();
+
+                            if (!response.ok || data.meta.status !== 'success') {
+
+                                throw new Error(data.meta.message || 'Failed to update leave type.');
+
+                            }
+
+        
+
+                            this.fetchLeaveTypes();
+
+                            this.showToast(data.meta.message);
+
+                            leavetype_modal.close();
+
+                        } catch (error) {
+
+                            console.error('Error updating leave type:', error);
+
+                            alert(error.message);
+
+                        }
+
+                    },
+
+        
+
+                    confirmDelete(leaveTypeId) {
+
+                        Swal.fire({
+
+                            title: 'Are you sure?',
+
+                            text: "You won't be able to revert this!",
+
+                            icon: 'warning',
+
+                            showCancelButton: true,
+
+                            confirmButtonColor: '#3085d6',
+
+                            cancelButtonColor: '#d33',
+
+                            confirmButtonText: 'Yes, delete it!'
+
+                        }).then((result) => {
+
+                            if (result.isConfirmed) {
+
+                                this.deleteLeaveType(leaveTypeId);
+
+                            }
+
+                        });
+
+                    },
+
+        
+
+                    async deleteLeaveType(leaveTypeId) {
+
+                        try {
+
+                            const token = localStorage.getItem('authToken');
+
+                            const response = await fetch(`${baseApiUrl}/admin/master/leave-types/${leaveTypeId}`, {
+
+                                method: 'DELETE',
+
+                                headers: {
+
+                                    'Authorization': `Bearer ${token}`,
+
+                                    'Accept': 'application/json'
+
+                                }
+
+                            });
+
+        
+
+                            const data = await response.json();
+
+                            if (!response.ok || data.meta.status !== 'success') {
+
+                                throw new Error(data.meta.message || 'Failed to delete leave type.');
+
+                            }
+
+        
+
+                            this.fetchLeaveTypes();
+
+                            this.showToast(data.meta.message);
+
+                        } catch (error) {
+
+                            console.error('Error deleting leave type:', error);
+
+                            alert(error.message);
+
+                        }
+
+                    },
+
+        
+
+                    get filteredLeaveTypes() {
+
+                        if (this.search === '') {
+
+                            return this.leaveTypes.slice(0, this.perPage);
+
+                        }
+
+                        return this.leaveTypes.filter(leaveType => {
+
+                            return leaveType.name.toLowerCase().includes(this.search.toLowerCase());
+
+                        }).slice(0, this.perPage);
+
                     }
 
-                    this.fetchLeaveTypes();
-                    delete_modal.close();
-                } catch (error) {
-                    console.error('Error deleting leave type:', error);
-                    alert(error.message);
                 }
-            },
 
-            get filteredLeaveTypes() {
-                if (this.search === '') {
-                    return this.leaveTypes.slice(0, this.perPage);
-                }
-                return this.leaveTypes.filter(leaveType => {
-                    return leaveType.name.toLowerCase().includes(this.search.toLowerCase());
-                }).slice(0, this.perPage);
             }
-        }
-    }
-</script>
-@endpush
+
+        </script>
+
+        @endpush
+
+        

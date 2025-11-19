@@ -183,6 +183,13 @@
             <p data-i18n="introText">Welcome to the DXLeave API documentation. This API provides endpoints for managing leave requests, users, and other core data for the DXLeave application. All responses follow a consistent structure defined by our <code>ResponseFormatter</code>.</p>
             <h4 data-i18n="baseUrlTitle">Base URL</h4>
             <p data-i18n="baseUrlText">You can set your API's base URL in the input box in the left sidebar. It will be used to generate the code examples.</p>
+            
+            <h4 data-i18n="sendingDataTitle">How to Send Data</h4>
+            <p data-i18n="sendingDataText">In each endpoint's parameter table, the 'Location' column tells you where to put your data. Here’s what each value means:</p>
+            <ul>
+                <li><strong style="color: var(--heading-color);">path</strong><span data-i18n="pathHelpText">: The data is part of the URL path itself (e.g., the user ID in <code>/api/admin/master/users/123</code>). The code examples automatically place this in the URL.</span></li>
+                <li><strong style="color: var(--heading-color);">body</strong><span data-i18n="bodyHelpText">: The data should be sent in the request body. For POST, PUT, and PATCH requests, this is typically a JSON object. If a file is involved, the request is sent as <code>multipart/form-data</code>. The code examples show the correct format.</span></li>
+            </ul>
         </section>
         
         <section id="auth" class="section">
@@ -328,6 +335,10 @@
                 introText: "Welcome to the DXLeave API documentation. This API provides endpoints for managing leave requests, users, and other core data for the DXLeave application. All responses follow a consistent structure defined by our <code>ResponseFormatter</code>.",
                 baseUrlTitle: "Base URL",
                 baseUrlText: "You can set your API's base URL in the input box in the left sidebar. It will be used to generate the code examples.",
+                sendingDataTitle: "How to Send Data",
+                sendingDataText: "In each endpoint's parameter table, the 'Location' column tells you where to put your data. Here’s what each value means:",
+                pathHelpText: ": The data is part of the URL path itself (e.g., the user ID in <code>/api/admin/master/users/123</code>). The code examples automatically place this in the URL.",
+                bodyHelpText: ": The data should be sent in the request body. For POST, PUT, and PATCH requests, this is typically a JSON object. If a file is involved, the request is sent as <code>multipart/form-data</code>. The code examples show the correct format.",
                 authTitle: "Authentication",
                 authText: "Public endpoints for user registration, login, and password management.",
                 userTitle: "User Profile",
@@ -383,6 +394,10 @@
                 introText: "Selamat datang di dokumentasi API DXLeave. API ini menyediakan endpoint untuk mengelola permintaan cuti, pengguna, dan data inti lainnya untuk aplikasi DXLeave. Semua respons mengikuti struktur konsisten yang ditentukan oleh <code>ResponseFormatter</code> kami.",
                 baseUrlTitle: "Base URL",
                 baseUrlText: "Anda dapat mengatur URL dasar API Anda di kotak input di bilah sisi kiri. Ini akan digunakan untuk menghasilkan contoh kode.",
+                sendingDataTitle: "Cara Mengirim Data",
+                sendingDataText: "Di setiap tabel parameter endpoint, kolom 'Lokasi' memberitahu Anda di mana harus meletakkan data. Berikut arti setiap nilainya:",
+                pathHelpText: ": Data adalah bagian dari URL path itu sendiri (mis., ID pengguna di <code>/api/admin/master/users/123</code>). Contoh kode secara otomatis menempatkannya di URL.",
+                bodyHelpText: ": Data harus dikirim dalam body permintaan. Untuk permintaan POST, PUT, dan PATCH, ini biasanya berupa objek JSON. Jika ada file yang terlibat, permintaan dikirim sebagai <code>multipart/form-data</code>. Contoh kode menunjukkan format yang benar.",
                 authTitle: "Autentikasi",
                 authText: "Endpoint publik untuk registrasi pengguna, login, dan manajemen kata sandi.",
                 userTitle: "Profil Pengguna",
