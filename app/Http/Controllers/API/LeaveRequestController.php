@@ -44,41 +44,45 @@ class LeaveRequestController extends Controller
      */
     public function index(Request $request)
     {
-        $user = Auth::user();
-        // Eager load relationships for efficiency and for the resource
-        $query = LeaveRequest::with(['user.department', 'leaveType', 'currentStep.approverRole', 'workflow.steps.approverRole', 'approvals.approver']);
+        try {
+            $user = Auth::user();
+            // Eager load relationships for efficiency and for the resource
+            $query = LeaveRequest::with(['user.department', 'leaveType', 'currentStep.approverRole', 'workflow.steps.approverRole', 'approvals.approver']);
 
-        // Base query for user's own requests
-        $ownRequestsQuery = (clone $query)->where('user_id', $user->id);
+            // Base query for user's own requests
+            $ownRequestsQuery = (clone $query)->where('user_id', $user->id);
 
-        // If user has permission to approve, they will also see requests they need to approve.
-        if ($user->hasPermissionTo('approve leave request')) {
-            // Get user roles
-            $userRoles = $user->getRoleNames();
+            // If user has permission to approve, they will also see requests they need to approve.
+            if ($user->hasPermissionTo('approve leave request')) {
+                // Get user roles
+                $userRoles = $user->getRoleNames();
 
-            // Get workflow steps the user can approve based on their roles
-            $approvableStepIds = DB::table('workflow_steps as ws')
-                ->join('roles', 'ws.approver_role_id', '=', 'roles.id')
-                ->whereIn('roles.name', $userRoles)
-                ->pluck('ws.id');
+                // Get workflow steps the user can approve based on their roles
+                $approvableStepIds = DB::table('workflow_steps as ws')
+                    ->join('roles', 'ws.approver_role_id', '=', 'roles.id')
+                    ->whereIn('roles.name', $userRoles)
+                    ->pluck('ws.id');
 
-            // Get requests waiting at those steps, excluding the user's own requests
-            $requestsToApproveQuery = (clone $query)
-                ->whereIn('current_workflow_step_id', $approvableStepIds)
-                ->where('user_id', '!=', $user->id);
-            
-            // Get both sets of requests
-            $ownRequests = $ownRequestsQuery->get();
-            $requestsToApprove = $requestsToApproveQuery->get();
+                // Get requests waiting at those steps, excluding the user's own requests
+                $requestsToApproveQuery = (clone $query)
+                    ->whereIn('current_workflow_step_id', $approvableStepIds)
+                    ->where('user_id', '!=', $user->id);
 
-            // Merge, ensure uniqueness, and re-index.
-            $requests = $ownRequests->merge($requestsToApprove)->unique('id')->values();
-        } else {
-            // Regular users only see their own requests
-            $requests = $ownRequestsQuery->get();
+                // Get both sets of requests
+                $ownRequests = $ownRequestsQuery->get();
+                $requestsToApprove = $requestsToApproveQuery->get();
+
+                // Merge, ensure uniqueness, and re-index.
+                $requests = $ownRequests->merge($requestsToApprove)->unique('id')->values();
+            } else {
+                // Regular users only see their own requests
+                $requests = $ownRequestsQuery->get();
+            }
+
+            return ResponseFormatter::success(LeaveRequestResource::collection($requests), 'Leave requests retrieved successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to retrieve leave requests: ' . $e->getMessage(), 500);
         }
-
-        return ResponseFormatter::success(LeaveRequestResource::collection($requests), 'Leave requests retrieved successfully');
     }
 
     /**
@@ -86,59 +90,59 @@ class LeaveRequestController extends Controller
      */
     public function store(Request $request)
     {
-        // 1. Validasi Input
-        $validatedData = $request->validate([
-            'leave_type_id' => 'required|exists:leave_types,id',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
-            'reason' => 'required|string|max:500',
-            'leave_period' => [
-                'required',
-                Rule::in(['full_day', 'half_day_morning', 'half_day_afternoon']),
-            ],
-            'supporting_document' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
-        ]);
-
-        // Handle file upload
-        $attachmentPath = null;
-        if ($request->hasFile('supporting_document')) {
-            // Store in 'storage/app/public/attachments' and get the relative path
-            $attachmentPath = $request->file('supporting_document')->store('attachments', 'public');
-        }
-
-        // Validasi kustom: Cuti setengah hari hanya boleh untuk satu hari.
-        if (in_array($validatedData['leave_period'], ['half_day_morning', 'half_day_afternoon'])) {
-            if ($validatedData['start_date'] !== $validatedData['end_date']) {
-                throw ValidationException::withMessages([
-                    'leave_period' => 'Half-day leave can only be requested for a single day.',
-                ]);
-            }
-        }
-
-        // 2. Hitung Durasi Cuti
-        $startDate = Carbon::parse($validatedData['start_date']);
-        $endDate = Carbon::parse($validatedData['end_date']);
-        $duration = 0;
-        if (in_array($validatedData['leave_period'], ['half_day_morning', 'half_day_afternoon'])) {
-            $duration = 0.5;
-        } else {
-            $duration = $startDate->diffInDays($endDate) + 1;
-        }
-
-        // 3. Cek Jatah Cuti
-        if (!$this->entitlementService->hasSufficientBalance(Auth::user(), $validatedData['leave_type_id'], $duration)) {
-            throw ValidationException::withMessages(['leave' => 'Insufficient leave balance.']);
-        }
-
-        // 4. Cari Alur Kerja yang Sesuai
-        $workflow = Workflow::where('applicable_model', LeaveRequest::class)->first();
-        if (!$workflow) {
-            return ResponseFormatter::error(null, 'Leave workflow not found.', 500);
-        }
-
-        // 5. Buat Permintaan Cuti
         try {
-            $leaveRequest = DB::transaction(function() use ($validatedData, $workflow, $duration, $attachmentPath) {
+            // 1. Validasi Input
+            $validatedData = $request->validate([
+                'leave_type_id' => 'required|exists:leave_types,id',
+                'start_date' => 'required|date',
+                'end_date' => 'required|date|after_or_equal:start_date',
+                'reason' => 'required|string|max:500',
+                'leave_period' => [
+                    'required',
+                    Rule::in(['full_day', 'half_day_morning', 'half_day_afternoon']),
+                ],
+                'supporting_document' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            ]);
+
+            // Handle file upload
+            $attachmentPath = null;
+            if ($request->hasFile('supporting_document')) {
+                // Store in 'storage/app/public/attachments' and get the relative path
+                $attachmentPath = $request->file('supporting_document')->store('attachments', 'public');
+            }
+
+            // Validasi kustom: Cuti setengah hari hanya boleh untuk satu hari.
+            if (in_array($validatedData['leave_period'], ['half_day_morning', 'half_day_afternoon'])) {
+                if ($validatedData['start_date'] !== $validatedData['end_date']) {
+                    throw ValidationException::withMessages([
+                        'leave_period' => 'Half-day leave can only be requested for a single day.',
+                    ]);
+                }
+            }
+
+            // 2. Hitung Durasi Cuti
+            $startDate = Carbon::parse($validatedData['start_date']);
+            $endDate = Carbon::parse($validatedData['end_date']);
+            $duration = 0;
+            if (in_array($validatedData['leave_period'], ['half_day_morning', 'half_day_afternoon'])) {
+                $duration = 0.5;
+            } else {
+                $duration = $startDate->diffInDays($endDate) + 1;
+            }
+
+            // 3. Cek Jatah Cuti
+            if (!$this->entitlementService->hasSufficientBalance(Auth::user(), $validatedData['leave_type_id'], $duration)) {
+                throw ValidationException::withMessages(['leave' => 'Insufficient leave balance.']);
+            }
+
+            // 4. Cari Alur Kerja yang Sesuai
+            $workflow = Workflow::where('applicable_model', LeaveRequest::class)->first();
+            if (!$workflow) {
+                return ResponseFormatter::error(null, 'Leave workflow not found.', 500);
+            }
+
+            // 5. Buat Permintaan Cuti
+            $leaveRequest = DB::transaction(function () use ($validatedData, $workflow, $duration, $attachmentPath) {
                 return LeaveRequest::create([
                     'user_id' => Auth::id(),
                     'leave_type_id' => $validatedData['leave_type_id'],
@@ -154,6 +158,8 @@ class LeaveRequestController extends Controller
             });
 
             return ResponseFormatter::success(new LeaveRequestResource($leaveRequest->load('leaveType')), 'Leave request submitted successfully');
+        } catch (ValidationException $e) {
+            return ResponseFormatter::error(['errors' => $e->errors()], $e->getMessage(), 422);
         } catch (\Exception $e) {
             return ResponseFormatter::error(null, 'Failed to submit leave request: ' . $e->getMessage(), 500);
         }
@@ -162,14 +168,14 @@ class LeaveRequestController extends Controller
 
     public function update(Request $request, LeaveRequest $leaveRequest)
     {
-        Log::info('Update method called', ['request_data' => $request->all()]);
-
-        // Otorisasi: Pastikan pengguna hanya mengedit permintaan cuti miliknya sendiri.
-        $this->authorize('update', $leaveRequest);
-        Log::info('Authorization successful');
-
-        // Validasi input dasar
         try {
+            Log::info('Update method called', ['request_data' => $request->all()]);
+
+            // Otorisasi: Pastikan pengguna hanya mengedit permintaan cuti miliknya sendiri.
+            $this->authorize('update', $leaveRequest);
+            Log::info('Authorization successful');
+
+            // Validasi input dasar
             $validatedData = $request->validate([
                 'leave_type_id' => 'sometimes|required|exists:leave_types,id',
                 'start_date' => 'sometimes|required|date',
@@ -184,109 +190,113 @@ class LeaveRequestController extends Controller
                 'supporting_document' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             ]);
             Log::info('Validation successful', ['validated_data' => $validatedData]);
+
+
+            // Cek status: Hanya izinkan edit jika statusnya masih 'Draft'.
+            if ($leaveRequest->current_status !== 'Draft') {
+                Log::warning('Attempted to update a non-draft leave request', ['leave_request_id' => $leaveRequest->id, 'current_status' => $leaveRequest->current_status]);
+                return ResponseFormatter::error(
+                    null,
+                    'This leave request cannot be edited because it is already being processed.',
+                    403
+                );
+            }
+
+            // Handle file upload
+            if ($request->hasFile('supporting_document')) {
+                // Hapus file lama jika ada
+                if ($leaveRequest->getRawOriginal('supporting_attachment_path')) {
+                    Storage::disk('public')->delete($leaveRequest->getRawOriginal('supporting_attachment_path'));
+                }
+
+                // Store in 'storage/app/public/attachments' and get the relative path
+                $path = $request->file('supporting_document')->store('attachments', 'public');
+                $validatedData['supporting_attachment_path'] = $path;
+            }
+
+            // Hitung ulang durasi jika ada perubahan terkait tanggal atau periode cuti
+            if (isset($validatedData['start_date']) || isset($validatedData['end_date']) || isset($validatedData['leave_period'])) {
+                $startDate = Carbon::parse($validatedData['start_date'] ?? $leaveRequest->start_date);
+                $endDate = Carbon::parse($validatedData['end_date'] ?? $leaveRequest->end_date);
+                $leavePeriod = $validatedData['leave_period'] ?? $leaveRequest->leave_period;
+
+                if (in_array($leavePeriod, ['half_day_morning', 'half_day_afternoon'])) {
+                    if ($startDate->notEqualTo($endDate)) {
+                        throw ValidationException::withMessages([
+                            'leave_period' => 'Half-day leave can only be requested for a single day.',
+                        ]);
+                    }
+                    $validatedData['duration_days'] = 0.5;
+                } else {
+                    $validatedData['duration_days'] = $startDate->diffInDays($endDate) + 1;
+                }
+            }
+
+            // Jika status diubah ke 'Pending', lakukan validasi penuh dan mulai alur kerja
+            if (isset($validatedData['current_status']) && $validatedData['current_status'] === 'Pending') {
+                Log::info('Attempting to change status to Pending');
+
+                // Validasi field yang wajib ada saat submit
+                $submitData = array_merge($leaveRequest->toArray(), $validatedData);
+                validator($submitData, [
+                    'leave_type_id' => 'required|exists:leave_types,id',
+                    'start_date' => 'required|date',
+                    'end_date' => 'required|date|after_or_equal:start_date',
+                    'reason' => 'required|string|max:500',
+                    'leave_period' => 'required',
+                ])->validate();
+
+                // Cek kembali jatah cuti dengan durasi final
+                $finalDuration = $validatedData['duration_days'] ?? $leaveRequest->duration_days;
+                $finalLeaveTypeId = $validatedData['leave_type_id'] ?? $leaveRequest->leave_type_id;
+                if (!$this->entitlementService->hasSufficientBalance(Auth::user(), $finalLeaveTypeId, $finalDuration)) {
+                    throw ValidationException::withMessages(['leave' => 'Insufficient leave balance.']);
+                }
+
+                // Cari langkah pertama dari alur kerja yang terkait
+                $workflow = $leaveRequest->workflow;
+                if (!$workflow) {
+                    return ResponseFormatter::error(null, 'Workflow not found for this leave request.', 500);
+                }
+                $firstStep = $workflow->steps()->orderBy('step_number', 'asc')->first();
+                if (!$firstStep) {
+                    return ResponseFormatter::error(null, 'Workflow is not configured correctly. No steps found.', 500);
+                }
+
+                // Set ID langkah alur kerja saat ini ke langkah pertama
+                $validatedData['current_workflow_step_id'] = $firstStep->id;
+                Log::info('Setting current_workflow_step_id to first step', ['step_id' => $firstStep->id]);
+
+                // Lakukan pembaruan DULUAN agar status 'Pending' tersimpan sebelum notif
+                $leaveRequest->update($validatedData);
+                $updatedLeaveRequest = $leaveRequest->fresh();
+
+                // Kirim notifikasi ke karyawan
+                SendLeaveRequestStatusUpdatedNotification::dispatch($updatedLeaveRequest);
+
+                // Kirim notifikasi ke approver
+                $approver = $this->workflowService->findApproverForStep($updatedLeaveRequest->user, $firstStep);
+                // dd($approver);
+                if ($approver) {
+                    SendLeaveRequestNotification::dispatch($approver, $updatedLeaveRequest);
+                    Log::info('Approver notification queued', ['approver_id' => $approver->id]);
+                }
+
+                return ResponseFormatter::success(new LeaveRequestResource($updatedLeaveRequest), 'Leave request submitted successfully');
+            }
+
+            // Lakukan pembaruan untuk perubahan selain submit (misal, hanya simpan draft)
+            $leaveRequest->update($validatedData);
+            Log::info('Leave request updated successfully', ['leave_request_id' => $leaveRequest->id]);
+
+            return ResponseFormatter::success(new LeaveRequestResource($leaveRequest->fresh()), 'Leave request updated successfully');
         } catch (ValidationException $e) {
             Log::error('Validation failed', ['errors' => $e->errors()]);
-            throw $e;
+            return ResponseFormatter::error(['errors' => $e->errors()], $e->getMessage(), 422);
+        } catch (\Exception $e) {
+            Log::error('An error occurred in update method', ['error' => $e->getMessage()]);
+            return ResponseFormatter::error(null, 'Failed to update leave request: ' . $e->getMessage(), 500);
         }
-
-        // Cek status: Hanya izinkan edit jika statusnya masih 'Draft'.
-        if ($leaveRequest->current_status !== 'Draft') {
-            Log::warning('Attempted to update a non-draft leave request', ['leave_request_id' => $leaveRequest->id, 'current_status' => $leaveRequest->current_status]);
-            return ResponseFormatter::error(
-                null,
-                'This leave request cannot be edited because it is already being processed.',
-                403
-            );
-        }
-
-        // Handle file upload
-        if ($request->hasFile('supporting_document')) {
-            // Hapus file lama jika ada
-            if ($leaveRequest->getRawOriginal('supporting_attachment_path')) {
-                Storage::disk('public')->delete($leaveRequest->getRawOriginal('supporting_attachment_path'));
-            }
-            
-            // Store in 'storage/app/public/attachments' and get the relative path
-            $path = $request->file('supporting_document')->store('attachments', 'public');
-            $validatedData['supporting_attachment_path'] = $path;
-        }
-
-        // Hitung ulang durasi jika ada perubahan terkait tanggal atau periode cuti
-        if (isset($validatedData['start_date']) || isset($validatedData['end_date']) || isset($validatedData['leave_period'])) {
-            $startDate = Carbon::parse($validatedData['start_date'] ?? $leaveRequest->start_date);
-            $endDate = Carbon::parse($validatedData['end_date'] ?? $leaveRequest->end_date);
-            $leavePeriod = $validatedData['leave_period'] ?? $leaveRequest->leave_period;
-
-            if (in_array($leavePeriod, ['half_day_morning', 'half_day_afternoon'])) {
-                if ($startDate->notEqualTo($endDate)) {
-                    throw ValidationException::withMessages([
-                        'leave_period' => 'Half-day leave can only be requested for a single day.',
-                    ]);
-                }
-                $validatedData['duration_days'] = 0.5;
-            } else {
-                $validatedData['duration_days'] = $startDate->diffInDays($endDate) + 1;
-            }
-        }
-
-        // Jika status diubah ke 'Pending', lakukan validasi penuh dan mulai alur kerja
-        if (isset($validatedData['current_status']) && $validatedData['current_status'] === 'Pending') {
-            Log::info('Attempting to change status to Pending');
-            
-            // Validasi field yang wajib ada saat submit
-            $submitData = array_merge($leaveRequest->toArray(), $validatedData);
-            validator($submitData, [
-                'leave_type_id' => 'required|exists:leave_types,id',
-                'start_date' => 'required|date',
-                'end_date' => 'required|date|after_or_equal:start_date',
-                'reason' => 'required|string|max:500',
-                'leave_period' => 'required',
-            ])->validate();
-
-            // Cek kembali jatah cuti dengan durasi final
-            $finalDuration = $validatedData['duration_days'] ?? $leaveRequest->duration_days;
-            $finalLeaveTypeId = $validatedData['leave_type_id'] ?? $leaveRequest->leave_type_id;
-            if (!$this->entitlementService->hasSufficientBalance(Auth::user(), $finalLeaveTypeId, $finalDuration)) {
-                throw ValidationException::withMessages(['leave' => 'Insufficient leave balance.']);
-            }
-
-            // Cari langkah pertama dari alur kerja yang terkait
-            $workflow = $leaveRequest->workflow;
-            if (!$workflow) {
-                return ResponseFormatter::error(null, 'Workflow not found for this leave request.', 500);
-            }
-            $firstStep = $workflow->steps()->orderBy('step_number', 'asc')->first();
-            if (!$firstStep) {
-                return ResponseFormatter::error(null, 'Workflow is not configured correctly. No steps found.', 500);
-            }
-
-            // Set ID langkah alur kerja saat ini ke langkah pertama
-            $validatedData['current_workflow_step_id'] = $firstStep->id;
-            Log::info('Setting current_workflow_step_id to first step', ['step_id' => $firstStep->id]);
-            
-            // Lakukan pembaruan DULUAN agar status 'Pending' tersimpan sebelum notif
-            $leaveRequest->update($validatedData);
-            $updatedLeaveRequest = $leaveRequest->fresh();
-
-            // Kirim notifikasi ke karyawan
-            SendLeaveRequestStatusUpdatedNotification::dispatch($updatedLeaveRequest);
-
-            // Kirim notifikasi ke approver
-            $approver = $this->workflowService->findApproverForStep($updatedLeaveRequest->user, $firstStep);
-            // dd($approver);
-            if ($approver) {
-                SendLeaveRequestNotification::dispatch($approver, $updatedLeaveRequest);
-                Log::info('Approver notification queued', ['approver_id' => $approver->id]);
-            }
-
-            return ResponseFormatter::success(new LeaveRequestResource($updatedLeaveRequest), 'Leave request submitted successfully');
-        }
-
-        // Lakukan pembaruan untuk perubahan selain submit (misal, hanya simpan draft)
-        $leaveRequest->update($validatedData);
-        Log::info('Leave request updated successfully', ['leave_request_id' => $leaveRequest->id]);
-
-        return ResponseFormatter::success(new LeaveRequestResource($leaveRequest->fresh()), 'Leave request updated successfully');
     }
 
     /**

@@ -24,11 +24,15 @@ class EmployeeEntitlementController extends Controller
      */
     public function index(Request $request)
     {
-        $entitlements = $this->entitlementService->getEntitlements($request);
-        return ResponseFormatter::success(
-            $entitlements,
-            'Employee entitlements retrieved successfully'
-        );
+        try {
+            $entitlements = $this->entitlementService->getEntitlements($request);
+            return ResponseFormatter::success(
+                $entitlements,
+                'Employee entitlements retrieved successfully'
+            );
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to retrieve employee entitlements: ' . $e->getMessage(), 500);
+        }
     }
 
     /**
@@ -56,10 +60,14 @@ class EmployeeEntitlementController extends Controller
      */
     public function show(EmployeeEntitlement $employeeEntitlement)
     {
-        return ResponseFormatter::success(
-            new EmployeeEntitlementResource($employeeEntitlement),
-            'Employee entitlement retrieved successfully'
-        );
+        try {
+            return ResponseFormatter::success(
+                new EmployeeEntitlementResource($employeeEntitlement),
+                'Employee entitlement retrieved successfully'
+            );
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to retrieve employee entitlement: ' . $e->getMessage(), 500);
+        }
     }
 
     /**
@@ -87,7 +95,11 @@ class EmployeeEntitlementController extends Controller
      */
     public function destroy(EmployeeEntitlement $employeeEntitlement)
     {
-        $this->entitlementService->deleteEntitlement($employeeEntitlement);
-        return ResponseFormatter::success(null, 'Employee entitlement deleted successfully');
+        try {
+            $this->entitlementService->deleteEntitlement($employeeEntitlement);
+            return ResponseFormatter::success(null, 'Employee entitlement deleted successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to delete employee entitlement: ' . $e->getMessage(), 500);
+        }
     }
 }

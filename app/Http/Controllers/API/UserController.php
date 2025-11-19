@@ -237,12 +237,20 @@ class UserController extends Controller
 
     public function logout(Request $request)
     {
-        $token = $request->user()->currentAccessToken()->delete();
-        return ResponseFormatter::success($token, 'Token Revoked');
+        try {
+            $token = $request->user()->currentAccessToken()->delete();
+            return ResponseFormatter::success($token, 'Token Revoked');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to logout: ' . $e->getMessage(), 500);
+        }
     }
 
     public function fetch(Request $request)
     {
-        return ResponseFormatter::success(new UserResource($request->user()), 'Data profile user berhasil diambil');
+        try {
+            return ResponseFormatter::success(new UserResource($request->user()), 'Data profile user berhasil diambil');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to fetch user: ' . $e->getMessage(), 500);
+        }
     }
 }

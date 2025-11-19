@@ -16,32 +16,36 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::with('roles')->get();
-        
-        // Search functionality
-        // if ($request->filled('search')) {
-        //     $search = $request->input('search');
-        //     $query->where(function ($q) use ($search) {
-        //         $q->where('name', 'like', '%' . $search . '%')
-        //           ->orWhere('email', 'like', '%' . $search . '%');
-        //     });
-        // }
+        try {
+            $query = User::with('roles')->get();
 
-        // // Sorting functionality
-        // if ($request->filled('sort_by')) {
-        //     $sortBy = $request->input('sort_by');
-        //     $sortDir = $request->input('sort_dir', 'asc');
-            
-        //     // Whitelist columns to prevent arbitrary sorting
-        //     $allowedSorts = ['name', 'email', 'created_at'];
-        //     if (in_array($sortBy, $allowedSorts)) {
-        //         $query->orderBy($sortBy, $sortDir);
-        //     }
-        // }
+            // Search functionality
+            // if ($request->filled('search')) {
+            //     $search = $request->input('search');
+            //     $query->where(function ($q) use ($search) {
+            //         $q->where('name', 'like', '%' . $search . '%')
+            //           ->orWhere('email', 'like', '%' . $search . '%');
+            //     });
+            // }
 
-        // $users = $query->paginate($request->input('per_page', 10));
-        
-        return ResponseFormatter::success(UserResource::collection($query), 'Users retrieved successfully');
+            // // Sorting functionality
+            // if ($request->filled('sort_by')) {
+            //     $sortBy = $request->input('sort_by');
+            //     $sortDir = $request->input('sort_dir', 'asc');
+
+            //     // Whitelist columns to prevent arbitrary sorting
+            //     $allowedSorts = ['name', 'email', 'created_at'];
+            //     if (in_array($sortBy, $allowedSorts)) {
+            //         $query->orderBy($sortBy, $sortDir);
+            //     }
+            // }
+
+            // $users = $query->paginate($request->input('per_page', 10));
+
+            return ResponseFormatter::success(UserResource::collection($query), 'Users retrieved successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to retrieve users: ' . $e->getMessage(), 500);
+        }
     }
 
     public function store(Request $request)
@@ -84,63 +88,78 @@ class UserController extends Controller
 
                 return $newUser;
             });
-            
-           return ResponseFormatter::success(new UserResource($user), 'User created successfully');
+
+            return ResponseFormatter::success(new UserResource($user), 'User created successfully');
         } catch (\Exception $e) {
             return ResponseFormatter::error([
                 'message' => 'Something went wrong during user creation.',
                 'error' => $e->getMessage(),
             ], 'User Creation Failed', 500);
         }
-
     }
 
     public function show(User $user)
     {
-        return ResponseFormatter::success(new UserResource($user->load('roles')), 'User retrieved successfully');
+        try {
+            return ResponseFormatter::success(new UserResource($user->load('roles')), 'User retrieved successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to retrieve user: ' . $e->getMessage(), 500);
+        }
     }
 
     public function update(Request $request, User $user)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => ['string', 'max:255'],
-            'employee_code' => ['string', 'max:255', 'unique:users,employee_code,' . $user->id],
-            'email' => ['string', 'email', 'max:255', 'unique:users,email,' . $user->id],
-            'phone_number' => ['nullable', 'string', 'max:255', 'unique:users,phone_number,' . $user->id],
-            'password' => ['nullable', 'string', 'min:8'],
-            'department_id' => ['nullable', 'exists:departments,id'],
-            'manager_id' => ['nullable', 'exists:users,id'],
-            'status' => ['nullable', 'string', 'max:255'],
-            'hire_date' => ['nullable', 'date'],
-            'roles' => ['array'],
-        ]);
+        try {
+            $validator = Validator::make($request->all(), [
+                'name' => ['string', 'max:255'],
+                'employee_code' => ['string', 'max:255', 'unique:users,employee_code,' . $user->id],
+                'email' => ['string', 'email', 'max:255', 'unique:users,email,' . $user->id],
+                'phone_number' => ['nullable', 'string', 'max:255', 'unique:users,phone_number,' . $user->id],
+                'password' => ['nullable', 'string', 'min:8'],
+                'department_id' => ['nullable', 'exists:departments,id'],
+                'manager_id' => ['nullable', 'exists:users,id'],
+                'status' => ['nullable', 'string', 'max:255'],
+                'hire_date' => ['nullable', 'date'],
+                'roles' => ['array'],
+            ]);
 
-        if ($validator->fails()) {
-            return ResponseFormatter::error(['errors' => $validator->errors()], 'Validation failed', 422);
+            if ($validator->fails()) {
+                return ResponseFormatter::error(['errors' => $validator->errors()], 'Validation failed', 422);
+            }
+
+            $userData = $request->except('password');
+            if ($request->filled('password')) {
+                $userData['password'] = Hash::make($request->password);
+            }
+
+            $user->update($userData);
+
+            if ($request->has('roles')) {
+                $user->syncRoles($request->roles);
+            }
+
+            return ResponseFormatter::success(new UserResource($user), 'User updated successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to update user: ' . $e->getMessage(), 500);
         }
-
-        $userData = $request->except('password');
-        if ($request->filled('password')) {
-            $userData['password'] = Hash::make($request->password);
-        }
-
-        $user->update($userData);
-
-        if ($request->has('roles')) {
-            $user->syncRoles($request->roles);
-        }
-
-        return ResponseFormatter::success(new UserResource($user), 'User updated successfully');
     }
 
     public function destroy(User $user)
     {
-        $user->delete();
-        return ResponseFormatter::success(null, 'User deleted successfully');
+        try {
+            $user->delete();
+            return ResponseFormatter::success(null, 'User deleted successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to delete user: ' . $e->getMessage(), 500);
+        }
     }
 
     public function getStatus(User $user)
     {
-        return ResponseFormatter::success($user->status, 'User status retrieved successfully');
+        try {
+            return ResponseFormatter::success($user->status, 'User status retrieved successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to retrieve user status: ' . $e->getMessage(), 500);
+        }
     }
 }

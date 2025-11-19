@@ -16,28 +16,32 @@ class LeaveTypeController extends Controller
      */
     public function index(Request $request)
     {
-        $query = LeaveType::query();
+        try {
+            $query = LeaveType::query();
 
-        // Search functionality
-        if ($request->filled('search')) {
-            $search = $request->input('search');
-            $query->where('name', 'like', '%' . $search . '%');
-        }
-
-        // Sorting functionality
-        if ($request->filled('sort_by')) {
-            $sortBy = $request->input('sort_by');
-            $sortDir = $request->input('sort_dir', 'asc');
-            
-            $allowedSorts = ['name', 'default_entitlement_days'];
-            if (in_array($sortBy, $allowedSorts)) {
-                $query->orderBy($sortBy, $sortDir);
+            // Search functionality
+            if ($request->filled('search')) {
+                $search = $request->input('search');
+                $query->where('name', 'like', '%' . $search . '%');
             }
+
+            // Sorting functionality
+            if ($request->filled('sort_by')) {
+                $sortBy = $request->input('sort_by');
+                $sortDir = $request->input('sort_dir', 'asc');
+
+                $allowedSorts = ['name', 'default_entitlement_days'];
+                if (in_array($sortBy, $allowedSorts)) {
+                    $query->orderBy($sortBy, $sortDir);
+                }
+            }
+
+            $leaveTypes = $query->paginate($request->input('per_page', 10));
+
+            return ResponseFormatter::success($leaveTypes, 'Leave types retrieved successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to retrieve leave types: ' . $e->getMessage(), 500);
         }
-
-        $leaveTypes = $query->paginate($request->input('per_page', 10));
-
-        return ResponseFormatter::success($leaveTypes, 'Leave types retrieved successfully');
     }
 
     /**
@@ -45,21 +49,25 @@ class LeaveTypeController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'default_entitlement_days' => 'required|integer|min:0',
-            'accrual_frequency' => 'sometimes|string|nullable',
-            'is_paid' => 'required|boolean',
-            'max_carry_over_days' => 'sometimes|integer|min:0|nullable',
-            'requires_attachment' => 'required|boolean',
-        ]);
+        try {
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:255',
+                'default_entitlement_days' => 'required|integer|min:0',
+                'accrual_frequency' => 'sometimes|string|nullable',
+                'is_paid' => 'required|boolean',
+                'max_carry_over_days' => 'sometimes|integer|min:0|nullable',
+                'requires_attachment' => 'required|boolean',
+            ]);
 
-        if ($validator->fails()) {
-            return ResponseFormatter::error(['errors' => $validator->errors()], 'Validation failed', 422);
+            if ($validator->fails()) {
+                return ResponseFormatter::error(['errors' => $validator->errors()], 'Validation failed', 422);
+            }
+
+            $leaveType = LeaveType::create($validator->validated());
+            return ResponseFormatter::success(new LeaveTypeResource($leaveType), 'Leave type created successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to create leave type: ' . $e->getMessage(), 500);
         }
-
-        $leaveType = LeaveType::create($validator->validated());
-        return ResponseFormatter::success(new LeaveTypeResource($leaveType), 'Leave type created successfully');
     }
 
     /**
@@ -67,7 +75,11 @@ class LeaveTypeController extends Controller
      */
     public function show(LeaveType $leaveType)
     {
-        return ResponseFormatter::success(new LeaveTypeResource($leaveType), 'Leave type retrieved successfully');
+        try {
+            return ResponseFormatter::success(new LeaveTypeResource($leaveType), 'Leave type retrieved successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to retrieve leave type: ' . $e->getMessage(), 500);
+        }
     }
 
     /**
@@ -75,21 +87,25 @@ class LeaveTypeController extends Controller
      */
     public function update(Request $request, LeaveType $leaveType)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'sometimes|required|string|max:255',
-            'default_entitlement_days' => 'sometimes|required|integer|min:0',
-            'accrual_frequency' => 'sometimes|string|nullable',
-            'is_paid' => 'sometimes|required|boolean',
-            'max_carry_over_days' => 'sometimes|integer|min:0|nullable',
-            'requires_attachment' => 'sometimes|required|boolean',
-        ]);
+        try {
+            $validator = Validator::make($request->all(), [
+                'name' => 'sometimes|required|string|max:255',
+                'default_entitlement_days' => 'sometimes|required|integer|min:0',
+                'accrual_frequency' => 'sometimes|string|nullable',
+                'is_paid' => 'sometimes|required|boolean',
+                'max_carry_over_days' => 'sometimes|integer|min:0|nullable',
+                'requires_attachment' => 'sometimes|required|boolean',
+            ]);
 
-        if ($validator->fails()) {
-            return ResponseFormatter::error(['errors' => $validator->errors()], 'Validation failed', 422);
+            if ($validator->fails()) {
+                return ResponseFormatter::error(['errors' => $validator->errors()], 'Validation failed', 422);
+            }
+
+            $leaveType->update($validator->validated());
+            return ResponseFormatter::success(new LeaveTypeResource($leaveType), 'Leave type updated successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to update leave type: ' . $e->getMessage(), 500);
         }
-
-        $leaveType->update($validator->validated());
-        return ResponseFormatter::success(new LeaveTypeResource($leaveType), 'Leave type updated successfully');
     }
 
     /**
@@ -97,7 +113,11 @@ class LeaveTypeController extends Controller
      */
     public function destroy(LeaveType $leaveType)
     {
-        $leaveType->delete();
-        return ResponseFormatter::success(null, 'Leave type deleted successfully');
+        try {
+            $leaveType->delete();
+            return ResponseFormatter::success(null, 'Leave type deleted successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to delete leave type: ' . $e->getMessage(), 500);
+        }
     }
 }

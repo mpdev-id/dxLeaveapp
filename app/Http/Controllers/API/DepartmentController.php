@@ -16,27 +16,31 @@ class DepartmentController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Department::query();
+        try {
+            $query = Department::query();
 
-        // Search functionality
-        if ($request->filled('search')) {
-            $search = $request->input('search');
-            $query->where('name', 'like', '%' . $search . '%');
-        }
-
-        // Sorting functionality
-        if ($request->filled('sort_by')) {
-            $sortBy = $request->input('sort_by');
-            $sortDir = $request->input('sort_dir', 'asc');
-            
-            if ($sortBy === 'name') {
-                $query->orderBy($sortBy, $sortDir);
+            // Search functionality
+            if ($request->filled('search')) {
+                $search = $request->input('search');
+                $query->where('name', 'like', '%' . $search . '%');
             }
+
+            // Sorting functionality
+            if ($request->filled('sort_by')) {
+                $sortBy = $request->input('sort_by');
+                $sortDir = $request->input('sort_dir', 'asc');
+
+                if ($sortBy === 'name') {
+                    $query->orderBy($sortBy, $sortDir);
+                }
+            }
+
+            $departments = $query->paginate($request->input('per_page', 10));
+
+            return ResponseFormatter::success($departments, 'Departments retrieved successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to retrieve departments: ' . $e->getMessage(), 500);
         }
-
-        $departments = $query->paginate($request->input('per_page', 10));
-
-        return ResponseFormatter::success($departments, 'Departments retrieved successfully');
     }
 
     /**
@@ -44,16 +48,20 @@ class DepartmentController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255|unique:departments,name',
-        ]);
+        try {
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:255|unique:departments,name',
+            ]);
 
-        if ($validator->fails()) {
-            return ResponseFormatter::error(['errors' => $validator->errors()], 'Validation failed', 422);
+            if ($validator->fails()) {
+                return ResponseFormatter::error(['errors' => $validator->errors()], 'Validation failed', 422);
+            }
+
+            $department = Department::create($validator->validated());
+            return ResponseFormatter::success(new DepartmentResource($department), 'Department created successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to create department: ' . $e->getMessage(), 500);
         }
-
-        $department = Department::create($validator->validated());
-        return ResponseFormatter::success(new DepartmentResource($department), 'Department created successfully');
     }
 
     /**
@@ -61,7 +69,11 @@ class DepartmentController extends Controller
      */
     public function show(Department $department)
     {
-        return ResponseFormatter::success(new DepartmentResource($department), 'Department retrieved successfully');
+        try {
+            return ResponseFormatter::success(new DepartmentResource($department), 'Department retrieved successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to retrieve department: ' . $e->getMessage(), 500);
+        }
     }
 
     /**
@@ -69,16 +81,20 @@ class DepartmentController extends Controller
      */
     public function update(Request $request, Department $department)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255|unique:departments,name,' . $department->id,
-        ]);
+        try {
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:255|unique:departments,name,' . $department->id,
+            ]);
 
-        if ($validator->fails()) {
-            return ResponseFormatter::error(['errors' => $validator->errors()], 'Validation failed', 422);
+            if ($validator->fails()) {
+                return ResponseFormatter::error(['errors' => $validator->errors()], 'Validation failed', 422);
+            }
+
+            $department->update($validator->validated());
+            return ResponseFormatter::success(new DepartmentResource($department), 'Department updated successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to update department: ' . $e->getMessage(), 500);
         }
-
-        $department->update($validator->validated());
-        return ResponseFormatter::success(new DepartmentResource($department), 'Department updated successfully');
     }
 
     /**
@@ -86,7 +102,11 @@ class DepartmentController extends Controller
      */
     public function destroy(Department $department)
     {
-        $department->delete();
-        return ResponseFormatter::success(null, 'Department deleted successfully');
+        try {
+            $department->delete();
+            return ResponseFormatter::success(null, 'Department deleted successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to delete department: ' . $e->getMessage(), 500);
+        }
     }
 }

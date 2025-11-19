@@ -20,145 +20,197 @@ class MasterDataController extends Controller
 
     public function getDepartments()
     {
-        $departments = Department::all();
-        return ResponseFormatter::success(DepartmentResource::collection($departments), 'Departments retrieved successfully');
+        try {
+            $departments = Department::all();
+            return ResponseFormatter::success(DepartmentResource::collection($departments), 'Departments retrieved successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to retrieve departments: ' . $e->getMessage(), 500);
+        }
     }
 
     public function createDepartment(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255|unique:departments,name',
-        ]);
+        try {
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:255|unique:departments,name',
+            ]);
 
-        if ($validator->fails()) {
-            return ResponseFormatter::error(['errors' => $validator->errors()], 'Validation failed', 422);
+            if ($validator->fails()) {
+                return ResponseFormatter::error(['errors' => $validator->errors()], 'Validation failed', 422);
+            }
+
+            $department = Department::create($validator->validated());
+            return ResponseFormatter::success(new DepartmentResource($department), 'Department created successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to create department: ' . $e->getMessage(), 500);
         }
-
-        $department = Department::create($validator->validated());
-        return ResponseFormatter::success(new DepartmentResource($department), 'Department created successfully');
     }
 
     public function updateDepartment(Request $request, Department $department)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255|unique:departments,name,' . $department->id,
-        ]);
+        try {
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:255|unique:departments,name,' . $department->id,
+            ]);
 
-        if ($validator->fails()) {
-            return ResponseFormatter::error(['errors' => $validator->errors()], 'Validation failed', 422);
+            if ($validator->fails()) {
+                return ResponseFormatter::error(['errors' => $validator->errors()], 'Validation failed', 422);
+            }
+
+            $department->update($validator->validated());
+            return ResponseFormatter::success(new DepartmentResource($department), 'Department updated successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to update department: ' . $e->getMessage(), 500);
         }
-
-        $department->update($validator->validated());
-        return ResponseFormatter::success(new DepartmentResource($department), 'Department updated successfully');
     }
 
     public function deleteDepartment(Department $department)
     {
-        $department->delete();
-        return ResponseFormatter::success(null, 'Department deleted successfully');
+        try {
+            $department->delete();
+            return ResponseFormatter::success(null, 'Department deleted successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to delete department: ' . $e->getMessage(), 500);
+        }
     }
 
     //====================== LEAVE TYPES ======================
 
     public function getLeaveTypes()
     {
-        $leaveTypes = LeaveType::all();
-        return ResponseFormatter::success(LeaveTypeResource::collection($leaveTypes), 'Leave types retrieved successfully');
+        try {
+            $leaveTypes = LeaveType::all();
+            return ResponseFormatter::success(LeaveTypeResource::collection($leaveTypes), 'Leave types retrieved successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to retrieve leave types: ' . $e->getMessage(), 500);
+        }
     }
 
     public function createLeaveType(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'default_entitlement_days' => 'required|integer|min:0',
-            'accrual_frequency' => 'sometimes|string',
-            'is_paid' => 'required|boolean',
-            'max_carry_over_days' => 'sometimes|integer|min:0|nullable',
-            'requires_attachment' => 'required|boolean',
-        ]);
+        try {
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:255',
+                'default_entitlement_days' => 'required|integer|min:0',
+                'accrual_frequency' => 'sometimes|string',
+                'is_paid' => 'required|boolean',
+                'max_carry_over_days' => 'sometimes|integer|min:0|nullable',
+                'requires_attachment' => 'required|boolean',
+            ]);
 
-        if ($validator->fails()) {
-            return ResponseFormatter::error(['errors' => $validator->errors()], 'Validation failed', 422);
+            if ($validator->fails()) {
+                return ResponseFormatter::error(['errors' => $validator->errors()], 'Validation failed', 422);
+            }
+
+            $leaveType = LeaveType::create($validator->validated());
+            return ResponseFormatter::success(new LeaveTypeResource($leaveType), 'Leave type created successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to create leave type: ' . $e->getMessage(), 500);
         }
-
-        $leaveType = LeaveType::create($validator->validated());
-        return ResponseFormatter::success(new LeaveTypeResource($leaveType), 'Leave type created successfully');
     }
 
     public function updateLeaveType(Request $request, LeaveType $leaveType)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'sometimes|required|string|max:255',
-            'default_entitlement_days' => 'sometimes|required|integer|min:0',
-            'accrual_frequency' => 'sometimes|string',
-            'is_paid' => 'sometimes|required|boolean',
-            'max_carry_over_days' => 'sometimes|integer|min:0|nullable',
-            'requires_attachment' => 'sometimes|required|boolean',
-        ]);
+        try {
+            $validator = Validator::make($request->all(), [
+                'name' => 'sometimes|required|string|max:255',
+                'default_entitlement_days' => 'sometimes|required|integer|min:0',
+                'accrual_frequency' => 'sometimes|string',
+                'is_paid' => 'sometimes|required|boolean',
+                'max_carry_over_days' => 'sometimes|integer|min:0|nullable',
+                'requires_attachment' => 'sometimes|required|boolean',
+            ]);
 
-        if ($validator->fails()) {
-            return ResponseFormatter::error(['errors' => $validator->errors()], 'Validation failed', 422);
+            if ($validator->fails()) {
+                return ResponseFormatter::error(['errors' => $validator->errors()], 'Validation failed', 422);
+            }
+
+            $leaveType->update($validator->validated());
+            return ResponseFormatter::success(new LeaveTypeResource($leaveType), 'Leave type updated successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to update leave type: ' . $e->getMessage(), 500);
         }
-
-        $leaveType->update($validator->validated());
-        return ResponseFormatter::success(new LeaveTypeResource($leaveType), 'Leave type updated successfully');
     }
 
     public function deleteLeaveType(LeaveType $leaveType)
     {
-        $leaveType->delete();
-        return ResponseFormatter::success(null, 'Leave type deleted successfully');
+        try {
+            $leaveType->delete();
+            return ResponseFormatter::success(null, 'Leave type deleted successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to delete leave type: ' . $e->getMessage(), 500);
+        }
     }
 
     //====================== PUBLIC HOLIDAYS ======================
 
     public function getPublicHolidays()
     {
-        $publicHolidays = PublicHoliday::all();
-        return ResponseFormatter::success(PublicHolidayResource::collection($publicHolidays), 'Public holidays retrieved successfully');
+        try {
+            $publicHolidays = PublicHoliday::all();
+            return ResponseFormatter::success(PublicHolidayResource::collection($publicHolidays), 'Public holidays retrieved successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to retrieve public holidays: ' . $e->getMessage(), 500);
+        }
     }
 
     public function createPublicHoliday(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'date' => 'required|date_format:Y-m-d',
-            // 'region_id' => 'sometimes|integer|nullable',
-        ]);
+        try {
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:255',
+                'date' => 'required|date_format:Y-m-d',
+                // 'region_id' => 'sometimes|integer|nullable',
+            ]);
 
-        if ($validator->fails()) {
-            return ResponseFormatter::error(['errors' => $validator->errors()], 'Validation failed', 422);
+            if ($validator->fails()) {
+                return ResponseFormatter::error(['errors' => $validator->errors()], 'Validation failed', 422);
+            }
+
+            $publicHoliday = PublicHoliday::create($validator->validated());
+            return ResponseFormatter::success(new PublicHolidayResource($publicHoliday), 'Public holiday created successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to create public holiday: ' . $e->getMessage(), 500);
         }
-
-        $publicHoliday = PublicHoliday::create($validator->validated());
-        return ResponseFormatter::success(new PublicHolidayResource($publicHoliday), 'Public holiday created successfully');
     }
 
     public function updatePublicHoliday(Request $request, PublicHoliday $publicHoliday)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'sometimes|required|string|max:255',
-            'date' => 'sometimes|required|date_format:Y-m-d',
-            // 'region_id' => 'sometimes|integer|nullable',
-        ]);
+        try {
+            $validator = Validator::make($request->all(), [
+                'name' => 'sometimes|required|string|max:255',
+                'date' => 'sometimes|required|date_format:Y-m-d',
+                // 'region_id' => 'sometimes|integer|nullable',
+            ]);
 
-        if ($validator->fails()) {
-            return ResponseFormatter::error(['errors' => $validator->errors()], 'Validation failed', 422);
+            if ($validator->fails()) {
+                return ResponseFormatter::error(['errors' => $validator->errors()], 'Validation failed', 422);
+            }
+
+            $publicHoliday->update($validator->validated());
+            return ResponseFormatter::success(new PublicHolidayResource($publicHoliday), 'Public holiday updated successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to update public holiday: ' . $e->getMessage(), 500);
         }
-
-        $publicHoliday->update($validator->validated());
-        return ResponseFormatter::success(new PublicHolidayResource($publicHoliday), 'Public holiday updated successfully');
     }
 
     public function deletePublicHoliday(PublicHoliday $publicHoliday)
     {
-        $publicHoliday->delete();
-        return ResponseFormatter::success(null, 'Public holiday deleted successfully');
+        try {
+            $publicHoliday->delete();
+            return ResponseFormatter::success(null, 'Public holiday deleted successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to delete public holiday: ' . $e->getMessage(), 500);
+        }
     }
 
     public function roles()
     {
-        $roles = Role::all();
-        return ResponseFormatter::success($roles, 'Roles retrieved successfully');
+        try {
+            $roles = Role::all();
+            return ResponseFormatter::success($roles, 'Roles retrieved successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to retrieve roles: ' . $e->getMessage(), 500);
+        }
     }
 }
