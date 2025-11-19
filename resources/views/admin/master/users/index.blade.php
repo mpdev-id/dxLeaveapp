@@ -91,312 +91,295 @@
                 </form>
             </div>
         </dialog>
-                <!-- Delete Confirmation Modal -->
-                {{-- <dialog id="delete_modal" class="modal">
-                    <div class="modal-box">
-                        <form method="dialog">
-                            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
-                        </form>
-                        <h3 class="font-bold text-lg">Confirm Deletion</h3>
-                        <p>Are you sure you want to delete this user?</p>
-                        <div class="modal-action">
-                            <button class="btn btn-error" @click="deleteUser()">Delete</button>
-                            <form method="dialog">
-                                <button class="btn">Cancel</button>
-                            </form>
-                        </div>
-                    </div>
-                </dialog> --}}
-                <div class="my-4 flex justify-between items-center">
-                    <div class="flex items-center">
-                        <select x-model="perPage" class="select select-bordered w-full max-w-xs">
-                            <option>5</option>
-                            <option>10</option>
-                            <option>20</option>
-                        </select>
-                    </div>
-                    <div class="relative">
-                        <input type="text" placeholder="Search" x-model="search" class="input input-bordered w-full max-w-xs" />
-                    </div>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="table table-zebra w-full">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Department</th>
-                                <th>Hire Date</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <template x-if="loading">
-                                <tr>
-                                    <td colspan="6" class="text-center py-10">
-                                        <span class="loading loading-spinner loading-lg"></span>
-                                    </td>
-                                </tr>
-                            </template>
-                            <template x-for="user in filteredUsers" :key="user.id">
-                                <tr>
-                                    <td>
-                                        <div class="flex items-center space-x-3">
-                                            <div class="avatar">
-                                                <div class="mask mask-squircle w-12 h-12">
-                                                    <img :src="user.profile_photo_url" :alt="user.name" />
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <div class="font-bold" x-text="user.name"></div>
-                                            </div>
+        <div class="overflow-x-auto">
+            <table class="table table-zebra w-full">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Department</th>
+                        <th>Hire Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template x-if="loading">
+                        <tr>
+                            <td colspan="5" class="text-center py-10"><span class="loading loading-spinner loading-lg"></span></td>
+                        </tr>
+                    </template>
+                    <template x-if="!loading && users.length === 0">
+                        <tr>
+                            <td colspan="5" class="text-center py-4">No users found.</td>
+                        </tr>
+                    </template>
+                    <template x-for="user in users" :key="user.id">
+                        <tr>
+                            <td>
+                                <div class="flex items-center space-x-3">
+                                    <div class="avatar">
+                                        <div class="mask mask-squircle w-12 h-12">
+                                            <img :src="user.profile_photo_url" :alt="user.name" />
                                         </div>
-                                    </td>
-                                    <td x-text="user.email"></td>
-                                    <td x-text="user.department ? user.department.name : 'N/A'"></td>
-                                    <td x-text="user.hire_date ? new Date(user.hire_date).toLocaleDateString() : 'N/A'"></td>
-                                    <td>
-                                        <span class="badge" :class="user.status === 'active' ? 'badge-success' : 'badge-error'" x-text="user.status"></span>
-                                    </td>
-                                    <td>
-                                        <button class="btn btn-sm btn-info" @click="openEditModal(user)">Edit</button>
-                                        <button class="btn btn-sm btn-error" @click="confirmDelete(user.id)">Delete</button>
-                                    </td>
-                                </tr>
-                            </template>
-                        </tbody>
-                    </table>
-                </div>
+                                    </div>
+                                    <div>
+                                        <div class="font-bold" x-text="user.name"></div>
+                                        <div class="text-sm opacity-50" x-text="user.email"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td x-text="user.department ? user.department.name : 'N/A'"></td>
+                            <td x-text="user.hire_date ? new Date(user.hire_date).toLocaleDateString() : 'N/A'"></td>
+                            <td>
+                                <span class="badge" :class="user.status === 'active' ? 'badge-success' : 'badge-error'" x-text="user.status"></span>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-info" @click="openEditModal(user)">Edit</button>
+                                <button class="btn btn-sm btn-error" @click="confirmDelete(user.id)">Delete</button>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+        <div class="flex justify-between items-center mt-4">
+            <div class="flex items-center gap-2">
+                <select x-model="perPage" @change="fetchUsers" class="select select-bordered">
+                    <option value="10">10 per page</option>
+                    <option value="25">25 per page</option>
+                    <option value="50">50 per page</option>
+                </select>
+                <input type="text" x-model.debounce.500ms="search" @input="fetchUsers" placeholder="Search..." class="input input-bordered">
+            </div>
+            <div class="join">
+                <button @click="currentPage > 1 && (currentPage--, fetchUsers())" :disabled="currentPage === 1" class="join-item btn">«</button>
+                <button class="join-item btn" x-text="`Page ${currentPage}`"></button>
+                <button @click="currentPage < totalPages && (currentPage++, fetchUsers())" :disabled="currentPage === totalPages" class="join-item btn">»</button>
             </div>
         </div>
-        @endsection
-        @push('scripts')
-        <script>
-            function usersTable(baseApiUrl) {
-                return {
-                    users: [],
-                    departments: [],
-                    roles: [],
-                    loading: true,
-                    search: '',
-                    perPage: 10,
-                    isEdit: false,
-                    newUser: {
-                        id: null,
-                        name: '',
-                        employee_code: '',
-                        email: '',
-                        phone_number: '',
-                        password: '',
-                        department_id: '',
-                        manager_id: '',
-                        status: 'active',
-                        hire_date: '',
-                        roles: []
-                    },
-                    errors: {},
-                    init() {
-                        this.fetchUsers();
-                        this.fetchDepartments();
-                        this.fetchRoles();
-                    },
-                    async fetchUsers() {
-                        this.loading = true;
-                        try {
-                            const token = localStorage.getItem('authToken');
-                            if (!token) {
-                                window.location.href = '/login';
-                                return;
-                            }
-                            const response = await fetch(`${baseApiUrl}/admin/master/users`, {
-                                headers: {
-                                    'Authorization': `Bearer ${token}`,
-                                    'Accept': 'application/json'
-                                }
-                            });
-                            if(response.status === 401) {
-                                localStorage.removeItem('authToken');
-                                window.location.href = '/login';
-                                return;
-                            }
-                            const data = await response.json();
-                            this.users = data.data;
-                        } catch (error) {
-                            console.error('Error fetching users:', error);
-                        } finally {
-                            this.loading = false;
-                        }
-                    },
-                    async fetchDepartments() {
-                        try {
-                            const token = localStorage.getItem('authToken');
-                            const response = await fetch(`${baseApiUrl}/admin/master/departments`, {
-                                headers: {
-                                    'Authorization': `Bearer ${token}`,
-                                    'Accept': 'application/json'
-                                }
-                            });
-                            const data = await response.json();
-                            this.departments = data.data.data;
-                        } catch (error) {
-                            console.error('Error fetching departments:', error);
-                        }
-                    },
-                    async fetchRoles() {
-                        try {
-                            const token = localStorage.getItem('authToken');
-                            const response = await fetch(`${baseApiUrl}/admin/master/roles`, {
-                                headers: {
-                                    'Authorization': `Bearer ${token}`,
-                                    'Accept': 'application/json'
-                                }
-                            });
-                            const data = await response.json();
-                            this.roles = data.data;
-                        } catch (error) {
-                            console.error('Error fetching roles:', error);
-                        }
-                    },
-                    showToast(message, icon = 'success') {
-                        Swal.fire({
-                            toast: true,
-                            position: 'top-end',
-                            icon: icon,
-                            title: message,
-                            showConfirmButton: false,
-                            timer: 3000,
-                            timerProgressBar: true
-                        });
-                    },
-                    openAddModal() {
-                        this.isEdit = false;
-                        this.newUser = {
-                            id: null, name: '', employee_code: '', email: '', phone_number: '',
-                            password: '', department_id: '', manager_id: '', status: 'active',
-                            hire_date: '', roles: []
-                        };
-                        this.errors = {};
-                        document.getElementById('user_modal').showModal();
-                    },
-                    openEditModal(user) {
-                        this.isEdit = true;
-                        this.newUser = {
-                            id: user.id, name: user.name, employee_code: user.employee_code,
-                            email: user.email, phone_number: user.phone_number, password: '',
-                            department_id: user.department_id ? Number(user.department_id) : '',
-                            manager_id: user.manager_id ? Number(user.manager_id) : '',
-                            status: user.status || 'active', hire_date: user.hire_date || '',
-                            roles: user.roles ? user.roles.map(role => role.name) : []
-                        };
-                        this.errors = {};
-                        document.getElementById('user_modal').showModal();
-                    },
-                    async addUser() {
-                        this.errors = {};
-                        try {
-                            const token = localStorage.getItem('authToken');
-                            const userData = { ...this.newUser };
-                            for (const key in userData) { if (userData[key] === '') { userData[key] = null; } }
-                            
-                            const response = await fetch(`${baseApiUrl}/admin/master/users`, {
-                                method: 'POST',
-                                headers: {
-                                    'Authorization': `Bearer ${token}`,
-                                    'Content-Type': 'application/json',
-                                    'Accept': 'application/json'
-                                },
-                                body: JSON.stringify(userData)
-                            });
-                            const data = await response.json();
-                            if (!response.ok) {
-                                if (response.status === 422) {
-                                    this.errors = data.data.errors;
-                                } else {
-                                    this.showToast(data.meta.message || 'Failed to add user.', 'error');
-                                }
-                                return;
-                            }
-                            this.fetchUsers();
-                            this.showToast(data.meta.message);
-                            document.getElementById('user_modal').close();
-                        } catch (error) {
-                            this.showToast('An unexpected error occurred.', 'error');
-                            console.error('Error adding user:', error);
-                        }
-                    },
-                    async updateUser() {
-                        this.errors = {};
-                        try {
-                            const token = localStorage.getItem('authToken');
-                            const userData = { ...this.newUser };
-                            if (userData.password === '' || userData.password === null) { delete userData.password; }
-                            for (const key in userData) { if (userData[key] === '') { userData[key] = null; } }
-
-                            const response = await fetch(`${baseApiUrl}/admin/master/users/${this.newUser.id}`, {
-                                method: 'PUT',
-                                headers: {
-                                    'Authorization': `Bearer ${token}`,
-                                    'Content-Type': 'application/json',
-                                    'Accept': 'application/json'
-                                },
-                                body: JSON.stringify(userData)
-                            });
-                            const data = await response.json();
-                            if (!response.ok) {
-                                if (response.status === 422) {
-                                    this.errors = data.data.errors;
-                                } else {
-                                    this.showToast(data.meta.message || 'Failed to update user.', 'error');
-                                }
-                                return;
-                            }
-                            this.fetchUsers();
-                            this.showToast(data.meta.message);
-                            document.getElementById('user_modal').close();
-                        } catch (error) {
-                            this.showToast('An unexpected error occurred.', 'error');
-                            console.error('Error updating user:', error);
-                        }
-                    },
-                    confirmDelete(userId) {
-                        Swal.fire({
-                            title: 'Are you sure?', text: "You won't be able to revert this!", icon: 'warning',
-                            showCancelButton: true, confirmButtonColor: '#3085d6', cancelButtonColor: '#d33',
-                            confirmButtonText: 'Yes, delete it!'
-                        }).then((result) => {
-                            if (result.isConfirmed) { this.deleteUser(userId); }
-                        });
-                    },
-                    async deleteUser(userId) {
-                        try {
-                            const token = localStorage.getItem('authToken');
-                            const response = await fetch(`${baseApiUrl}/admin/master/users/${userId}`, {
-                                method: 'DELETE',
-                                headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
-                            });
-                            const data = await response.json();
-                            if (!response.ok || data.meta.status !== 'success') {
-                                this.showToast(data.meta.message || 'Failed to delete user.', 'error');
-                                return;
-                            }
-                            this.fetchUsers();
-                            this.showToast(data.meta.message);
-                        } catch (error) {
-                            this.showToast('An unexpected error occurred.', 'error');
-                            console.error('Error deleting user:', error);
-                        }
-                    },
-                    get filteredUsers() {
-                        if (this.search === '') {
-                            return this.users.slice(0, this.perPage);
-                        }
-                        return this.users.filter(user => {
-                            return user.name.toLowerCase().includes(this.search.toLowerCase()) ||
-                                   user.email.toLowerCase().includes(this.search.toLowerCase());
-                        }).slice(0, this.perPage);
+    </div>
+</div>
+@endsection
+@push('scripts')
+<script>
+    function usersTable(baseApiUrl) {
+        return {
+            users: [],
+            departments: [],
+            roles: [],
+            loading: true,
+            search: '',
+            perPage: 10,
+            currentPage: 1,
+            totalPages: 1,
+            isEdit: false,
+            newUser: {
+                id: null,
+                name: '',
+                employee_code: '',
+                email: '',
+                phone_number: '',
+                password: '',
+                department_id: '',
+                manager_id: '',
+                status: 'active',
+                hire_date: '',
+                roles: []
+            },
+            errors: {},
+            init() {
+                this.fetchUsers();
+                this.fetchDepartments();
+                this.fetchRoles();
+            },
+            async fetchUsers() {
+                this.loading = true;
+                try {
+                    const token = localStorage.getItem('authToken');
+                    if (!token) {
+                        window.location.href = '/login';
+                        return;
                     }
+                    const response = await fetch(`${baseApiUrl}/admin/master/users?page=${this.currentPage}&per_page=${this.perPage}&search=${this.search}`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Accept': 'application/json'
+                        }
+                    });
+                    if(response.status === 401) {
+                        localStorage.removeItem('authToken');
+                        window.location.href = '/login';
+                        return;
+                    }
+                    const data = await response.json();
+                    this.users = data.data.data;
+                    this.totalPages = data.data.last_page;
+                } catch (error) {
+                    console.error('Error fetching users:', error);
+                } finally {
+                    this.loading = false;
+                }
+            },
+            async fetchDepartments() {
+                try {
+                    const token = localStorage.getItem('authToken');
+                    const response = await fetch(`${baseApiUrl}/admin/master/departments?all=true`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Accept': 'application/json'
+                        }
+                    });
+                    const data = await response.json();
+                    this.departments = data.data;
+                } catch (error) {
+                    console.error('Error fetching departments:', error);
+                }
+            },
+            async fetchRoles() {
+                try {
+                    const token = localStorage.getItem('authToken');
+                    const response = await fetch(`${baseApiUrl}/admin/master/roles`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Accept': 'application/json'
+                        }
+                    });
+                    const data = await response.json();
+                    this.roles = data.data;
+                } catch (error) {
+                    console.error('Error fetching roles:', error);
+                }
+            },
+            showToast(message, icon = 'success') {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: icon,
+                    title: message,
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+            },
+            openAddModal() {
+                this.isEdit = false;
+                this.newUser = {
+                    id: null, name: '', employee_code: '', email: '', phone_number: '',
+                    password: '', department_id: '', manager_id: '', status: 'active',
+                    hire_date: '', roles: []
+                };
+                this.errors = {};
+                document.getElementById('user_modal').showModal();
+            },
+            openEditModal(user) {
+                this.isEdit = true;
+                this.newUser = {
+                    id: user.id, name: user.name, employee_code: user.employee_code,
+                    email: user.email, phone_number: user.phone_number, password: '',
+                    department_id: user.department_id ? Number(user.department_id) : '',
+                    manager_id: user.manager_id ? Number(user.manager_id) : '',
+                    status: user.status || 'active', hire_date: user.hire_date || '',
+                    roles: user.roles ? user.roles.map(role => role.name) : []
+                };
+                this.errors = {};
+                document.getElementById('user_modal').showModal();
+            },
+            async addUser() {
+                this.errors = {};
+                try {
+                    const token = localStorage.getItem('authToken');
+                    const userData = { ...this.newUser };
+                    for (const key in userData) { if (userData[key] === '') { userData[key] = null; } }
+                    
+                    const response = await fetch(`${baseApiUrl}/admin/master/users`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify(userData)
+                    });
+                    const data = await response.json();
+                    if (!response.ok) {
+                        if (response.status === 422) {
+                            this.errors = data.data.errors;
+                        } else {
+                            this.showToast(data.meta.message || 'Failed to add user.', 'error');
+                        }
+                        return;
+                    }
+                    this.fetchUsers();
+                    this.showToast(data.meta.message);
+                    document.getElementById('user_modal').close();
+                } catch (error) {
+                    this.showToast('An unexpected error occurred.', 'error');
+                    console.error('Error adding user:', error);
+                }
+            },
+            async updateUser() {
+                this.errors = {};
+                try {
+                    const token = localStorage.getItem('authToken');
+                    const userData = { ...this.newUser };
+                    if (userData.password === '' || userData.password === null) { delete userData.password; }
+                    for (const key in userData) { if (userData[key] === '') { userData[key] = null; } }
+
+                    const response = await fetch(`${baseApiUrl}/admin/master/users/${this.newUser.id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify(userData)
+                    });
+                    const data = await response.json();
+                    if (!response.ok) {
+                        if (response.status === 422) {
+                            this.errors = data.data.errors;
+                        } else {
+                            this.showToast(data.meta.message || 'Failed to update user.', 'error');
+                        }
+                        return;
+                    }
+                    this.fetchUsers();
+                    this.showToast(data.meta.message);
+                    document.getElementById('user_modal').close();
+                } catch (error) {
+                    this.showToast('An unexpected error occurred.', 'error');
+                    console.error('Error updating user:', error);
+                }
+            },
+            confirmDelete(userId) {
+                Swal.fire({
+                    title: 'Are you sure?', text: "You won't be able to revert this!", icon: 'warning',
+                    showCancelButton: true, confirmButtonColor: '#3085d6', cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) { this.deleteUser(userId); }
+                });
+            },
+            async deleteUser(userId) {
+                try {
+                    const token = localStorage.getItem('authToken');
+                    const response = await fetch(`${baseApiUrl}/admin/master/users/${userId}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+                    });
+                    const data = await response.json();
+                    if (!response.ok || data.meta.status !== 'success') {
+                        this.showToast(data.meta.message || 'Failed to delete user.', 'error');
+                        return;
+                    }
+                    this.fetchUsers();
+                    this.showToast(data.meta.message);
+                } catch (error) {
+                    this.showToast('An unexpected error occurred.', 'error');
+                    console.error('Error deleting user:', error);
                 }
             }
-        </script>
-        @endpush
+        }
+    }
+</script>
+@endpush

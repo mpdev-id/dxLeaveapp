@@ -27,7 +27,56 @@
                 </form>
             </div>
         </dialog>
-        
+        <div class="overflow-x-auto">
+            <table class="table table-zebra w-full">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template x-if="loading">
+                        <tr>
+                            <td colspan="2" class="text-center py-10"><span class="loading loading-spinner loading-lg"></span></td>
+                        </tr>
+                    </template>
+                    <template x-if="!loading && departments.length === 0">
+                        <tr>
+                            <td colspan="2" class="text-center py-4">No departments found.</td>
+                        </tr>
+                    </template>
+                    <template x-for="department in departments" :key="department.id">
+                        <tr>
+                            <td x-text="department.name"></td>
+                            <td>
+                                <button @click="openEditModal(department)" class="btn btn-sm btn-warning">Edit</button>
+                                <button @click="confirmDelete(department.id)" class="btn btn-sm btn-error">Delete</button>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+        <div class="flex justify-between items-center mt-4">
+            <div class="flex items-center gap-2">
+                <select x-model="perPage" @change="fetchDepartments" class="select select-bordered">
+                    <option value="10">10 per page</option>
+                    <option value="25">25 per page</option>
+                    <option value="50">50 per page</option>
+                </select>
+                <input type="text" x-model.debounce.500ms="search" @input="fetchDepartments" placeholder="Search..." class="input input-bordered">
+            </div>
+            <div class="join">
+                <button @click="currentPage > 1 && (currentPage--, fetchDepartments())" :disabled="currentPage === 1" class="join-item btn">«</button>
+                <button class="join-item btn" x-text="`Page ${currentPage}`"></button>
+                <button @click="currentPage < totalPages && (currentPage++, fetchDepartments())" :disabled="currentPage === totalPages" class="join-item btn">»</button>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+
 @push('scripts')
 <script>
     function departmentsTable(baseApiUrl) {
@@ -36,6 +85,8 @@
             loading: true,
             search: '',
             perPage: 10,
+            currentPage: 1,
+            totalPages: 1,
             isEdit: false,
             newDepartment: { id: null, name: '' },
             errors: {},
@@ -49,12 +100,13 @@
                 try {
                     const token = localStorage.getItem('authToken');
                     if (!token) { window.location.href = '/login'; return; }
-                    const response = await fetch(`${baseApiUrl}/admin/master/departments`, {
+                    const response = await fetch(`${baseApiUrl}/admin/master/departments?page=${this.currentPage}&per_page=${this.perPage}&search=${this.search}`, {
                         headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
                     });
                     if (response.status === 401) { localStorage.removeItem('authToken'); window.location.href = '/login'; return; }
                     const data = await response.json();
                     this.departments = data.data.data;
+                    this.totalPages = data.data.last_page;
                 } catch (error) {
                     console.error('Error fetching departments:', error);
                     this.showToast('Failed to fetch departments.', 'error');
@@ -165,15 +217,6 @@
                     this.showToast('An unexpected error occurred.', 'error');
                     console.error('Error deleting department:', error);
                 }
-            },
-
-            get filteredDepartments() {
-                if (this.search === '') {
-                    return this.departments.slice(0, this.perPage);
-                }
-                return this.departments.filter(department => {
-                    return department.name.toLowerCase().includes(this.search.toLowerCase());
-                }).slice(0, this.perPage);
             }
         }
     }
