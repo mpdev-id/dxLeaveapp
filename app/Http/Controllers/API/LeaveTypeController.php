@@ -36,7 +36,11 @@ class LeaveTypeController extends Controller
                 }
             }
 
-            $leaveTypes = $query->paginate($request->input('per_page', 10));
+            if ($request->input('all') === 'true') {
+                $leaveTypes = $query->get();
+            } else {
+                $leaveTypes = $query->paginate($request->input('per_page', 10));
+            }
 
             return ResponseFormatter::success($leaveTypes, 'Leave types retrieved successfully');
         } catch (\Exception $e) {

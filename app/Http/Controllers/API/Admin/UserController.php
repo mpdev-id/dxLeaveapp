@@ -17,7 +17,7 @@ class UserController extends Controller
     public function index(Request $request)
     {
         try {
-            $users = User::with('roles')
+            $query = User::with('roles')
                 ->when($request->filled('search'), function ($query) use ($request) {
                     $search = $request->input('search');
                     return $query->where(function ($q) use ($search) {
@@ -34,8 +34,13 @@ class UserController extends Controller
                     if (in_array($sortBy, $allowedSorts)) {
                         return $query->orderBy($sortBy, $sortDir);
                     }
-                })
-                ->paginate($request->input('per_page', 10));
+                });
+
+            if ($request->input('all') === 'true') {
+                $users = $query->get();
+            } else {
+                $users = $query->paginate($request->input('per_page', 10));
+            }
 
             return ResponseFormatter::success($users, 'Users retrieved successfully');
         } catch (\Exception $e) {
