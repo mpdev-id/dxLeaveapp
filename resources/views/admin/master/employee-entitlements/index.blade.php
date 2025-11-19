@@ -37,8 +37,8 @@
                         </select>
                     </div>
                     <div class="form-control">
-                        <label class="label">Days</label>
-                        <input type="number" x-model="newEntitlement.days" class="input input-bordered" required>
+                        <label class="label">initial_balance</label>
+                        <input type="number" x-model="newEntitlement.initial_balance" class="input input-bordered" required>
                     </div>
                     <div class="form-control">
                         <label class="label">Year</label>
@@ -89,7 +89,7 @@
                     <tr>
                         <th>Employee Name</th>
                         <th>Leave Type</th>
-                        <th>Days</th>
+                        <th>initial_balance</th>
                         <th>Year</th>
                         <th>Actions</th>
                     </tr>
@@ -131,12 +131,12 @@
             loading: true,
             search: '',
             perPage: 10,
-            isEdit: false,
+            isEdit: true,
             newEntitlement: {
-                id: null,
+                
                 user_id: '',
                 leave_type_id: '',
-                days: '',
+                initial_balance: '',
                 year: new Date().getFullYear()
             },
             entitlementToDelete: null,
@@ -212,17 +212,16 @@
 
             openAddModal() {
                 this.isEdit = false;
-                this.newEntitlement = { id: null, user_id: '', leave_type_id: '', days: '', year: new Date().getFullYear() };
+                this.newEntitlement = { id: null, user_id: '', leave_type_id: '', initial_balance: '', year: new Date().getFullYear() };
                 entitlement_modal.showModal();
             },
 
             openEditModal(entitlement) {
                 this.isEdit = true;
                 this.newEntitlement = { 
-                    id: entitlement.id,
                     user_id: entitlement.user.id,
                     leave_type_id: entitlement.leave_type.id,
-                    days: entitlement.initial_balance,
+                    initial_balance: entitlement.initial_balance,
                     year: entitlement.year
                 };
                 entitlement_modal.showModal();
