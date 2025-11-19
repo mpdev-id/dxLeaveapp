@@ -35,8 +35,12 @@ class DepartmentController extends Controller
                 }
             }
 
-            $departments = $query->paginate($request->input('per_page', 10));
-
+              if ($request->input('all') === 'true') {
+                $users = $query->get();
+            } else {
+                $users = $query->paginate($request->input('per_page', 10));
+            }
+            
             return ResponseFormatter::success($departments, 'Departments retrieved successfully');
         } catch (\Exception $e) {
             return ResponseFormatter::error(null, 'Failed to retrieve departments: ' . $e->getMessage(), 500);

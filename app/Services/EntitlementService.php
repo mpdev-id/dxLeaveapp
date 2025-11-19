@@ -55,7 +55,13 @@ class EntitlementService
             }
         }
 
-        return $query->paginate($request->input('per_page', 10));
+        if ($request->input('all') === 'true') {
+            $entitlements = $query->get();
+        } else {
+            $entitlements = $query->paginate($request->input('per_page', 10));
+        }
+
+        return $entitlements;
     }
 
     public function findEntitlementById($id)

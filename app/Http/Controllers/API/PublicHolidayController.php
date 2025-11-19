@@ -36,7 +36,11 @@ class PublicHolidayController extends Controller
                 }
             }
 
-            $holidays = $query->paginate($request->input('per_page', 10));
+            if ($request->input('all') === 'true') {
+                $holidays = $query->get();
+            } else {
+                $holidays = $query->paginate($request->input('per_page', 10));
+            }
 
             return ResponseFormatter::success($holidays, 'Public holidays retrieved successfully');
         } catch (\Exception $e) {
