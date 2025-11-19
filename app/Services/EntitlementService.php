@@ -81,6 +81,10 @@ class EntitlementService
 
     public function updateEntitlement(EmployeeEntitlement $entitlement, array $data)
     {
+        \Illuminate\Support\Facades\Log::info('Updating entitlement in service', [
+            'data' => $data,
+            'entitlement' => $entitlement
+        ]);
         $validator = Validator::make($data, [
             'user_id' => 'exists:users,id',
             'leave_type_id' => 'exists:leave_types,id',
@@ -94,7 +98,11 @@ class EntitlementService
             throw new ValidationException($validator);
         }
 
-        $entitlement->update($data);
+        $result = $entitlement->update($data);
+        \Illuminate\Support\Facades\Log::info('Entitlement update result', [
+            'result' => $result,
+            'entitlement' => $entitlement
+        ]);
         return $entitlement;
     }
 

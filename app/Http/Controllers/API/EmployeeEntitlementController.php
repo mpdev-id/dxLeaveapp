@@ -76,17 +76,33 @@ class EmployeeEntitlementController extends Controller
     public function update(Request $request, EmployeeEntitlement $employeeEntitlement)
     {
         try {
+            \Illuminate\Support\Facades\Log::info('Updating entitlement', [
+                'request' => $request->all(),
+                'entitlement' => $employeeEntitlement
+            ]);
             $updatedEntitlement = $this->entitlementService->updateEntitlement($employeeEntitlement, $request->all());
             return ResponseFormatter::success(
                 new EmployeeEntitlementResource($updatedEntitlement),
                 'Employee entitlement updated successfully'
             );
         } catch (ValidationException $e) {
+            \Illuminate\Support\Facades\Log::error('Validation failed during entitlement update', [
+                'errors' => $e->errors(),
+                'request' => $request->all(),
+                'entitlement' => $employeeEntitlement
+            ]);
             return ResponseFormatter::error(
                 ['errors' => $e->errors()],
                 'Validation failed',
                 422
             );
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('An unexpected error occurred during entitlement update', [
+                'error' => $e->getMessage(),
+                'request' => $request->all(),
+                'entitlement' => $employeeEntitlement
+            ]);
+            return ResponseFormatter::error(null, 'An unexpected error occurred: ' . $e->getMessage(), 500);
         }
     }
 
@@ -100,6 +116,23 @@ class EmployeeEntitlementController extends Controller
             return ResponseFormatter::success(null, 'Employee entitlement deleted successfully');
         } catch (\Exception $e) {
             return ResponseFormatter::error(null, 'Failed to delete employee entitlement: ' . $e->getMessage(), 500);
+        }
+    }
+
+    public function testUpdate(Request $request, EmployeeEntitlement $employeeEntitlement)
+    {
+        try {
+            $updatedEntitlement = $this->entitlementService->updateEntitlement($employeeEntitlement, ['initial_balance' => 100]);
+            return ResponseFormatter::success(
+                new EmployeeEntitlementResource($updatedEntitlement),
+                'Employee entitlement updated successfully from test'
+            );
+        } catch (ValidationException $e) {
+            return ResponseFormatter::error(
+                ['errors' => $e->errors()],
+                'Validation failed',
+                422
+            );
         }
     }
 }
