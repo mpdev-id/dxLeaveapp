@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DXLeave API Documentation</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📄</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📄</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code&display=swap" rel="stylesheet">
@@ -102,9 +102,9 @@
 
         #base-url-input { width: calc(100% - 30px); background-color: var(--input-bg); color: var(--input-text); border: 1px solid var(--border-color); border-radius: 5px; padding: 8px 15px; margin-top: 10px; margin-bottom: 20px; font-family: 'Fira Code', monospace; }
 
-        .endpoint { cursor: pointer; }
-        .endpoint:hover { background-color: rgba(255,255,255,0.05); }
-        .light-mode .endpoint:hover { background-color: rgba(0,0,0,0.05); }
+        .endpoint-link { cursor: pointer; }
+        .endpoint-link:hover { background-color: rgba(255,255,255,0.05); }
+        .light-mode .endpoint-link:hover { background-color: rgba(0,0,0,0.05); }
         #sidebar h1 { font-size: 24px; color: var(--heading-color); margin-bottom: 10px; }
         #sidebar ul { list-style: none; padding: 0; }
         #sidebar ul li a { display: block; color: var(--text-color); text-decoration: none; padding: 10px 15px; border-radius: 5px; margin-bottom: 5px; transition: background-color 0.2s ease, color 0.2s ease; font-size: 15px; }
@@ -114,7 +114,7 @@
         .section > p { font-size: 16px; line-height: 1.7; margin-bottom: 30px; }
         .endpoint { background-color: var(--content-bg); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 30px; overflow: hidden; transition: background-color 0.3s, border-color 0.3s; }
         .light-mode .endpoint { backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
-        .endpoint-header { padding: 20px; display: flex; align-items: center; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; gap: 15px; }
+        .endpoint-header { padding: 20px; display: flex; align-items: center; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; gap: 15px; cursor: pointer; }
         .method { font-family: 'Fira Code', monospace; font-weight: 700; padding: 6px 12px; border-radius: 5px; color: #fff; font-size: 14px; min-width: 70px; text-align: center; }
         .GET { background-color: var(--method-get); }
         .POST { background-color: var(--method-post); }
@@ -167,9 +167,13 @@
             <li><a href="#auth" data-i18n="navAuth">Authentication</a></li>
             <li><a href="#user" data-i18n="navUser">User Profile</a></li>
             <li><a href="#leave-requests" data-i18n="navLeaveRequests">Leave Requests</a></li>
-            <li><a href="#approvals" data-i18n="navApprovals">Approvals</a></li>
-            <li><a href="#admin-master" data-i18n="navAdminMaster">Admin: Master Data</a></li>
             <li><a href="#admin-dashboard" data-i18n="navAdminDashboard">Admin: Dashboard</a></li>
+            <li><a href="#admin-users" data-i18n="navAdminUsers">Admin: Users</a></li>
+            <li><a href="#admin-departments" data-i18n="navAdminDepartments">Admin: Departments</a></li>
+            <li><a href="#admin-leave-types" data-i18n="navAdminLeaveTypes">Admin: Leave Types</a></li>
+            <li><a href="#admin-public-holidays" data-i18n="navAdminPublicHolidays">Admin: Public Holidays</a></li>
+            <li><a href="#admin-entitlements" data-i18n="navAdminEntitlements">Admin: Entitlements</a></li>
+            <li><a href="#admin-leave-requests" data-i18n="navAdminLeaveRequests">Admin: Leave Requests</a></li>
         </ul>
     </div>
 
@@ -184,133 +188,96 @@
         <section id="auth" class="section">
             <h2 data-i18n="authTitle">Authentication</h2>
             <p data-i18n="authText">Public endpoints for user registration, login, and password management.</p>
-            <div class="endpoint" data-path="/register">
-                <div class="endpoint-header"><span class="method POST">POST</span><span class="endpoint-path">/api/register</span></div>
-                <div class="endpoint-details"></div>
-            </div>
-            <div class="endpoint" data-path="/login">
-                <div class="endpoint-header"><span class="method POST">POST</span><span class="endpoint-path">/api/login</span></div>
-                <div class="endpoint-details"></div>
-            </div>
-            <div class="endpoint" data-path="/logout">
-                <div class="endpoint-header"><span class="method POST">POST</span><span class="endpoint-path">/api/logout</span><span class="badge" data-i18n="authRequiredBadge">Auth Required</span></div>
-                <div class="endpoint-details"></div>
-            </div>
-            <div class="endpoint" data-path="/forgot-password">
-                <div class="endpoint-header"><span class="method POST">POST</span><span class="endpoint-path">/api/forgot-password</span></div>
-                <div class="endpoint-details"></div>
-            </div>
-            <div class="endpoint" data-path="/reset-password">
-                <div class="endpoint-header"><span class="method POST">POST</span><span class="endpoint-path">/api/reset-password</span></div>
-                <div class="endpoint-details"></div>
-            </div>
+            <div class="endpoint" data-id="api/register"></div>
+            <div class="endpoint" data-id="api/login"></div>
+            <div class="endpoint" data-id="api/logout"></div>
+            <div class="endpoint" data-id="api/forgot-password"></div>
+            <div class="endpoint" data-id="api/reset-password"></div>
         </section>
 
         <section id="user" class="section">
             <h2 data-i18n="userTitle">User Profile</h2>
             <p data-i18n="userText">Endpoint for the authenticated user.</p>
-            <div class="endpoint" data-path="/user">
-                <div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/api/user</span><span class="badge" data-i18n="authRequiredBadge">Auth Required</span></div>
-                <div class="endpoint-details"></div>
-            </div>
+            <div class="endpoint" data-id="api/user"></div>
         </section>
 
         <section id="leave-requests" class="section">
             <h2 data-i18n="leaveRequestsTitle">Leave Requests</h2>
             <p data-i18n="leaveRequestsText">Endpoints for employees to manage their own leave requests.</p>
-            <div class="endpoint" data-path="/leave-requests">
-                <div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/api/leave-requests</span><span class="badge" data-i18n="authRequiredBadge">Auth Required</span></div>
-                <div class="endpoint-details"></div>
-            </div>
-            <div class="endpoint" data-path="/leave-requests-create">
-                <div class="endpoint-header"><span class="method POST">POST</span><span class="endpoint-path">/api/leave-requests</span><span class="badge" data-i18n="authRequiredBadge">Auth Required</span></div>
-                <div class="endpoint-details"></div>
-            </div>
-            <div class="endpoint" data-path="/leave-requests/{id}">
-                <div class="endpoint-header"><span class="method PATCH">PATCH</span><span class="endpoint-path">/api/leave-requests/{id}</span><span class="badge" data-i18n="authRequiredBadge">Auth Required</span></div>
-                <div class="endpoint-details"></div>
-            </div>
-        </section>
-        
-        <section id="approvals" class="section">
-            <h2 data-i18n="approvalsTitle">Approvals</h2>
-            <p data-i18n="approvalsText">Endpoints for managers to approve or reject leave requests.</p>
-            <div class="endpoint" data-path="/leave-requests/{id}/approve">
-                <div class="endpoint-header"><span class="method PATCH">PATCH</span><span class="endpoint-path">/api/leave-requests/{leaveRequest}/approve</span><span class="badge" data-i18n="managerRoleBadge">Manager/Approver Role</span></div>
-                <div class="endpoint-details"></div>
-            </div>
+            <div class="endpoint" data-id="api/leave-requests-get"></div>
+            <div class="endpoint" data-id="api/leave-requests-post"></div>
+            <div class="endpoint" data-id="api/leave-requests/{leave_request}-patch"></div>
+            <div class="endpoint" data-id="api/leave-requests/{leaveRequest}/approve-patch"></div>
         </section>
 
-        <section id="admin-master" class="section">
-            <h2 data-i18n="adminMasterTitle">Admin: Master Data</h2>
-            <p data-i18n="adminMasterText">Full CRUD endpoints for managing core system data. All require Super Admin role.</p>
-            
-            <h4>Users</h4>
-            <div class="endpoint" data-path="/admin/users">
-                <div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/api/admin/master/users</span><span class="badge admin" data-i18n="superAdminBadge">Super Admin</span></div>
-                <div class="endpoint-details"></div>
-            </div>
-            <div class="endpoint" data-path="/admin/users-create">
-                <div class="endpoint-header"><span class="method POST">POST</span><span class="endpoint-path">/api/admin/master/users</span><span class="badge admin" data-i18n="superAdminBadge">Super Admin</span></div>
-                <div class="endpoint-details"></div>
-            </div>
-            <div class="endpoint" data-path="/admin/users/{id}">
-                <div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/api/admin/master/users/{id}</span><span class="badge admin" data-i18n="superAdminBadge">Super Admin</span></div>
-                <div class="endpoint-details"></div>
-            </div>
-            <div class="endpoint" data-path="/admin/users/{id}-update">
-                <div class="endpoint-header"><span class="method PUT">PUT</span><span class="endpoint-path">/api/admin/master/users/{id}</span><span class="badge admin" data-i18n="superAdminBadge">Super Admin</span></div>
-                <div class="endpoint-details"></div>
-            </div>
-            <div class="endpoint" data-path="/admin/users/{id}-delete">
-                <div class="endpoint-header"><span class="method DELETE">DELETE</span><span class="endpoint-path">/api/admin/master/users/{id}</span><span class="badge admin" data-i18n="superAdminBadge">Super Admin</span></div>
-                <div class="endpoint-details"></div>
-            </div>
-
-            <h4>Departments</h4>
-            <div class="endpoint" data-path="/admin/departments">
-                <div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/api/admin/master/departments</span><span class="badge admin" data-i18n="superAdminBadge">Super Admin</span></div>
-                <div class="endpoint-details"></div>
-            </div>
-            <div class="endpoint" data-path="/admin/departments-create">
-                <div class="endpoint-header"><span class="method POST">POST</span><span class="endpoint-path">/api/admin/master/departments</span><span class="badge admin" data-i18n="superAdminBadge">Super Admin</span></div>
-                <div class="endpoint-details"></div>
-            </div>
-            
-            <h4>Leave Types</h4>
-            <div class="endpoint" data-path="/admin/leave-types">
-                <div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/api/admin/master/leave-types</span><span class="badge admin" data-i18n="superAdminBadge">Super Admin</span></div>
-                <div class="endpoint-details"></div>
-            </div>
-            
-            <h4>Public Holidays</h4>
-            <div class="endpoint" data-path="/admin/public-holidays">
-                <div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/api/admin/master/public-holidays</span><span class="badge admin" data-i18n="superAdminBadge">Super Admin</span></div>
-                <div class="endpoint-details"></div>
-            </div>
-
-            <h4>Employee Entitlements</h4>
-            <div class="endpoint" data-path="/admin/employee-entitlements">
-                <div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/api/admin/master/employee-entitlements</span><span class="badge admin" data-i18n="superAdminBadge">Super Admin</span></div>
-                <div class="endpoint-details"></div>
-            </div>
-        </section>
-        
         <section id="admin-dashboard" class="section">
             <h2 data-i18n="adminDashboardTitle">Admin: Dashboard</h2>
             <p data-i18n="adminDashboardText">Endpoints for fetching aggregated data for the admin dashboard.</p>
-            <div class="endpoint" data-path="/admin/dashboard/stats">
-                <div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/api/admin/dashboard/stats</span><span class="badge admin" data-i18n="superAdminBadge">Super Admin</span></div>
-                <div class="endpoint-details"></div>
-            </div>
-            <div class="endpoint" data-path="/admin/dashboard/recent-activity">
-                <div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/api/admin/dashboard/recent-activity</span><span class="badge admin" data-i18n="superAdminBadge">Super Admin</span></div>
-                <div class="endpoint-details"></div>
-            </div>
-            <div class="endpoint" data-path="/admin/dashboard/upcoming-leaves">
-                <div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/api/admin/dashboard/upcoming-leaves</span><span class="badge admin" data-i18n="superAdminBadge">Super Admin</span></div>
-                <div class="endpoint-details"></div>
-            </div>
+            <div class="endpoint" data-id="api/admin/dashboard/stats"></div>
+            <div class="endpoint" data-id="api/admin/dashboard/recent-activity"></div>
+            <div class="endpoint" data-id="api/admin/dashboard/upcoming-leaves"></div>
+        </section>
+
+        <section id="admin-users" class="section">
+            <h2 data-i18n="adminUsersTitle">Admin: Users</h2>
+            <p data-i18n="adminUsersText">Endpoints for managing users.</p>
+            <div class="endpoint" data-id="api/admin/master/users-get"></div>
+            <div class="endpoint" data-id="api/admin/master/users-post"></div>
+            <div class="endpoint" data-id="api/admin/master/users/{user}-get"></div>
+            <div class="endpoint" data-id="api/admin/master/users/{user}-put"></div>
+            <div class="endpoint" data-id="api/admin/master/users/{user}-delete"></div>
+            <div class="endpoint" data-id="api/admin/master/users/{user}/status-get"></div>
+            <div class="endpoint" data-id="api/admin/master/roles-get"></div>
+        </section>
+
+        <section id="admin-departments" class="section">
+            <h2 data-i18n="adminDepartmentsTitle">Admin: Departments</h2>
+            <p data-i18n="adminDepartmentsText">Endpoints for managing departments.</p>
+            <div class="endpoint" data-id="api/admin/master/departments-get"></div>
+            <div class="endpoint" data-id="api/admin/master/departments-post"></div>
+            <div class="endpoint" data-id="api/admin/master/departments/{department}-get"></div>
+            <div class="endpoint" data-id="api/admin/master/departments/{department}-put"></div>
+            <div class="endpoint" data-id="api/admin/master/departments/{department}-delete"></div>
+        </section>
+
+        <section id="admin-leave-types" class="section">
+            <h2 data-i18n="adminLeaveTypesTitle">Admin: Leave Types</h2>
+            <p data-i18n="adminLeaveTypesText">Endpoints for managing leave types.</p>
+            <div class="endpoint" data-id="api/admin/master/leave-types-get"></div>
+            <div class="endpoint" data-id="api/admin/master/leave-types-post"></div>
+            <div class="endpoint" data-id="api/admin/master/leave-types/{leave_type}-get"></div>
+            <div class="endpoint" data-id="api/admin/master/leave-types/{leave_type}-put"></div>
+            <div class="endpoint" data-id="api/admin/master/leave-types/{leave_type}-delete"></div>
+        </section>
+
+        <section id="admin-public-holidays" class="section">
+            <h2 data-i18n="adminPublicHolidaysTitle">Admin: Public Holidays</h2>
+            <p data-i18n="adminPublicHolidaysText">Endpoints for managing public holidays.</p>
+            <div class="endpoint" data-id="api/admin/master/public-holidays-get"></div>
+            <div class="endpoint" data-id="api/admin/master/public-holidays-post"></div>
+            <div class="endpoint" data-id="api/admin/master/public-holidays/{public_holiday}-get"></div>
+            <div class="endpoint" data-id="api/admin/master/public-holidays/{public_holiday}-put"></div>
+            <div class="endpoint" data-id="api/admin/master/public-holidays/{public_holiday}-delete"></div>
+        </section>
+
+        <section id="admin-entitlements" class="section">
+            <h2 data-i18n="adminEntitlementsTitle">Admin: Employee Entitlements</h2>
+            <p data-i18n="adminEntitlementsText">Endpoints for managing employee entitlements.</p>
+            <div class="endpoint" data-id="api/admin/master/employee-entitlements-get"></div>
+            <div class="endpoint" data-id="api/admin/master/employee-entitlements-post"></div>
+            <div class="endpoint" data-id="api/admin/master/employee-entitlements/{employee_entitlement}-get"></div>
+            <div class="endpoint" data-id="api/admin/master/employee-entitlements/{employee_entitlement}-put"></div>
+            <div class="endpoint" data-id="api/admin/master/employee-entitlements/{employee_entitlement}-delete"></div>
+        </section>
+
+        <section id="admin-leave-requests" class="section">
+            <h2 data-i18n="adminLeaveRequestsTitle">Admin: Leave Requests</h2>
+            <p data-i18n="adminLeaveRequestsText">Endpoints for managing all leave requests.</p>
+            <div class="endpoint" data-id="api/admin/master/leave-requests-get"></div>
+            <div class="endpoint" data-id="api/admin/master/leave-requests-post"></div>
+            <div class="endpoint" data-id="api/admin/master/leave-requests/{leave_request}-get"></div>
+            <div class="endpoint" data-id="api/admin/master/leave-requests/{leave_request}-put"></div>
+            <div class="endpoint" data-id="api/admin/master/leave-requests/{leave_request}-delete"></div>
         </section>
     </div>
 
@@ -350,9 +317,13 @@
                 navAuth: "Authentication",
                 navUser: "User Profile",
                 navLeaveRequests: "Leave Requests",
-                navApprovals: "Approvals",
-                navAdminMaster: "Admin: Master Data",
                 navAdminDashboard: "Admin: Dashboard",
+                navAdminUsers: "Admin: Users",
+                navAdminDepartments: "Admin: Departments",
+                navAdminLeaveTypes: "Admin: Leave Types",
+                navAdminPublicHolidays: "Admin: Public Holidays",
+                navAdminEntitlements: "Admin: Entitlements",
+                navAdminLeaveRequests: "Admin: Leave Requests",
                 introTitle: "Introduction",
                 introText: "Welcome to the DXLeave API documentation. This API provides endpoints for managing leave requests, users, and other core data for the DXLeave application. All responses follow a consistent structure defined by our <code>ResponseFormatter</code>.",
                 baseUrlTitle: "Base URL",
@@ -363,12 +334,20 @@
                 userText: "Endpoint for the authenticated user.",
                 leaveRequestsTitle: "Leave Requests",
                 leaveRequestsText: "Endpoints for employees to manage their own leave requests.",
-                approvalsTitle: "Approvals",
-                approvalsText: "Endpoints for managers to approve or reject leave requests.",
-                adminMasterTitle: "Admin: Master Data",
-                adminMasterText: "Full CRUD endpoints for managing core system data. All require Super Admin role.",
                 adminDashboardTitle: "Admin: Dashboard",
                 adminDashboardText: "Endpoints for fetching aggregated data for the admin dashboard.",
+                adminUsersTitle: "Admin: Users",
+                adminUsersText: "Endpoints for managing users.",
+                adminDepartmentsTitle: "Admin: Departments",
+                adminDepartmentsText: "Endpoints for managing departments.",
+                adminLeaveTypesTitle: "Admin: Leave Types",
+                adminLeaveTypesText: "Endpoints for managing leave types.",
+                adminPublicHolidaysTitle: "Admin: Public Holidays",
+                adminPublicHolidaysText: "Endpoints for managing public holidays.",
+                adminEntitlementsTitle: "Admin: Employee Entitlements",
+                adminEntitlementsText: "Endpoints for managing employee entitlements.",
+                adminLeaveRequestsTitle: "Admin: Leave Requests",
+                adminLeaveRequestsText: "Endpoints for managing all leave requests.",
                 codeExamplesTitle: "Code Examples",
                 clickEndpointHint: "Click an endpoint to see an example.",
                 copyBtn: "Copy",
@@ -379,6 +358,7 @@
                 parametersTitle: "Parameters",
                 fieldHeader: "Field",
                 typeHeader: "Type",
+                locationHeader: "Location",
                 requiredHeader: "Required",
                 successResponseTitle: "Success Response (200 OK)",
                 errorResponseTitle: "Error Response (e.g., 422)",
@@ -392,9 +372,13 @@
                 navAuth: "Autentikasi",
                 navUser: "Profil Pengguna",
                 navLeaveRequests: "Pengajuan Cuti",
-                navApprovals: "Persetujuan",
-                navAdminMaster: "Admin: Master Data",
                 navAdminDashboard: "Admin: Dasbor",
+                navAdminUsers: "Admin: Pengguna",
+                navAdminDepartments: "Admin: Departemen",
+                navAdminLeaveTypes: "Admin: Jenis Cuti",
+                navAdminPublicHolidays: "Admin: Hari Libur",
+                navAdminEntitlements: "Admin: Jatah Cuti",
+                navAdminLeaveRequests: "Admin: Pengajuan Cuti",
                 introTitle: "Pendahuluan",
                 introText: "Selamat datang di dokumentasi API DXLeave. API ini menyediakan endpoint untuk mengelola permintaan cuti, pengguna, dan data inti lainnya untuk aplikasi DXLeave. Semua respons mengikuti struktur konsisten yang ditentukan oleh <code>ResponseFormatter</code> kami.",
                 baseUrlTitle: "Base URL",
@@ -405,12 +389,20 @@
                 userText: "Endpoint untuk pengguna yang terautentikasi.",
                 leaveRequestsTitle: "Pengajuan Cuti",
                 leaveRequestsText: "Endpoint bagi karyawan untuk mengelola permintaan cuti mereka sendiri.",
-                approvalsTitle: "Persetujuan",
-                approvalsText: "Endpoint bagi manajer untuk menyetujui atau menolak permintaan cuti.",
-                adminMasterTitle: "Admin: Master Data",
-                adminMasterText: "Endpoint CRUD penuh untuk mengelola data sistem inti. Semua memerlukan peran Super Admin.",
                 adminDashboardTitle: "Admin: Dasbor",
                 adminDashboardText: "Endpoint untuk mengambil data agregat untuk dasbor admin.",
+                adminUsersTitle: "Admin: Pengguna",
+                adminUsersText: "Endpoint untuk mengelola pengguna.",
+                adminDepartmentsTitle: "Admin: Departemen",
+                adminDepartmentsText: "Endpoint untuk mengelola departemen.",
+                adminLeaveTypesTitle: "Admin: Jenis Cuti",
+                adminLeaveTypesText: "Endpoint untuk mengelola jenis cuti.",
+                adminPublicHolidaysTitle: "Admin: Hari Libur",
+                adminPublicHolidaysText: "Endpoint untuk mengelola hari libur nasional.",
+                adminEntitlementsTitle: "Admin: Jatah Cuti",
+                adminEntitlementsText: "Endpoint untuk mengelola jatah cuti karyawan.",
+                adminLeaveRequestsTitle: "Admin: Pengajuan Cuti",
+                adminLeaveRequestsText: "Endpoint untuk mengelola semua permintaan cuti.",
                 codeExamplesTitle: "Contoh Kode",
                 clickEndpointHint: "Klik sebuah endpoint untuk melihat contoh.",
                 copyBtn: "Salin",
@@ -421,6 +413,7 @@
                 parametersTitle: "Parameter",
                 fieldHeader: "Kolom",
                 typeHeader: "Tipe",
+                locationHeader: "Lokasi",
                 requiredHeader: "Wajib",
                 successResponseTitle: "Respons Sukses (200 OK)",
                 errorResponseTitle: "Respons Gagal (cth., 422)",
@@ -430,170 +423,159 @@
         };
 
         const endpointsData = {
-            '/register': { 
+            'api/register': {
                 method: 'POST',
-                description: {
-                    en: 'Creates a new user account.',
-                    id: 'Membuat akun pengguna baru.'
-                },
-                params: [ { name: 'name', required: true, example: 'Jane Doe' }, { name: 'employee_code', required: true, example: 'EMP003' }, { name: 'email', required: true, example: 'jane.doe@example.com' }, { name: 'phone_number', required: true, example: '081234567890' }, { name: 'password', required: true, example: 'password123' }, { name: 'password_confirmation', required: true, example: 'password123' } ],
-                successResponse: `{
-    "meta": { "code": 200, "status": "success", "message": "User registered successfully" },
-    "data": { "access_token": "...", "user": { ... } }
-}`,
-                errorResponse: `{
-    "meta": { "code": 422, "status": "error", "message": "The email has already been taken." },
-    "data": { "email": ["The email has already been taken."] }
-}`
-            },
-            '/login': { 
-                method: 'POST',
-                description: {
-                    en: 'Authenticates a user and returns a Sanctum token.',
-                    id: 'Mengautentikasi pengguna dan mengembalikan token Sanctum.'
-                },
-                params: [ { name: 'identifier', required: true, example: 'jane.doe@example.com' }, { name: 'password', required: true, example: 'password123' } ],
-                successResponse: `{
-    "meta": { "code": 200, "status": "success", "message": "Login successful" },
-    "data": { "access_token": "...", "user": { ... } }
-}`,
-                errorResponse: `{
-    "meta": { "code": 401, "status": "error", "message": "Invalid credentials" },
-    "data": null
-}`
-            },
-            '/logout': { 
-                method: 'POST',
-                description: {
-                    en: 'Invalidates the user\'s current Sanctum token.',
-                    id: 'Membatalkan token Sanctum pengguna saat ini.'
-                },
-                params: [],
-                successResponse: `{
-    "meta": { "code": 200, "status": "success", "message": "Logout successful" },
-    "data": null
-}`
-            },
-             '/forgot-password': {
-                method: 'POST',
-                description: {
-                    en: 'Sends a password reset link to the user\'s email.',
-                    id: 'Mengirim tautan pengaturan ulang kata sandi ke email pengguna.'
-                },
-                params: [{ name: 'identifier', required: true, example: 'jane.doe@example.com' }],
-                successResponse: `{
-    "meta": { "code": 200, "status": "success", "message": "Password reset link sent" },
-    "data": null
-}`
-            },
-            '/reset-password': {
-                method: 'POST',
-                description: {
-                    en: 'Resets the user password with a valid token.',
-                    id: 'Mengatur ulang kata sandi pengguna dengan token yang valid.'
-                },
-                params: [ { name: 'email', required: true, example: 'jane.doe@example.com' }, { name: 'token', required: true, example: 'xxxxxxxx' }, { name: 'password', required: true, example: 'newSecurePassword' }, { name: 'password_confirmation', required: true, example: 'newSecurePassword' } ],
-                successResponse: `{
-    "meta": { "code": 200, "status": "success", "message": "Password has been reset" },
-    "data": null
-}`
-            },
-            '/user': { 
-                method: 'GET',
-                description: {
-                    en: 'Fetches the profile of the authenticated user.',
-                    id: 'Mengambil profil pengguna yang terautentikasi.'
-                },
-                params: [],
-                successResponse: `{
-    "meta": { "code": 200, "status": "success", "message": "User fetched successfully" },
-    "data": { "id": 1, "name": "John Doe", "email": "john@example.com", ... }
-}`
-            },
-            '/leave-requests': {
-                method: 'GET',
-                description: {
-                    en: 'Retrieves a list of the user\'s own leave requests.',
-                    id: 'Mengambil daftar permintaan cuti milik pengguna.'
-                },
-                params: [],
-                successResponse: `{
-    "meta": { "code": 200, "status": "success", "message": "Leave requests fetched" },
-    "data": [ { "id": 1, "leave_type": "Annual", ... }, ... ]
-}`
-            },
-            '/leave-requests-create': {
-                method: 'POST',
-                path: '/leave-requests',
-                description: {
-                    en: 'Submits a new leave request. For half-day leaves, `start_date` and `end_date` must be the same.',
-                    id: 'Mengajukan permintaan cuti baru. Untuk cuti setengah hari, `start_date` dan `end_date` harus sama.'
-                },
-                params: [ 
-                    { name: 'leave_type_id', required: true, example: 1 }, 
-                    { name: 'start_date', required: true, example: '2025-12-24' }, 
-                    { name: 'end_date', required: true, example: '2025-12-24' }, 
-                    { name: 'reason', required: true, example: 'Personal day.' },
-                    { name: 'leave_period', required: true, example: 'half_day_morning', type: "enum('full_day', 'half_day_morning', 'half_day_afternoon')" },
-                    { name: 'supporting_document', required: false, example: 'file.pdf', type: 'file' }
+                description: { en: 'Creates a new user account.', id: 'Membuat akun pengguna baru.' },
+                params: [
+                    { name: 'name', required: true, example: 'Jane Doe', in: 'body' },
+                    { name: 'employee_code', required: true, example: 'EMP003', in: 'body' },
+                    { name: 'email', required: true, example: 'jane.doe@example.com', in: 'body' },
+                    { name: 'phone_number', required: true, example: '081234567890', in: 'body' },
+                    { name: 'password', required: true, example: 'password123', in: 'body' },
+                    { name: 'password_confirmation', required: true, example: 'password123', in: 'body' }
                 ],
-                successResponse: `{
-    "meta": { "code": 201, "status": "success", "message": "Leave request created" },
-    "data": { "id": 5, "status": "Draft", ... }
-}`,
-                errorResponse: `{
-    "meta": { "code": 422, "status": "error", "message": "Insufficient leave balance." },
-    "data": null
-}`
+                successResponse: `{"meta":{"code":200,"status":"success","message":"User Registered & Entitlement Created Successfully"},"data":{"access_token":"...","token_type":"Bearer","user":{...}}}`,
+                errorResponse: `{"meta":{"code":422,"status":"error","message":"Validation failed"},"data":{"errors":{"email":["The email has already been taken."]}}}`
             },
-            '/leave-requests/{id}': {
-                method: 'PATCH',
-                description: {
-                    en: 'Updates a draft leave request, e.g., to submit it for approval.',
-                    id: 'Memperbarui draf permintaan cuti, mis., untuk mengirimkannya untuk persetujuan.'
-                },
-                params: [ 
-                    { name: 'current_status', required: false, example: 'Pending' },
-                    { name: 'leave_period', required: false, example: 'full_day', type: "enum('full_day', 'half_day_morning', 'half_day_afternoon')" },
-                    { name: 'supporting_document', required: false, example: 'file.pdf', type: 'file' }
+            'api/login': {
+                method: 'POST',
+                description: { en: 'Authenticates a user and returns a Sanctum token.', id: 'Mengautentikasi pengguna dan mengembalikan token Sanctum.' },
+                params: [
+                    { name: 'identifier', required: true, example: 'jane.doe@example.com', in: 'body' },
+                    { name: 'password', required: true, example: 'password123', in: 'body' }
                 ],
-                successResponse: `{
-    "meta": { "code": 200, "status": "success", "message": "Leave request updated" },
-    "data": { "id": 5, "status": "Pending", ... }
-}`
+                successResponse: `{"meta":{"code":200,"status":"success","message":"Authenticated"},"data":{"access_token":"...","token_type":"Bearer","user":{...}}}`,
+                errorResponse: `{"meta":{"code":500,"status":"error","message":"Authentication Failed"},"data":{"message":"Unauthorized"}}`
             },
-            '/leave-requests/{id}/approve': {
+            'api/logout': {
+                method: 'POST',
+                auth: true,
+                description: { en: 'Invalidates the user\'s current Sanctum token.', id: 'Membatalkan token Sanctum pengguna saat ini.' },
+                params: [],
+                successResponse: `{"meta":{"code":200,"status":"success","message":"Token Revoked"},"data":true}`
+            },
+             'api/forgot-password': {
+                method: 'POST',
+                description: { en: 'Sends a password reset link to the user\'s email.', id: 'Mengirim tautan pengaturan ulang kata sandi ke email pengguna.' },
+                params: [{ name: 'identifier', required: true, example: 'jane.doe@example.com', in: 'body' }],
+                successResponse: `{"meta":{"code":200,"status":"success","message":"Password Reset"},"data":{"message":"Password reset link sent to your email","token":"..."}}`
+            },
+            'api/reset-password': {
+                method: 'POST',
+                description: { en: 'Resets the user password with a valid token.', id: 'Mengatur ulang kata sandi pengguna dengan token yang valid.' },
+                params: [
+                    { name: 'email', required: true, example: 'jane.doe@example.com', in: 'body' },
+                    { name: 'token', required: true, example: 'xxxxxxxx', in: 'body' },
+                    { name: 'password', required: true, example: 'newSecurePassword', in: 'body' },
+                    { name: 'password_confirmation', required: true, example: 'newSecurePassword', in: 'body' }
+                ],
+                successResponse: `{"meta":{"code":200,"status":"success","message":"Password Reset"},"data":{"message":"Password has been reset"}}`
+            },
+            'api/user': {
+                method: 'GET',
+                auth: true,
+                description: { en: 'Fetches the profile of the authenticated user.', id: 'Mengambil profil pengguna yang terautentikasi.' },
+                params: [],
+                successResponse: `{"meta":{"code":200,"status":"success","message":"Data profile user berhasil diambil"},"data":{...}}`
+            },
+            'api/leave-requests-get': {
+                method: 'GET',
+                path: 'api/leave-requests',
+                auth: true,
+                description: { en: 'Retrieves a list of the user\'s own leave requests and requests needing their approval.', id: 'Mengambil daftar permintaan cuti milik pengguna dan yang memerlukan persetujuannya.' },
+                params: [],
+                successResponse: `{"meta":{"code":200,"status":"success","message":"Leave requests retrieved successfully"},"data":[...]}`
+            },
+            'api/leave-requests-post': {
+                method: 'POST',
+                path: 'api/leave-requests',
+                auth: true,
+                description: { en: 'Submits a new leave request. For half-day leaves, `start_date` and `end_date` must be the same.', id: 'Mengajukan permintaan cuti baru. Untuk cuti setengah hari, `start_date` dan `end_date` harus sama.' },
+                params: [
+                    { name: 'leave_type_id', required: true, example: 1, in: 'body' },
+                    { name: 'start_date', required: true, example: '2025-12-24', in: 'body' },
+                    { name: 'end_date', required: true, example: '2025-12-24', in: 'body' },
+                    { name: 'reason', required: true, example: 'Personal day.', in: 'body' },
+                    { name: 'leave_period', required: true, example: 'half_day_morning', type: "enum('full_day', 'half_day_morning', 'half_day_afternoon')", in: 'body' },
+                    { name: 'supporting_document', required: false, example: 'file.pdf', type: 'file', in: 'body' }
+                ],
+                successResponse: `{"meta":{"code":200,"status":"success","message":"Leave request submitted successfully"},"data":{...}}`,
+                errorResponse: `{"meta":{"code":422,"status":"error","message":"Insufficient leave balance."},"data":null}`
+            },
+            'api/leave-requests/{leave_request}-patch': {
                 method: 'PATCH',
-                path: '/leave-requests/{leaveRequest}/approve',
-                description: {
-                    en: 'Allows a manager to approve or reject a leave request.',
-                    id: 'Memungkinkan manajer untuk menyetujui atau menolak permintaan cuti.'
-                },
-                params: [ { name: 'action', required: true, example: 'Approved' }, { name: 'comments', required: false, example: 'Enjoy!' } ],
-                successResponse: `{
-    "meta": { "code": 200, "status": "success", "message": "Leave request has been Approved" },
-    "data": { "id": 5, "status": "Approved", ... }
-}`
+                path: 'api/leave-requests/{leave_request}',
+                auth: true,
+                description: { en: 'Updates a draft leave request, e.g., to submit it for approval.', id: 'Memperbarui draf permintaan cuti, mis., untuk mengirimkannya untuk persetujuan.' },
+                params: [
+                    { name: 'leave_request', required: true, example: 1, in: 'path' },
+                    { name: 'current_status', required: false, example: 'Pending', in: 'body' },
+                    { name: 'leave_period', required: false, example: 'full_day', type: "enum('full_day', 'half_day_morning', 'half_day_afternoon')", in: 'body' },
+                    { name: 'supporting_document', required: false, example: 'file.pdf', type: 'file', in: 'body' }
+                ],
+                successResponse: `{"meta":{"code":200,"status":"success","message":"Leave request updated successfully"},"data":{...}}`
+            },
+            'api/leave-requests/{leaveRequest}/approve-patch': {
+                method: 'PATCH',
+                path: 'api/leave-requests/{leaveRequest}/approve',
+                auth: 'manager',
+                description: { en: 'Allows a manager to approve or reject a leave request.', id: 'Memungkinkan manajer untuk menyetujui atau menolak permintaan cuti.' },
+                params: [
+                    { name: 'leaveRequest', required: true, example: 1, in: 'path' },
+                    { name: 'action', required: true, example: 'Approved', type: "enum('Approved', 'Rejected')", in: 'body' },
+                    { name: 'comments', required: false, example: 'Enjoy!', in: 'body' }
+                ],
+                successResponse: `{"meta":{"code":200,"status":"success","message":"Approval action recorded successfully."},"data":{...}}`
             },
             
-            // Admin Users
-            '/admin/users': { method: 'GET', path: '/admin/master/users', description: { en: 'Retrieves a paginated list of all users.', id: 'Mengambil daftar semua pengguna yang dipaginasi.' }, params: [], successResponse: `{"meta":..., "data":[...]}` },
-            '/admin/users-create': { method: 'POST', path: '/admin/master/users', description: { en: 'Creates a new user.', id: 'Membuat pengguna baru.' }, params: [ { name: 'name', required: true, example: 'Admin Doe' }, { name: 'email', required: true, example: 'admin@example.com' } ], successResponse: `{"meta":..., "data":{...}}`, errorResponse: `{"meta":..., "data":{"email": ["..."]}}` },
-            '/admin/users/{id}': { method: 'GET', path: '/admin/master/users/{id}', description: { en: 'Retrieves a single user by ID.', id: 'Mengambil satu pengguna berdasarkan ID.' }, params: [], successResponse: `{"meta":..., "data":{...}}` },
-            '/admin/users/{id}-update': { method: 'PUT', path: '/admin/master/users/{id}', description: { en: 'Updates a user\'s details.', id: 'Memperbarui detail pengguna.' }, params: [ { name: 'name', required: false, example: 'Admin Doe Updated' } ], successResponse: `{"meta":..., "data":{...}}` },
-            '/admin/users/{id}-delete': { method: 'DELETE', path: '/admin/master/users/{id}', description: { en: 'Deletes a user.', id: 'Menghapus pengguna.' }, params: [], successResponse: `{"meta":..., "data":null}` },
-
-            // Admin Others
-            '/admin/departments': { method: 'GET', path: '/admin/master/departments', description: { en: 'Retrieves a list of all departments.', id: 'Mengambil daftar semua departemen.' }, params: [], successResponse: `{"meta":..., "data":[...]}` },
-            '/admin/departments-create': { method: 'POST', path: '/admin/master/departments', description: { en: 'Creates a new department.', id: 'Membuat departemen baru.' }, params: [{ name: 'name', required: true, example: 'New Department' }], successResponse: `{"meta":..., "data":{...}}` },
-            '/admin/leave-types': { method: 'GET', path: '/admin/master/leave-types', description: { en: 'Retrieves a list of all leave types.', id: 'Mengambil daftar semua jenis cuti.' }, params: [], successResponse: `{"meta":..., "data":[...]}` },
-            '/admin/public-holidays': { method: 'GET', path: '/admin/master/public-holidays', description: { en: 'Retrieves a list of all public holidays.', id: 'Mengambil daftar semua hari libur nasional.' }, params: [], successResponse: `{"meta":..., "data":[...]}` },
-            '/admin/employee-entitlements': { method: 'GET', path: '/admin/master/employee-entitlements', description: { en: 'Retrieves a list of all employee entitlements.', id: 'Mengambil daftar semua jatah cuti karyawan.' }, params: [], successResponse: `{"meta":..., "data":[...]}` },
-
             // Admin Dashboard
-            '/admin/dashboard/stats': { method: 'GET', path: '/admin/dashboard/stats', description: { en: 'Retrieves key statistics for the dashboard.', id: 'Mengambil statistik utama untuk dasbor.' }, params: [], successResponse: `{"meta":..., "data":{...}}` },
-            '/admin/dashboard/recent-activity': { method: 'GET', path: '/admin/dashboard/recent-activity', description: { en: 'Gets a feed of recent activities.', id: 'Mendapatkan umpan aktivitas terbaru.' }, params: [], successResponse: `{"meta":..., "data":[...]}` },
-            '/admin/dashboard/upcoming-leaves': { method: 'GET', path: '/admin/dashboard/upcoming-leaves', description: { en: 'Gets a list of upcoming approved leaves.', id: 'Mendapatkan daftar cuti yang akan datang yang telah disetujui.' }, params: [], successResponse: `{"meta":..., "data":[...]}` },
+            'api/admin/dashboard/stats': { method: 'GET', auth: 'admin', description: { en: 'Retrieves key statistics for the dashboard.', id: 'Mengambil statistik utama untuk dasbor.' }, params: [], successResponse: `{"meta":..., "data":{...}}` },
+            'api/admin/dashboard/recent-activity': { method: 'GET', auth: 'admin', description: { en: 'Gets a feed of recent activities.', id: 'Mendapatkan umpan aktivitas terbaru.' }, params: [], successResponse: `{"meta":..., "data":[...]}` },
+            'api/admin/dashboard/upcoming-leaves': { method: 'GET', auth: 'admin', description: { en: 'Gets a list of upcoming approved leaves.', id: 'Mendapatkan daftar cuti yang akan datang yang telah disetujui.' }, params: [], successResponse: `{"meta":..., "data":[...]}` },
+
+            // Admin Users
+            'api/admin/master/users-get': { method: 'GET', path: 'api/admin/master/users', auth: 'admin', description: { en: 'Retrieves a list of all users.', id: 'Mengambil daftar semua pengguna.' }, params: [], successResponse: `{"meta":..., "data":[...]}` },
+            'api/admin/master/users-post': { method: 'POST', path: 'api/admin/master/users', auth: 'admin', description: { en: 'Creates a new user.', id: 'Membuat pengguna baru.' }, params: [ { name: 'name', required: true, example: 'Admin Doe', in: 'body' }, { name: 'email', required: true, example: 'admin@example.com', in: 'body' }, { name: 'password', required: true, example: 'password', in: 'body' }, { name: 'roles', required: false, example: ['Super Admin'], type: 'array', in: 'body' } ], successResponse: `{"meta":..., "data":{...}}`, errorResponse: `{"meta":..., "data":{"errors":{"email": ["..."]}}}` },
+            'api/admin/master/users/{user}-get': { method: 'GET', path: 'api/admin/master/users/{user}', auth: 'admin', description: { en: 'Retrieves a single user by ID.', id: 'Mengambil satu pengguna berdasarkan ID.' }, params: [{ name: 'user', required: true, example: 1, in: 'path' }], successResponse: `{"meta":..., "data":{...}}` },
+            'api/admin/master/users/{user}-put': { method: 'PUT', path: 'api/admin/master/users/{user}', auth: 'admin', description: { en: 'Updates a user\'s details.', id: 'Memperbarui detail pengguna.' }, params: [ { name: 'user', required: true, example: 1, in: 'path' }, { name: 'name', required: false, example: 'Admin Doe Updated', in: 'body' }, { name: 'roles', required: false, example: ['Employee'], type: 'array', in: 'body' } ], successResponse: `{"meta":..., "data":{...}}` },
+            'api/admin/master/users/{user}-delete': { method: 'DELETE', path: 'api/admin/master/users/{user}', auth: 'admin', description: { en: 'Deletes a user.', id: 'Menghapus pengguna.' }, params: [{ name: 'user', required: true, example: 1, in: 'path' }], successResponse: `{"meta":..., "data":null}` },
+            'api/admin/master/users/{user}/status-get': { method: 'GET', path: 'api/admin/master/users/{user}/status', auth: 'admin', description: { en: 'Retrieves the status of a user.', id: 'Mengambil status pengguna.' }, params: [{ name: 'user', required: true, example: 1, in: 'path' }], successResponse: `{"meta":..., "data":"Active"}` },
+            'api/admin/master/roles-get': { method: 'GET', path: 'api/admin/master/roles', auth: 'admin', description: { en: 'Retrieves a list of all available roles.', id: 'Mengambil daftar semua peran yang tersedia.' }, params: [], successResponse: `{"meta":..., "data":[...]}` },
+
+            // Admin Departments
+            'api/admin/master/departments-get': { method: 'GET', path: 'api/admin/master/departments', auth: 'admin', description: { en: 'Retrieves a list of all departments.', id: 'Mengambil daftar semua departemen.' }, params: [], successResponse: `{"meta":..., "data":[...]}` },
+            'api/admin/master/departments-post': { method: 'POST', path: 'api/admin/master/departments', auth: 'admin', description: { en: 'Creates a new department.', id: 'Membuat departemen baru.' }, params: [{ name: 'name', required: true, example: 'New Department', in: 'body' }], successResponse: `{"meta":..., "data":{...}}` },
+            'api/admin/master/departments/{department}-get': { method: 'GET', path: 'api/admin/master/departments/{department}', auth: 'admin', description: { en: 'Retrieves a single department by ID.', id: 'Mengambil satu departemen berdasarkan ID.' }, params: [{ name: 'department', required: true, example: 1, in: 'path' }], successResponse: `{"meta":..., "data":{...}}` },
+            'api/admin/master/departments/{department}-put': { method: 'PUT', path: 'api/admin/master/departments/{department}', auth: 'admin', description: { en: 'Updates a department.', id: 'Memperbarui departemen.' }, params: [{ name: 'department', required: true, example: 1, in: 'path' }, { name: 'name', required: true, example: 'Updated Department', in: 'body' }], successResponse: `{"meta":..., "data":{...}}` },
+            'api/admin/master/departments/{department}-delete': { method: 'DELETE', path: 'api/admin/master/departments/{department}', auth: 'admin', description: { en: 'Deletes a department.', id: 'Menghapus departemen.' }, params: [{ name: 'department', required: true, example: 1, in: 'path' }], successResponse: `{"meta":..., "data":null}` },
+
+            // Admin Leave Types
+            'api/admin/master/leave-types-get': { method: 'GET', path: 'api/admin/master/leave-types', auth: 'admin', description: { en: 'Retrieves a list of all leave types.', id: 'Mengambil daftar semua jenis cuti.' }, params: [], successResponse: `{"meta":..., "data":[...]}` },
+            'api/admin/master/leave-types-post': { method: 'POST', path: 'api/admin/master/leave-types', auth: 'admin', description: { en: 'Creates a new leave type.', id: 'Membuat jenis cuti baru.' }, params: [{ name: 'name', required: true, example: 'Sick Leave', in: 'body' }, { name: 'default_entitlement_days', required: true, example: 10, in: 'body' }], successResponse: `{"meta":..., "data":{...}}` },
+            'api/admin/master/leave-types/{leave_type}-get': { method: 'GET', path: 'api/admin/master/leave-types/{leave_type}', auth: 'admin', description: { en: 'Retrieves a single leave type by ID.', id: 'Mengambil satu jenis cuti berdasarkan ID.' }, params: [{ name: 'leave_type', required: true, example: 1, in: 'path' }], successResponse: `{"meta":..., "data":{...}}` },
+            'api/admin/master/leave-types/{leave_type}-put': { method: 'PUT', path: 'api/admin/master/leave-types/{leave_type}', auth: 'admin', description: { en: 'Updates a leave type.', id: 'Memperbarui jenis cuti.' }, params: [{ name: 'leave_type', required: true, example: 1, in: 'path' }, { name: 'name', required: false, example: 'Annual Leave', in: 'body' }], successResponse: `{"meta":..., "data":{...}}` },
+            'api/admin/master/leave-types/{leave_type}-delete': { method: 'DELETE', path: 'api/admin/master/leave-types/{leave_type}', auth: 'admin', description: { en: 'Deletes a leave type.', id: 'Menghapus jenis cuti.' }, params: [{ name: 'leave_type', required: true, example: 1, in: 'path' }], successResponse: `{"meta":..., "data":null}` },
+
+            // Admin Public Holidays
+            'api/admin/master/public-holidays-get': { method: 'GET', path: 'api/admin/master/public-holidays', auth: 'admin', description: { en: 'Retrieves a list of all public holidays.', id: 'Mengambil daftar semua hari libur nasional.' }, params: [], successResponse: `{"meta":..., "data":[...]}` },
+            'api/admin/master/public-holidays-post': { method: 'POST', path: 'api/admin/master/public-holidays', auth: 'admin', description: { en: 'Creates a new public holiday.', id: 'Membuat hari libur nasional baru.' }, params: [{ name: 'name', required: true, example: 'Independence Day', in: 'body' }, { name: 'date', required: true, example: '2025-08-17', in: 'body' }], successResponse: `{"meta":..., "data":{...}}` },
+            'api/admin/master/public-holidays/{public_holiday}-get': { method: 'GET', path: 'api/admin/master/public-holidays/{public_holiday}', auth: 'admin', description: { en: 'Retrieves a single public holiday by ID.', id: 'Mengambil satu hari libur nasional berdasarkan ID.' }, params: [{ name: 'public_holiday', required: true, example: 1, in: 'path' }], successResponse: `{"meta":..., "data":{...}}` },
+            'api/admin/master/public-holidays/{public_holiday}-put': { method: 'PUT', path: 'api/admin/master/public-holidays/{public_holiday}', auth: 'admin', description: { en: 'Updates a public holiday.', id: 'Memperbarui hari libur nasional.' }, params: [{ name: 'public_holiday', required: true, example: 1, in: 'path' }, { name: 'name', required: false, example: 'New Year', in: 'body' }], successResponse: `{"meta":..., "data":{...}}` },
+            'api/admin/master/public-holidays/{public_holiday}-delete': { method: 'DELETE', path: 'api/admin/master/public-holidays/{public_holiday}', auth: 'admin', description: { en: 'Deletes a public holiday.', id: 'Menghapus hari libur nasional.' }, params: [{ name: 'public_holiday', required: true, example: 1, in: 'path' }], successResponse: `{"meta":..., "data":null}` },
+
+            // Admin Employee Entitlements
+            'api/admin/master/employee-entitlements-get': { method: 'GET', path: 'api/admin/master/employee-entitlements', auth: 'admin', description: { en: 'Retrieves a list of all employee entitlements.', id: 'Mengambil daftar semua jatah cuti karyawan.' }, params: [], successResponse: `{"meta":..., "data":[...]}` },
+            'api/admin/master/employee-entitlements-post': { method: 'POST', path: 'api/admin/master/employee-entitlements', auth: 'admin', description: { en: 'Creates a new employee entitlement.', id: 'Membuat jatah cuti karyawan baru.' }, params: [{ name: 'user_id', required: true, example: 1, in: 'body' }, { name: 'leave_type_id', required: true, example: 1, in: 'body' }, { name: 'initial_balance', required: true, example: 12, in: 'body' }], successResponse: `{"meta":..., "data":{...}}` },
+            'api/admin/master/employee-entitlements/{employee_entitlement}-get': { method: 'GET', path: 'api/admin/master/employee-entitlements/{employee_entitlement}', auth: 'admin', description: { en: 'Retrieves a single employee entitlement by ID.', id: 'Mengambil satu jatah cuti karyawan berdasarkan ID.' }, params: [{ name: 'employee_entitlement', required: true, example: 1, in: 'path' }], successResponse: `{"meta":..., "data":{...}}` },
+            'api/admin/master/employee-entitlements/{employee_entitlement}-put': { method: 'PUT', path: 'api/admin/master/employee-entitlements/{employee_entitlement}', auth: 'admin', description: { en: 'Updates an employee entitlement.', id: 'Memperbarui jatah cuti karyawan.' }, params: [{ name: 'employee_entitlement', required: true, example: 1, in: 'path' }, { name: 'initial_balance', required: false, example: 15, in: 'body' }], successResponse: `{"meta":..., "data":{...}}` },
+            'api/admin/master/employee-entitlements/{employee_entitlement}-delete': { method: 'DELETE', path: 'api/admin/master/employee-entitlements/{employee_entitlement}', auth: 'admin', description: { en: 'Deletes an employee entitlement.', id: 'Menghapus jatah cuti karyawan.' }, params: [{ name: 'employee_entitlement', required: true, example: 1, in: 'path' }], successResponse: `{"meta":..., "data":null}` },
+
+            // Admin Leave Requests
+            'api/admin/master/leave-requests-get': { method: 'GET', path: 'api/admin/master/leave-requests', auth: 'admin', description: { en: 'Retrieves a list of all leave requests.', id: 'Mengambil daftar semua permintaan cuti.' }, params: [], successResponse: `{"meta":..., "data":[...]}` },
+            'api/admin/master/leave-requests-post': { method: 'POST', path: 'api/admin/master/leave-requests', auth: 'admin', description: { en: 'Creates a new leave request as an admin.', id: 'Membuat permintaan cuti baru sebagai admin.' }, params: [{ name: 'user_id', required: true, example: 2, in: 'body' }, { name: 'leave_type_id', required: true, example: 1, in: 'body' }, { name: 'start_date', required: true, example: '2025-12-25', in: 'body' }], successResponse: `{"meta":..., "data":{...}}` },
+            'api/admin/master/leave-requests/{leave_request}-get': { method: 'GET', path: 'api/admin/master/leave-requests/{leave_request}', auth: 'admin', description: { en: 'Retrieves a single leave request by ID.', id: 'Mengambil satu permintaan cuti berdasarkan ID.' }, params: [{ name: 'leave_request', required: true, example: 1, in: 'path' }], successResponse: `{"meta":..., "data":{...}}` },
+            'api/admin/master/leave-requests/{leave_request}-put': { method: 'PUT', path: 'api/admin/master/leave-requests/{leave_request}', auth: 'admin', description: { en: 'Updates a leave request as an admin.', id: 'Memperbarui permintaan cuti sebagai admin.' }, params: [{ name: 'leave_request', required: true, example: 1, in: 'path' }, { name: 'current_status', required: false, example: 'Approved', in: 'body' }], successResponse: `{"meta":..., "data":{...}}` },
+            'api/admin/master/leave-requests/{leave_request}-delete': { method: 'DELETE', path: 'api/admin/master/leave-requests/{leave_request}', auth: 'admin', description: { en: 'Deletes a leave request.', id: 'Menghapus permintaan cuti.' }, params: [{ name: 'leave_request', required: true, example: 1, in: 'path' }], successResponse: `{"meta":..., "data":null}` },
         };
 
         let currentLang = 'en';
@@ -615,10 +597,10 @@
             document.title = i18nData[lang].docTitle;
             baseUrlInput.title = i18nData[lang].baseUrlTitle;
             
-            // Force a click on the active endpoint to re-render its details in the new language
             const activeEndpoint = document.querySelector('.endpoint.active-endpoint');
             if (activeEndpoint) {
-                activeEndpoint.click();
+                renderEndpointDetails(activeEndpoint);
+                renderCodeExamples(activeEndpoint);
             }
         };
 
@@ -646,80 +628,130 @@
             }
         });
 
-        document.querySelectorAll('.endpoint').forEach(endpointEl => {
-            endpointEl.addEventListener('click', () => {
-                // Manage active endpoint state
-                document.querySelector('.endpoint.active-endpoint')?.classList.remove('active-endpoint');
-                endpointEl.classList.add('active-endpoint');
+        function renderEndpointHeader(endpointEl, endpointData) {
+            const path = endpointData.path || endpointEl.dataset.id;
+            let badges = '';
+            if (endpointData.auth === true) {
+                badges = `<span class="badge" data-i18n="authRequiredBadge">${i18nData[currentLang].authRequiredBadge}</span>`;
+            } else if (endpointData.auth === 'manager') {
+                badges = `<span class="badge" data-i18n="managerRoleBadge">${i18nData[currentLang].managerRoleBadge}</span>`;
+            } else if (endpointData.auth === 'admin') {
+                badges = `<span class="badge admin" data-i18n="superAdminBadge">${i18nData[currentLang].superAdminBadge}</span>`;
+            }
 
-                const path = endpointEl.dataset.path;
-                const endpointData = endpointsData[path];
-                if (!endpointData) { console.warn(`No data for path: ${path}`); return; }
+            endpointEl.innerHTML = `
+                <div class="endpoint-header">
+                    <span class="method ${endpointData.method}">${endpointData.method}</span>
+                    <span class="endpoint-path">/${path}</span>
+                    ${badges}
+                </div>
+                <div class="endpoint-details"></div>
+            `;
+        }
 
-                const detailsContainer = endpointEl.querySelector('.endpoint-details');
-                if(detailsContainer) {
-                    let html = '';
-                    if (endpointData.description) {
-                        html += `<p>${endpointData.description[currentLang] || endpointData.description['en']}</p>`;
-                    }
+        function renderEndpointDetails(endpointEl) {
+            const id = endpointEl.dataset.id;
+            const endpointData = endpointsData[id];
+            if (!endpointData) { console.warn(`No data for id: ${id}`); return; }
 
-                    if (endpointData.params && endpointData.params.length > 0) {
-                        html += `<h4 data-i18n="parametersTitle">${i18nData[currentLang].parametersTitle}</h4><table>`;
-                        html += `<tr><th data-i18n="fieldHeader">${i18nData[currentLang].fieldHeader}</th><th data-i18n="typeHeader">${i18nData[currentLang].typeHeader}</th><th data-i18n="requiredHeader">${i18nData[currentLang].requiredHeader}</th></tr>`;
-                        endpointData.params.forEach(p => {
-                            html += `<tr><td><code>${p.name}</code></td><td>${p.type || 'string'}</td><td>${p.required ? i18nData[currentLang].yes : i18nData[currentLang].no}</td></tr>`;
-                        });
-                        html += `</table>`;
-                    }
-
-                    if (endpointData.successResponse) {
-                        html += `<h4 data-i18n="successResponseTitle">${i18nData[currentLang].successResponseTitle}</h4><div class="code-block"><pre><code>${endpointData.successResponse.trim()}</code></pre></div>`;
-                    }
-                    if (endpointData.errorResponse) {
-                        html += `<h4 data-i18n="errorResponseTitle">${i18nData[currentLang].errorResponseTitle}</h4><div class="code-block"><pre><code>${endpointData.errorResponse.trim()}</code></pre></div>`;
-                    }
-                    detailsContainer.innerHTML = html;
+            const detailsContainer = endpointEl.querySelector('.endpoint-details');
+            if(detailsContainer) {
+                let html = '';
+                if (endpointData.description) {
+                    html += `<p>${endpointData.description[currentLang] || endpointData.description['en']}</p>`;
                 }
 
-                const baseUrl = baseUrlInput.value;
-                const finalPath = endpointData.path || path;
-                const fullUrl = `${baseUrl}/api${finalPath}`;
+                if (endpointData.params && endpointData.params.length > 0) {
+                    html += `<h4 data-i18n="parametersTitle">${i18nData[currentLang].parametersTitle}</h4><table>`;
+                    html += `<tr>
+                                <th data-i18n="fieldHeader">${i18nData[currentLang].fieldHeader}</th>
+                                <th data-i18n="typeHeader">${i18nData[currentLang].typeHeader}</th>
+                                <th data-i18n="locationHeader">${i18nData[currentLang].locationHeader}</th>
+                                <th data-i18n="requiredHeader">${i18nData[currentLang].requiredHeader}</th>
+                             </tr>`;
+                    endpointData.params.forEach(p => {
+                        html += `<tr>
+                                    <td><code>${p.name}</code></td>
+                                    <td>${p.type || 'string'}</td>
+                                    <td>${p.in}</td>
+                                    <td>${p.required ? i18nData[currentLang].yes : i18nData[currentLang].no}</td>
+                                 </tr>`;
+                    });
+                    html += `</table>`;
+                }
 
-                const examples = {
-                    curl: generateCurl(endpointData.method, fullUrl, endpointData.params),
-                    php: generatePhp(endpointData.method, `/api${finalPath}`, endpointData.params),
-                    js: generateJs(endpointData.method, fullUrl, endpointData.params)
-                };
+                if (endpointData.successResponse) {
+                    html += `<h4 data-i18n="successResponseTitle">${i18nData[currentLang].successResponseTitle}</h4><div class="code-block"><pre><code>${endpointData.successResponse.trim()}</code></pre></div>`;
+                }
+                if (endpointData.errorResponse) {
+                    html += `<h4 data-i18n="errorResponseTitle">${i18nData[currentLang].errorResponseTitle}</h4><div class="code-block"><pre><code>${endpointData.errorResponse.trim()}</code></pre></div>`;
+                }
+                detailsContainer.innerHTML = html;
+            }
+        }
 
-                document.querySelector('[data-lang-content="curl"] pre').innerHTML = examples.curl;
-                document.querySelector('[data-lang-content="php"] pre').innerHTML = examples.php;
-                document.querySelector('[data-lang-content="js"] pre').innerHTML = examples.js;
-            });
+        function renderCodeExamples(endpointEl) {
+            const id = endpointEl.dataset.id;
+            const endpointData = endpointsData[id];
+            if (!endpointData) return;
+
+            const baseUrl = baseUrlInput.value;
+            const finalPath = endpointData.path || id;
+            const fullUrl = `${baseUrl}/${finalPath}`;
+
+            const examples = {
+                curl: generateCurl(endpointData.method, fullUrl, endpointData.params || []),
+                php: generatePhp(endpointData.method, `/${finalPath}`, endpointData.params || []),
+                js: generateJs(endpointData.method, fullUrl, endpointData.params || [])
+            };
+
+            document.querySelector('[data-lang-content="curl"] pre').innerHTML = examples.curl;
+            document.querySelector('[data-lang-content="php"] pre').innerHTML = examples.php;
+            document.querySelector('[data-lang-content="js"] pre').innerHTML = examples.js;
+        }
+
+        document.querySelectorAll('.endpoint').forEach(endpointEl => {
+            const id = endpointEl.dataset.id;
+            const endpointData = endpointsData[id];
+            if (endpointData) {
+                renderEndpointHeader(endpointEl, endpointData);
+                endpointEl.querySelector('.endpoint-header').addEventListener('click', () => {
+                    document.querySelector('.endpoint.active-endpoint')?.classList.remove('active-endpoint');
+                    endpointEl.classList.add('active-endpoint');
+                    renderEndpointDetails(endpointEl);
+                    renderCodeExamples(endpointEl);
+                });
+            }
         });
 
         function formatCode(code) { return code.replace(/(\ \/\/ required|\ \/\/ optional)/g, '<span class="comment">$1</span>'); }
         
         function generateCurl(method, path, params) {
-            let curl = `curl --location --request ${method} '${path}'`;
+            let finalPath = path;
+            params.filter(p => p.in === 'path').forEach(p => {
+                finalPath = finalPath.replace(`{${p.name}}`, p.example);
+            });
+
+            let curl = `curl --location --request ${method} '${finalPath}'`;
             let headers = { 'Accept': 'application/json', 'Authorization': 'Bearer <YOUR_AUTH_TOKEN>' };
             
             const fileParams = params.filter(p => p.type === 'file');
-            const jsonParams = params.filter(p => p.type !== 'file');
+            const bodyParams = params.filter(p => p.in === 'body');
 
             if (fileParams.length > 0) {
                 for(const p of fileParams) {
                     curl += ` \
 --form '${p.name}=@"/path/to/your/${p.example}"'`;
                 }
-                for(const p of jsonParams) {
+                for(const p of bodyParams) {
                      curl += ` \
 --form '${p.name}=${p.example}'`;
                 }
-            } else if (jsonParams.length > 0) {
+            } else if (bodyParams.length > 0) {
                 headers['Content-Type'] = 'application/json';
-                const bodyLines = jsonParams.map(p => `    "${p.name}": "${p.example}"`);
+                const bodyLines = bodyParams.map(p => `    "${p.name}": "${p.example}"`);
                 curl += ` \
---data-raw '{
+--data-raw '{ 
 ${bodyLines.join(',\n')}
 }'`;
             }
@@ -733,66 +765,77 @@ ${bodyLines.join(',\n')}
         }
 
         function generatePhp(method, path, params) {
+            let finalPath = path;
+            params.filter(p => p.in === 'path').forEach(p => {
+                finalPath = finalPath.replace(`{${p.name}}`, p.example);
+            });
+
             let php = `use Illuminate\\Support\\Facades\\Http;\n\n`;
             php += `$baseUrl = "${baseUrlInput.value}";\n`;
             
             const fileParam = params.find(p => p.type === 'file');
-            const bodyParams = params.filter(p => p.type !== 'file');
+            const bodyParams = params.filter(p => p.in === 'body');
             let effectiveMethod = method.toLowerCase();
             let response = `$response = Http::withToken(<YOUR_AUTH_TOKEN>)->acceptJson()`;
 
             if (fileParam) {
                 response += `->attach(\n    '${fileParam.name}', file_get_contents('/path/to/your/${fileParam.example}'), '${fileParam.example}'
 )`;
-                // When sending files, other data is sent as multipart, not JSON
                 const multipartData = bodyParams.reduce((acc, p) => {
                     acc[p.name] = p.example;
                     return acc;
                 }, {});
 
-                if (method === 'PATCH') {
-                    multipartData['_method'] = 'PATCH';
+                if (method === 'PATCH' || method === 'PUT') {
+                    multipartData['_method'] = method;
                     effectiveMethod = 'post';
                 }
-                response += `->${effectiveMethod}($baseUrl . '${path}', ${JSON.stringify(multipartData, null, 4)});`;
+                response += `->${effectiveMethod}($baseUrl . '${finalPath}', ${JSON.stringify(multipartData, null, 4)});`;
 
-            } else {
+            } else { 
                  const bodyLines = bodyParams.map(p => `        '${p.name}' => '${p.example}'`);
                  const bodyString = bodyParams.length > 0 ? `[\n${bodyLines.join(',\n')}\n    ]` : '[]';
-                 response += `->${effectiveMethod}($baseUrl . '${path}', ${bodyString});`;
+                 response += `->${effectiveMethod}($baseUrl . '${finalPath}', ${bodyString});`;
             }
             
             return formatCode(php + response + `\n\n// ...`);
         }
 
         function generateJs(method, path, params) {
-            const isPatch = method === 'PATCH';
-            const hasFile = params.some(p => p.type === 'file');
-            const effectiveMethod = isPatch && hasFile ? 'POST' : method;
+            let finalPath = path;
+            params.filter(p => p.in === 'path').forEach(p => {
+                finalPath = finalPath.replace(`{${p.name}}`, p.example);
+            });
 
-            let js = `const url = '${path}';\n`;
+            const isPatchOrPut = method === 'PATCH' || method === 'PUT';
+            const hasFile = params.some(p => p.type === 'file');
+            const effectiveMethod = isPatchOrPut && hasFile ? 'POST' : method;
+
+            let js = `const url = '${finalPath}';\n`;
             let bodyVar = 'body';
             let optionsHeaders = {
                 'Accept': 'application/json',
                 'Authorization': 'Bearer <YOUR_AUTH_TOKEN>'
             };
 
+            const bodyParams = params.filter(p => p.in === 'body');
+
             if (hasFile) {
                 js += `const formData = new FormData();\n`;
-                params.forEach(p => {
+                bodyParams.forEach(p => {
                     if (p.type === 'file') {
                         js += `// formData.append('${p.name}', yourFileInput.files[0]);\n`;
                     } else {
                         js += `formData.append('${p.name}', '${p.example}');\n`;
                     }
                 });
-                if(isPatch) {
-                    js += `formData.append('_method', 'PATCH');\n`;
+                if(isPatchOrPut) {
+                    js += `formData.append('_method', '${method}');\n`;
                 }
                 bodyVar = 'formData';
-            } else if (params.length > 0) {
+            } else if (bodyParams.length > 0) {
                 optionsHeaders['Content-Type'] = 'application/json';
-                const bodyLines = params.map(p => `    "${p.name}": "${p.example}"`);
+                const bodyLines = bodyParams.map(p => `    "${p.name}": "${p.example}"`);
                 js += `const body = {\n${bodyLines.join(',\n')}\n};
 `;
             }
@@ -801,7 +844,7 @@ ${bodyLines.join(',\n')}
             js += `    method: '${effectiveMethod}',\n`;
             js += `    headers: ${JSON.stringify(optionsHeaders, null, 4)}`;
             
-            if (params.length > 0) {
+            if (bodyParams.length > 0) {
                 js += `,
     body: ${hasFile ? bodyVar : `JSON.stringify(${bodyVar})`}
 `;
@@ -841,7 +884,6 @@ fetch(url, options).then(...)`;
         };
         window.addEventListener('scroll', updateActiveLink);
         
-        // Language switcher logic
         langSwitcher.addEventListener('click', (e) => {
             if (e.target.tagName === 'BUTTON') {
                 const lang = e.target.dataset.lang;
@@ -849,7 +891,6 @@ fetch(url, options).then(...)`;
             }
         });
 
-        // Initial load
         const savedLang = localStorage.getItem('api_lang') || 'en';
         setLanguage(savedLang);
         updateActiveLink();

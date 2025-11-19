@@ -118,21 +118,4 @@ class EmployeeEntitlementController extends Controller
             return ResponseFormatter::error(null, 'Failed to delete employee entitlement: ' . $e->getMessage(), 500);
         }
     }
-
-    public function testUpdate(Request $request, EmployeeEntitlement $employeeEntitlement)
-    {
-        try {
-            $updatedEntitlement = $this->entitlementService->updateEntitlement($employeeEntitlement, ['initial_balance' => 100]);
-            return ResponseFormatter::success(
-                new EmployeeEntitlementResource($updatedEntitlement),
-                'Employee entitlement updated successfully from test'
-            );
-        } catch (ValidationException $e) {
-            return ResponseFormatter::error(
-                ['errors' => $e->errors()],
-                'Validation failed',
-                422
-            );
-        }
-    }
 }

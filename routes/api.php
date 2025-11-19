@@ -46,7 +46,6 @@ Route::middleware(['auth:sanctum', 'role:Super Admin'])->prefix('admin/master')-
     Route::get('users/{user}/status', [AdminUserController::class, 'getStatus'])->name('admin.users.status');
     Route::get('roles', [\App\Http\Controllers\API\MasterDataController::class, 'roles'])->name('admin.roles.index');
 });
-
 // --- Rute Administrasi Dasbor (Hanya untuk Admin) ---
 Route::middleware(['auth:sanctum', 'role:Super Admin'])->prefix('admin/dashboard')->group(function () {
     Route::get('stats', [\App\Http\Controllers\API\Admin\DashboardController::class, 'getStats']);
