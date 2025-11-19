@@ -20,29 +20,29 @@ class UserController extends Controller
             $query = User::with('roles')->get();
 
             // Search functionality
-            // if ($request->filled('search')) {
-            //     $search = $request->input('search');
-            //     $query->where(function ($q) use ($search) {
-            //         $q->where('name', 'like', '%' . $search . '%')
-            //           ->orWhere('email', 'like', '%' . $search . '%');
-            //     });
-            // }
+            if ($request->filled('search')) {
+                $search = $request->input('search');
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', '%' . $search . '%')
+                      ->orWhere('email', 'like', '%' . $search . '%');
+                });
+            }
 
-            // // Sorting functionality
-            // if ($request->filled('sort_by')) {
-            //     $sortBy = $request->input('sort_by');
-            //     $sortDir = $request->input('sort_dir', 'asc');
+            // Sorting functionality
+            if ($request->filled('sort_by')) {
+                $sortBy = $request->input('sort_by');
+                $sortDir = $request->input('sort_dir', 'asc');
 
-            //     // Whitelist columns to prevent arbitrary sorting
-            //     $allowedSorts = ['name', 'email', 'created_at'];
-            //     if (in_array($sortBy, $allowedSorts)) {
-            //         $query->orderBy($sortBy, $sortDir);
-            //     }
-            // }
+                // Whitelist columns to prevent arbitrary sorting
+                $allowedSorts = ['name', 'email', 'created_at'];
+                if (in_array($sortBy, $allowedSorts)) {
+                    $query->orderBy($sortBy, $sortDir);
+                }
+            }
 
-            // $users = $query->paginate($request->input('per_page', 10));
+            $users = $query->paginate($request->input('per_page', 10));
 
-            return ResponseFormatter::success(UserResource::collection($query), 'Users retrieved successfully');
+            return ResponseFormatter::success(UserResource::collection($users), 'Users retrieved successfully');
         } catch (\Exception $e) {
             return ResponseFormatter::error(null, 'Failed to retrieve users: ' . $e->getMessage(), 500);
         }
