@@ -14,20 +14,22 @@
         <dialog id="leavetype_modal" class="modal">
             <div class="modal-box">
                 <form method="dialog">
-                    <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                    <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" @click="errors = {}">✕</button>
                 </form>
                 <h3 class="font-bold text-lg" x-text="isEdit ? 'Edit Leave Type' : 'Add New Leave Type'"></h3>
                 <form @submit.prevent="isEdit ? updateLeaveType() : addLeaveType()">
                     <div class="form-control">
                         <label class="label">Name</label>
-                        <input type="text" x-model="newLeaveType.name" class="input input-bordered" required>
+                        <input type="text" x-model="newLeaveType.name" class="input input-bordered" :class="{'input-error': errors.name}" required>
+                        <div x-show="errors.name" class="text-error text-sm mt-1" x-text="errors.name ? errors.name[0] : ''"></div>
                     </div>
                     <div class="form-control">
                         <label class="label">Days</label>
-                        <input type="number" x-model="newLeaveType.days" class="input input-bordered" required>
+                        <input type="number" x-model="newLeaveType.days" class="input input-bordered" :class="{'input-error': errors.days}" required>
+                        <div x-show="errors.days" class="text-error text-sm mt-1" x-text="errors.days ? errors.days[0] : ''"></div>
                     </div>
                     <div class="modal-action">
-                        <button type="button" class="btn" @click="leavetype_modal.close()">Cancel</button>
+                        <button type="button" class="btn" @click="leavetype_modal.close(); errors = {}">Cancel</button>
                         <button type="submit" class="btn btn-primary" x-text="isEdit ? 'Update' : 'Create'"></button>
                     </div>
                 </form>
@@ -187,6 +189,7 @@
                         days: ''
 
                     },
+                    errors: {},
 
                     
 
@@ -260,239 +263,527 @@
 
         
 
-                    showToast(message) {
-
-                        Swal.fire({
-
-                            toast: true,
-
-                            position: 'top-end',
-
-                            icon: 'success',
-
-                            title: message,
-
-                            showConfirmButton: false,
-
-                            timer: 3000,
-
-                            timerProgressBar: true
-
-                        });
-
-                    },
+                                        showToast(message, icon = 'success') {
 
         
 
-                    openAddModal() {
-
-                        this.isEdit = false;
-
-                        this.newLeaveType = { id: null, name: '', days: '' };
-
-                        leavetype_modal.showModal();
-
-                    },
+                                            Swal.fire({
 
         
 
-                    openEditModal(leaveType) {
-
-                        this.isEdit = true;
-
-                        this.newLeaveType = { ...leaveType, days: parseFloat(leaveType.default_entitlement_days) };
-
-                        leavetype_modal.showModal();
-
-                    },
+                                                toast: true,
 
         
 
-                    async addLeaveType() {
-
-                        try {
-
-                            const token = localStorage.getItem('authToken');
-
-                            const response = await fetch(`${baseApiUrl}/admin/master/leave-types`, {
-
-                                method: 'POST',
-
-                                headers: {
-
-                                    'Authorization': `Bearer ${token}`,
-
-                                    'Content-Type': 'application/json',
-
-                                    'Accept': 'application/json'
-
-                                },
-
-                                body: JSON.stringify(this.newLeaveType)
-
-                            });
+                                                position: 'top-end',
 
         
 
-                            const data = await response.json();
-
-                            if (!response.ok || data.meta.status !== 'success') {
-
-                                throw new Error(data.meta.message || 'Failed to add leave type.');
-
-                            }
+                                                icon: icon,
 
         
 
-                            this.fetchLeaveTypes();
-
-                            this.showToast(data.meta.message);
-
-                            leavetype_modal.close();
-
-                        } catch (error) {
-
-                            console.error('Error adding leave type:', error);
-
-                            alert(error.message);
-
-                        }
-
-                    },
+                                                title: message,
 
         
 
-                    async updateLeaveType() {
-
-                        try {
-
-                            const token = localStorage.getItem('authToken');
-
-                            const response = await fetch(`${baseApiUrl}/admin/master/leave-types/${this.newLeaveType.id}`, {
-
-                                method: 'PUT',
-
-                                headers: {
-
-                                    'Authorization': `Bearer ${token}`,
-
-                                    'Content-Type': 'application/json',
-
-                                    'Accept': 'application/json'
-
-                                },
-
-                                body: JSON.stringify(this.newLeaveType)
-
-                            });
+                                                showConfirmButton: false,
 
         
 
-                            const data = await response.json();
-
-                            if (!response.ok || data.meta.status !== 'success') {
-
-                                throw new Error(data.meta.message || 'Failed to update leave type.');
-
-                            }
+                                                timer: 3000,
 
         
 
-                            this.fetchLeaveTypes();
-
-                            this.showToast(data.meta.message);
-
-                            leavetype_modal.close();
-
-                        } catch (error) {
-
-                            console.error('Error updating leave type:', error);
-
-                            alert(error.message);
-
-                        }
-
-                    },
+                                                timerProgressBar: true
 
         
 
-                    confirmDelete(leaveTypeId) {
-
-                        Swal.fire({
-
-                            title: 'Are you sure?',
-
-                            text: "You won't be able to revert this!",
-
-                            icon: 'warning',
-
-                            showCancelButton: true,
-
-                            confirmButtonColor: '#3085d6',
-
-                            cancelButtonColor: '#d33',
-
-                            confirmButtonText: 'Yes, delete it!'
-
-                        }).then((result) => {
-
-                            if (result.isConfirmed) {
-
-                                this.deleteLeaveType(leaveTypeId);
-
-                            }
-
-                        });
-
-                    },
+                                            });
 
         
 
-                    async deleteLeaveType(leaveTypeId) {
-
-                        try {
-
-                            const token = localStorage.getItem('authToken');
-
-                            const response = await fetch(`${baseApiUrl}/admin/master/leave-types/${leaveTypeId}`, {
-
-                                method: 'DELETE',
-
-                                headers: {
-
-                                    'Authorization': `Bearer ${token}`,
-
-                                    'Accept': 'application/json'
-
-                                }
-
-                            });
+                                        },
 
         
 
-                            const data = await response.json();
-
-                            if (!response.ok || data.meta.status !== 'success') {
-
-                                throw new Error(data.meta.message || 'Failed to delete leave type.');
-
-                            }
+                                        openAddModal() {
 
         
 
-                            this.fetchLeaveTypes();
+                                            this.isEdit = false;
 
-                            this.showToast(data.meta.message);
+        
 
-                        } catch (error) {
+                                            this.newLeaveType = { id: null, name: '', days: '' };
 
-                            console.error('Error deleting leave type:', error);
+        
 
-                            alert(error.message);
+                                            this.errors = {};
 
-                        }
+        
 
-                    },
+                                            leavetype_modal.showModal();
+
+        
+
+                                        },
+
+        
+
+                            
+
+        
+
+                                        openEditModal(leaveType) {
+
+        
+
+                                            this.isEdit = true;
+
+        
+
+                                            this.newLeaveType = { ...leaveType, days: parseFloat(leaveType.default_entitlement_days) };
+
+        
+
+                                            this.errors = {};
+
+        
+
+                                            leavetype_modal.showModal();
+
+        
+
+                                        },
+
+        
+
+                            
+
+        
+
+                                        async addLeaveType() {
+
+        
+
+                                            this.errors = {};
+
+        
+
+                                            try {
+
+        
+
+                                                const token = localStorage.getItem('authToken');
+
+        
+
+                                                const response = await fetch(`${baseApiUrl}/admin/master/leave-types`, {
+
+        
+
+                                                    method: 'POST',
+
+        
+
+                                                    headers: {
+
+        
+
+                                                        'Authorization': `Bearer ${token}`,
+
+        
+
+                                                        'Content-Type': 'application/json',
+
+        
+
+                                                        'Accept': 'application/json'
+
+        
+
+                                                    },
+
+        
+
+                                                    body: JSON.stringify(this.newLeaveType)
+
+        
+
+                                                });
+
+        
+
+                            
+
+        
+
+                                                const data = await response.json();
+
+        
+
+                                                if (!response.ok) {
+
+        
+
+                                                    if (response.status === 422) {
+
+        
+
+                                                        this.errors = data.data.errors;
+
+        
+
+                                                    } else {
+
+        
+
+                                                        this.showToast(data.meta.message || 'Failed to add leave type.', 'error');
+
+        
+
+                                                    }
+
+        
+
+                                                    return;
+
+        
+
+                                                }
+
+        
+
+                            
+
+        
+
+                                                this.fetchLeaveTypes();
+
+        
+
+                                                this.showToast(data.meta.message);
+
+        
+
+                                                leavetype_modal.close();
+
+        
+
+                                            } catch (error) {
+
+        
+
+                                                this.showToast('An unexpected error occurred.', 'error');
+
+        
+
+                                                console.error('Error adding leave type:', error);
+
+        
+
+                                            }
+
+        
+
+                                        },
+
+        
+
+                            
+
+        
+
+                                        async updateLeaveType() {
+
+        
+
+                                            this.errors = {};
+
+        
+
+                                            try {
+
+        
+
+                                                const token = localStorage.getItem('authToken');
+
+        
+
+                                                const response = await fetch(`${baseApiUrl}/admin/master/leave-types/${this.newLeaveType.id}`, {
+
+        
+
+                                                    method: 'PUT',
+
+        
+
+                                                    headers: {
+
+        
+
+                                                        'Authorization': `Bearer ${token}`,
+
+        
+
+                                                        'Content-Type': 'application/json',
+
+        
+
+                                                        'Accept': 'application/json'
+
+        
+
+                                                    },
+
+        
+
+                                                    body: JSON.stringify(this.newLeaveType)
+
+        
+
+                                                });
+
+        
+
+                            
+
+        
+
+                                                const data = await response.json();
+
+        
+
+                                                if (!response.ok) {
+
+        
+
+                                                    if (response.status === 422) {
+
+        
+
+                                                        this.errors = data.data.errors;
+
+        
+
+                                                    } else {
+
+        
+
+                                                        this.showToast(data.meta.message || 'Failed to update leave type.', 'error');
+
+        
+
+                                                    }
+
+        
+
+                                                    return;
+
+        
+
+                                                }
+
+        
+
+                            
+
+        
+
+                                                this.fetchLeaveTypes();
+
+        
+
+                                                this.showToast(data.meta.message);
+
+        
+
+                                                leavetype_modal.close();
+
+        
+
+                                            } catch (error) {
+
+        
+
+                                                this.showToast('An unexpected error occurred.', 'error');
+
+        
+
+                                                console.error('Error updating leave type:', error);
+
+        
+
+                                            }
+
+        
+
+                                        },
+
+        
+
+                            
+
+        
+
+                                        confirmDelete(leaveTypeId) {
+
+        
+
+                                            Swal.fire({
+
+        
+
+                                                title: 'Are you sure?',
+
+        
+
+                                                text: "You won't be able to revert this!",
+
+        
+
+                                                icon: 'warning',
+
+        
+
+                                                showCancelButton: true,
+
+        
+
+                                                confirmButtonColor: '#3085d6',
+
+        
+
+                                                cancelButtonColor: '#d33',
+
+        
+
+                                                confirmButtonText: 'Yes, delete it!'
+
+        
+
+                                            }).then((result) => {
+
+        
+
+                                                if (result.isConfirmed) {
+
+        
+
+                                                    this.deleteLeaveType(leaveTypeId);
+
+        
+
+                                                }
+
+        
+
+                                            });
+
+        
+
+                                        },
+
+        
+
+                            
+
+        
+
+                                        async deleteLeaveType(leaveTypeId) {
+
+        
+
+                                            try {
+
+        
+
+                                                const token = localStorage.getItem('authToken');
+
+        
+
+                                                const response = await fetch(`${baseApiUrl}/admin/master/leave-types/${leaveTypeId}`, {
+
+        
+
+                                                    method: 'DELETE',
+
+        
+
+                                                    headers: {
+
+        
+
+                                                        'Authorization': `Bearer ${token}`,
+
+        
+
+                                                        'Accept': 'application/json'
+
+        
+
+                                                    }
+
+        
+
+                                                });
+
+        
+
+                            
+
+        
+
+                                                const data = await response.json();
+
+        
+
+                                                if (!response.ok || data.meta.status !== 'success') {
+
+        
+
+                                                    this.showToast(data.meta.message || 'Failed to delete leave type.', 'error');
+
+        
+
+                                                    return;
+
+        
+
+                                                }
+
+        
+
+                            
+
+        
+
+                                                this.fetchLeaveTypes();
+
+        
+
+                                                this.showToast(data.meta.message);
+
+        
+
+                                            } catch (error) {
+
+        
+
+                                                this.showToast('An unexpected error occurred.', 'error');
+
+        
+
+                                                console.error('Error deleting leave type:', error);
+
+        
+
+                                            }
+
+        
+
+                                        },
 
         
 

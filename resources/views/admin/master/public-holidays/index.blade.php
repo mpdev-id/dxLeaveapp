@@ -11,20 +11,22 @@
         <dialog id="publicholiday_modal" class="modal">
             <div class="modal-box">
                 <form method="dialog">
-                    <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                    <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" @click="errors = {}">✕</button>
                 </form>
                 <h3 class="font-bold text-lg" x-text="isEdit ? 'Edit Public Holiday' : 'Add New Public Holiday'"></h3>
                 <form @submit.prevent="isEdit ? updatePublicHoliday() : addPublicHoliday()">
                     <div class="form-control">
                         <label class="label">Name</label>
-                        <input type="text" x-model="newPublicHoliday.name" class="input input-bordered" required>
+                        <input type="text" x-model="newPublicHoliday.name" class="input input-bordered" :class="{'input-error': errors.name}" required>
+                        <div x-show="errors.name" class="text-error text-sm mt-1" x-text="errors.name ? errors.name[0] : ''"></div>
                     </div>
                     <div class="form-control">
                         <label class="label">Date</label>
-                        <input type="date" x-model="newPublicHoliday.date" class="input input-bordered" required>
+                        <input type="date" x-model="newPublicHoliday.date" class="input input-bordered" :class="{'input-error': errors.date}" required>
+                        <div x-show="errors.date" class="text-error text-sm mt-1" x-text="errors.date ? errors.date[0] : ''"></div>
                     </div>
                     <div class="modal-action">
-                        <button type="button" class="btn" @click="publicholiday_modal.close()">Cancel</button>
+                        <button type="button" class="btn" @click="publicholiday_modal.close(); errors = {}">Cancel</button>
                         <button type="submit" class="btn btn-primary" x-text="isEdit ? 'Update' : 'Create'"></button>
                     </div>
                 </form>
@@ -105,6 +107,7 @@
                         name: '',
                         date: ''
                     },
+                    errors: {},
                     init() {
                         this.fetchPublicHolidays();
                     },
@@ -135,11 +138,11 @@
                             this.loading = false;
                         }
                     },
-                    showToast(message) {
+                    showToast(message, icon = 'success') {
                         Swal.fire({
                             toast: true,
                             position: 'top-end',
-                            icon: 'success',
+                            icon: icon,
                             title: message,
                             showConfirmButton: false,
                             timer: 3000,
@@ -149,14 +152,17 @@
                     openAddModal() {
                         this.isEdit = false;
                         this.newPublicHoliday = { id: null, name: '', date: '' };
+                        this.errors = {};
                         publicholiday_modal.showModal();
                     },
                     openEditModal(publicHoliday) {
                         this.isEdit = true;
                         this.newPublicHoliday = { ...publicHoliday };
+                        this.errors = {};
                         publicholiday_modal.showModal();
                     },
                     async addPublicHoliday() {
+                        this.errors = {};
                         try {
                             const token = localStorage.getItem('authToken');
                             const response = await fetch(`${baseApiUrl}/admin/master/public-holidays`, {
@@ -169,18 +175,24 @@
                                 body: JSON.stringify(this.newPublicHoliday)
                             });
                             const data = await response.json();
-                            if (!response.ok || data.meta.status !== 'success') {
-                                throw new Error(data.meta.message || 'Failed to add public holiday.');
+                            if (!response.ok) {
+                                if (response.status === 422) {
+                                    this.errors = data.data.errors;
+                                } else {
+                                    this.showToast(data.meta.message || 'Failed to add public holiday.', 'error');
+                                }
+                                return;
                             }
                             this.fetchPublicHolidays();
                             this.showToast(data.meta.message);
                             publicholiday_modal.close();
                         } catch (error) {
+                            this.showToast('An unexpected error occurred.', 'error');
                             console.error('Error adding public holiday:', error);
-                            alert(error.message);
                         }
                     },
                     async updatePublicHoliday() {
+                        this.errors = {};
                         try {
                             const token = localStorage.getItem('authToken');
                             const response = await fetch(`${baseApiUrl}/admin/master/public-holidays/${this.newPublicHoliday.id}`, {
@@ -193,15 +205,20 @@
                                 body: JSON.stringify(this.newPublicHoliday)
                             });
                             const data = await response.json();
-                            if (!response.ok || data.meta.status !== 'success') {
-                                throw new Error(data.meta.message || 'Failed to update public holiday.');
+                            if (!response.ok) {
+                                if (response.status === 422) {
+                                    this.errors = data.data.errors;
+                                } else {
+                                    this.showToast(data.meta.message || 'Failed to update public holiday.', 'error');
+                                }
+                                return;
                             }
                             this.fetchPublicHolidays();
                             this.showToast(data.meta.message);
                             publicholiday_modal.close();
                         } catch (error) {
+                            this.showToast('An unexpected error occurred.', 'error');
                             console.error('Error updating public holiday:', error);
-                            alert(error.message);
                         }
                     },
                     confirmDelete(publicHolidayId) {
@@ -231,13 +248,14 @@
                             });
                             const data = await response.json();
                             if (!response.ok || data.meta.status !== 'success') {
-                                throw new Error(data.meta.message || 'Failed to delete public holiday.');
+                                this.showToast(data.meta.message || 'Failed to delete public holiday.', 'error');
+                                return;
                             }
                             this.fetchPublicHolidays();
                             this.showToast(data.meta.message);
                         } catch (error) {
+                            this.showToast('An unexpected error occurred.', 'error');
                             console.error('Error deleting public holiday:', error);
-                            alert(error.message);
                         }
                     },
                     get filteredPublicHolidays() {

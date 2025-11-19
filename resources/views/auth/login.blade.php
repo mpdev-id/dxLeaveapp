@@ -23,14 +23,16 @@
                 <label class="label" for="identifier">
                     <span class="label-text">Email or Username</span>
                 </label>
-                <input type="text" id="identifier" x-model="formData.identifier" placeholder="email or username" class="input input-bordered w-full" required />
+                <input type="text" id="identifier" x-model="formData.identifier" placeholder="email or username" class="input input-bordered w-full" :class="{'input-error': errors.identifier}" required />
+                <div x-show="errors.identifier" class="text-error text-sm mt-1" x-text="errors.identifier ? errors.identifier[0] : ''"></div>
             </div>
             
             <div class="form-control">
                 <label class="label" for="password">
                     <span class="label-text">Password</span>
                 </label>
-                <input type="password" id="password" x-model="formData.password" placeholder="password" class="input input-bordered w-full" required />
+                <input type="password" id="password" x-model="formData.password" placeholder="password" class="input input-bordered w-full" :class="{'input-error': errors.password}" required />
+                <div x-show="errors.password" class="text-error text-sm mt-1" x-text="errors.password ? errors.password[0] : ''"></div>
             </div>
 
             <div class="flex items-center justify-between mt-4">
@@ -44,7 +46,7 @@
                     <a href="{{ route('password.request') }}" class="label-text-alt link link-hover">Forgot password?</a>
                 </label>
             </div>
-
+            
             <div class="form-control mt-6">
                 <button type="submit" class="btn btn-primary" :disabled="loading">
                     <span x-show="loading" class="loading loading-spinner"></span>
@@ -69,6 +71,7 @@
             },
             loading: false,
             errorMessage: '',
+            errors: {},
             init() {
                 if (localStorage.getItem('authToken')) {
                     window.location.href = '/admin/users';
@@ -77,6 +80,7 @@
             async submitForm() {
                 this.loading = true;
                 this.errorMessage = '';
+                this.errors = {};
                 try {
                     const response = await fetch(`${baseApiUrl}/login`, {
                         method: 'POST',
@@ -90,16 +94,19 @@
                     const data = await response.json();
 
                     if (!response.ok) {
-                        const message = data.message || data.error || 'An unknown error occurred during login.';
-                        throw new Error(message);
+                        if (response.status === 422 && data.data && data.data.errors) {
+                            this.errors = data.data.errors;
+                        } else {
+                            this.errorMessage = data.message || data.meta.message || 'An unknown error occurred.';
+                        }
+                        return; // Stop execution
                     }
 
                     if (data.data && data.data.access_token) {
                         localStorage.setItem('authToken', data.data.access_token);
                         window.location.href = '/admin/users';
                     } else {
-                        const message = data.meta?.message || data.message || 'Login successful, but no token was provided.';
-                        throw new Error(message);
+                        this.errorMessage = data.meta?.message || data.message || 'Login successful, but no token was provided.';
                     }
 
                 } catch (error) {

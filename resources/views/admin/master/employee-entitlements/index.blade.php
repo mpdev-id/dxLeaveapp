@@ -11,38 +11,42 @@
         <dialog id="entitlement_modal" class="modal">
             <div class="modal-box">
                 <form method="dialog">
-                    <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                    <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" @click="errors = {}">✕</button>
                 </form>
                 <h3 class="font-bold text-lg" x-text="isEdit ? 'Edit Entitlement' : 'Add New Entitlement'"></h3>
                 <form @submit.prevent="isEdit ? updateEntitlement() : addEntitlement()">
                     <div class="form-control">
                         <label class="label">Employee</label>
-                        <select x-model="newEntitlement.user_id" class="select select-bordered" required>
+                        <select x-model="newEntitlement.user_id" class="select select-bordered" :class="{'input-error': errors.user_id}" required>
                             <option value="">Select Employee</option>
                             <template x-for="user in users" :key="user.id">
                                 <option :value="user.id" x-text="user.name"></option>
                             </template>
                         </select>
+                        <div x-show="errors.user_id" class="text-error text-sm mt-1" x-text="errors.user_id ? errors.user_id[0] : ''"></div>
                     </div>
                     <div class="form-control">
                         <label class="label">Leave Type</label>
-                        <select x-model="newEntitlement.leave_type_id" class="select select-bordered" required>
+                        <select x-model="newEntitlement.leave_type_id" class="select select-bordered" :class="{'input-error': errors.leave_type_id}" required>
                             <option value="">Select Leave Type</option>
                             <template x-for="leaveType in leaveTypes" :key="leaveType.id">
                                 <option :value="leaveType.id" x-text="leaveType.name"></option>
                             </template>
                         </select>
+                        <div x-show="errors.leave_type_id" class="text-error text-sm mt-1" x-text="errors.leave_type_id ? errors.leave_type_id[0] : ''"></div>
                     </div>
                     <div class="form-control">
-                        <label class="label">initial_balance</label>
-                        <input type="number" x-model="newEntitlement.initial_balance" class="input input-bordered" required>
+                        <label class="label">Balance</label>
+                        <input type="number" x-model="newEntitlement.initial_balance" class="input input-bordered" :class="{'input-error': errors.initial_balance}" required>
+                        <div x-show="errors.initial_balance" class="text-error text-sm mt-1" x-text="errors.initial_balance ? errors.initial_balance[0] : ''"></div>
                     </div>
                     <div class="form-control">
                         <label class="label">Year</label>
-                        <input type="number" x-model="newEntitlement.year" class="input input-bordered" required>
+                        <input type="number" x-model="newEntitlement.year" class="input input-bordered" :class="{'input-error': errors.year}" required>
+                        <div x-show="errors.year" class="text-error text-sm mt-1" x-text="errors.year ? errors.year[0] : ''"></div>
                     </div>
                     <div class="modal-action">
-                        <button type="button" class="btn" @click="entitlement_modal.close()">Cancel</button>
+                        <button type="button" class="btn" @click="entitlement_modal.close(); errors = {}">Cancel</button>
                         <button type="submit" class="btn btn-primary" x-text="isEdit ? 'Update' : 'Create'"></button>
                     </div>
                 </form>
@@ -130,6 +134,7 @@
                         initial_balance: '',
                         year: new Date().getFullYear()
                     },
+                    errors: {},
                     init() {
                         this.fetchEntitlements();
                         this.fetchUsers();
@@ -192,11 +197,11 @@
                             console.error('Error fetching leave types:', error);
                         }
                     },
-                    showToast(message) {
+                    showToast(message, icon = 'success') {
                         Swal.fire({
                             toast: true,
                             position: 'top-end',
-                            icon: 'success',
+                            icon: icon,
                             title: message,
                             showConfirmButton: false,
                             timer: 3000,
@@ -206,6 +211,7 @@
                     openAddModal() {
                         this.isEdit = false;
                         this.newEntitlement = { id: null, user_id: '', leave_type_id: '', initial_balance: '', year: new Date().getFullYear() };
+                        this.errors = {};
                         entitlement_modal.showModal();
                     },
                     openEditModal(entitlement) {
@@ -217,9 +223,11 @@
                             initial_balance: entitlement.initial_balance,
                             year: entitlement.year
                         };
+                        this.errors = {};
                         entitlement_modal.showModal();
                     },
                     async addEntitlement() {
+                        this.errors = {};
                         try {
                             const token = localStorage.getItem('authToken');
                             const response = await fetch(`${baseApiUrl}/admin/master/employee-entitlements`, {
@@ -232,18 +240,24 @@
                                 body: JSON.stringify(this.newEntitlement)
                             });
                             const data = await response.json();
-                            if (!response.ok || data.meta.status !== 'success') {
-                                throw new Error(data.meta.message || 'Failed to add entitlement.');
+                            if (!response.ok) {
+                                if (response.status === 422) {
+                                    this.errors = data.data.errors;
+                                } else {
+                                    this.showToast(data.meta.message || 'Failed to add entitlement.', 'error');
+                                }
+                                return;
                             }
                             this.fetchEntitlements();
                             this.showToast(data.meta.message);
                             entitlement_modal.close();
                         } catch (error) {
+                            this.showToast('An unexpected error occurred.', 'error');
                             console.error('Error adding entitlement:', error);
-                            alert(error.message);
                         }
                     },
                     async updateEntitlement() {
+                        this.errors = {};
                         try {
                             const token = localStorage.getItem('authToken');
                             const response = await fetch(`${baseApiUrl}/admin/master/employee-entitlements/${this.newEntitlement.id}`, {
@@ -256,15 +270,20 @@
                                 body: JSON.stringify(this.newEntitlement)
                             });
                             const data = await response.json();
-                            if (!response.ok || data.meta.status !== 'success') {
-                                throw new Error(data.meta.message || 'Failed to update entitlement.');
+                            if (!response.ok) {
+                                if (response.status === 422) {
+                                    this.errors = data.data.errors;
+                                } else {
+                                    this.showToast(data.meta.message || 'Failed to update entitlement.', 'error');
+                                }
+                                return;
                             }
                             this.fetchEntitlements();
                             this.showToast(data.meta.message);
                             entitlement_modal.close();
                         } catch (error) {
+                            this.showToast('An unexpected error occurred.', 'error');
                             console.error('Error updating entitlement:', error);
-                            alert(error.message);
                         }
                     },
                     confirmDelete(entitlementId) {
@@ -294,13 +313,14 @@
                             });
                             const data = await response.json();
                             if (!response.ok || data.meta.status !== 'success') {
-                                throw new Error(data.meta.message || 'Failed to delete entitlement.');
+                                this.showToast(data.meta.message || 'Failed to delete entitlement.', 'error');
+                                return;
                             }
                             this.fetchEntitlements();
                             this.showToast(data.meta.message);
                         } catch (error) {
+                            this.showToast('An unexpected error occurred.', 'error');
                             console.error('Error deleting entitlement:', error);
-                            alert(error.message);
                         }
                     },
                     get filteredEntitlements() {

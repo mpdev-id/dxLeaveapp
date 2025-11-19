@@ -13,39 +13,38 @@
     <form @submit.prevent="submitForm">
         @csrf
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {{-- Name --}}
             <div class="form-control">
                 <label class="label" for="name"><span class="label-text">Full Name</span></label>
-                <input type="text" id="name" x-model="formData.name" placeholder="Your Full Name" class="input input-bordered w-full" required />
-                <div x-show="errors.name" x-text="errors.name ? errors.name[0] : ''" class="text-red-500 text-xs mt-1"></div>
+                <input type="text" id="name" x-model="formData.name" placeholder="Your Full Name" class="input input-bordered w-full" :class="{'input-error': errors.name}" required />
+                <div x-show="errors.name" x-text="errors.name ? errors.name[0] : ''" class="text-error text-sm mt-1"></div>
             </div>
 
             {{-- Employee Code --}}
             <div class="form-control">
                 <label class="label" for="employee_code"><span class="label-text">Employee Code</span></label>
-                <input type="text" id="employee_code" x-model="formData.employee_code" placeholder="e.g., EMP001" class="input input-bordered w-full" required />
-                <div x-show="errors.employee_code" x-text="errors.employee_code ? errors.employee_code[0] : ''" class="text-red-500 text-xs mt-1"></div>
+                <input type="text" id="employee_code" x-model="formData.employee_code" placeholder="e.g., EMP001" class="input input-bordered w-full" :class="{'input-error': errors.employee_code}" required />
+                <div x-show="errors.employee_code" x-text="errors.employee_code ? errors.employee_code[0] : ''" class="text-error text-sm mt-1"></div>
             </div>
 
             {{-- Email --}}
             <div class="form-control">
                 <label class="label" for="email"><span class="label-text">Email</span></label>
-                <input type="email" id="email" x-model="formData.email" placeholder="your.email@example.com" class="input input-bordered w-full" required />
-                <div x-show="errors.email" x-text="errors.email ? errors.email[0] : ''" class="text-red-500 text-xs mt-1"></div>
+                <input type="email" id="email" x-model="formData.email" placeholder="your.email@example.com" class="input input-bordered w-full" :class="{'input-error': errors.email}" required />
+                <div x-show="errors.email" x-text="errors.email ? errors.email[0] : ''" class="text-error text-sm mt-1"></div>
             </div>
 
             {{-- Phone Number --}}
             <div class="form-control">
                 <label class="label" for="phone_number"><span class="label-text">Phone Number</span></label>
-                <input type="tel" id="phone_number" x-model="formData.phone_number" placeholder="e.g., 08123456789" class="input input-bordered w-full" required />
-                <div x-show="errors.phone_number" x-text="errors.phone_number ? errors.phone_number[0] : ''" class="text-red-500 text-xs mt-1"></div>
+                <input type="tel" id="phone_number" x-model="formData.phone_number" placeholder="e.g., 08123456789" class="input input-bordered w-full" :class="{'input-error': errors.phone_number}" required />
+                <div x-show="errors.phone_number" x-text="errors.phone_number ? errors.phone_number[0] : ''" class="text-error text-sm mt-1"></div>
             </div>
 
             {{-- Password --}}
             <div class="form-control">
                 <label class="label" for="password"><span class="label-text">Password</span></label>
-                <input type="password" id="password" x-model="formData.password" placeholder="Enter Password" class="input input-bordered w-full" required />
-                <div x-show="errors.password" x-text="errors.password ? errors.password[0] : ''" class="text-red-500 text-xs mt-1"></div>
+                <input type="password" id="password" x-model="formData.password" placeholder="Enter Password" class="input input-bordered w-full" :class="{'input-error': errors.password}" required />
+                <div x-show="errors.password" x-text="errors.password ? errors.password[0] : ''" class="text-error text-sm mt-1"></div>
             </div>
 
             {{-- Password Confirmation --}}
@@ -57,30 +56,30 @@
             {{-- Department --}}
             <div class="form-control">
                 <label class="label" for="department_id"><span class="label-text">Department</span></label>
-                <select id="department_id" x-model="formData.department_id" class="select select-bordered w-full">
+                <select id="department_id" x-model="formData.department_id" class="select select-bordered w-full" :class="{'input-error': errors.department_id}">
                     <option value="" disabled>Select a department</option>
                     <template x-for="dept in departments" :key="dept.id">
                         <option :value="dept.id" x-text="dept.name"></option>
                     </template>
                 </select>
-                <div x-show="errors.department_id" x-text="errors.department_id ? errors.department_id[0] : ''" class="text-red-500 text-xs mt-1"></div>
+                <div x-show="errors.department_id" x-text="errors.department_id ? errors.department_id[0] : ''" class="text-error text-sm mt-1"></div>
             </div>
 
             {{-- Hire Date --}}
             <div class="form-control">
                 <label class="label" for="hire_date"><span class="label-text">Hire Date</span></label>
-                <input type="date" id="hire_date" x-model="formData.hire_date" class="input input-bordered w-full" />
-                <div x-show="errors.hire_date" x-text="errors.hire_date ? errors.hire_date[0] : ''" class="text-red-500 text-xs mt-1"></div>
+                <input type="date" id="hire_date" x-model="formData.hire_date" class="input input-bordered w-full" :class="{'input-error': errors.hire_date}" />
+                <div x-show="errors.hire_date" x-text="errors.hire_date ? errors.hire_date[0] : ''" class="text-error text-sm mt-1"></div>
             </div>
 
             {{-- Status --}}
             <div class="form-control md:col-span-2">
                 <label class="label" for="status"><span class="label-text">Status</span></label>
-                <select id="status" x-model="formData.status" class="select select-bordered w-full">
+                <select id="status" x-model="formData.status" class="select select-bordered w-full" :class="{'input-error': errors.status}">
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
                 </select>
-                <div x-show="errors.status" x-text="errors.status ? errors.status[0] : ''" class="text-red-500 text-xs mt-1"></div>
+                <div x-show="errors.status" x-text="errors.status ? errors.status[0] : ''" class="text-error text-sm mt-1"></div>
             </div>
         </div>
 
@@ -147,24 +146,29 @@
                     const data = await response.json();
 
                     if (!response.ok) {
+                        this.success = false;
                         if (response.status === 422) {
-                            this.errors = data.errors;
-                            this.message = 'Please check the form for errors.';
+                            this.errors = data.data?.errors || data.errors || {};
+                            this.message = data.meta?.message || data.message || 'Please check the form for errors.';
                         } else {
-                            this.message = data.message || 'An unknown error occurred.';
+                            this.message = data.meta?.message || data.message || 'An unknown error occurred.';
                         }
-                        throw new Error('Registration failed');
+                        return; // Stop execution
                     }
                     
-                    this.message = 'Registration successful! Please log in.';
+                    this.message = data.meta?.message || data.message || 'Registration successful! Please log in.';
                     this.success = true;
-                    // Optionally redirect after a delay
+                    this.errors = {};
+                    this.formData = { name: '', employee_code: '', email: '', phone_number: '', password: '', password_confirmation: '', department_id: '', hire_date: '', status: 'active' };
+
                     setTimeout(() => {
                         window.location.href = '{{ route("login") }}';
                     }, 2000);
 
                 } catch (error) {
-                    console.error(error.message);
+                    this.success = false;
+                    this.message = 'Failed to connect to the server.';
+                    console.error(error);
                 } finally {
                     this.loading = false;
                 }
