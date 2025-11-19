@@ -45,10 +45,10 @@
                         <input type="number" x-model="newEntitlement.year" class="input input-bordered" required>
                     </div>
                     <div class="modal-action">
-                        <button type="submit" class="btn btn-primary" x-text="isEdit ? 'Update' : 'Create'"></button>
                         <form method="dialog">
                             <button class="btn">Cancel</button>
                         </form>
+                        <button type="submit" class="btn btn-primary" x-text="isEdit ? 'Update' : 'Create'"></button>
                     </div>
                 </form>
             </div>
@@ -219,6 +219,7 @@
             openEditModal(entitlement) {
                 this.isEdit = true;
                 this.newEntitlement = { 
+                    id: entitlement.id,
                     user_id: entitlement.user.id,
                     leave_type_id: entitlement.leave_type.id,
                     initial_balance: entitlement.initial_balance,
