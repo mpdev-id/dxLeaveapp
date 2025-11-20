@@ -6,7 +6,7 @@
 @source "../../storage/framework/views/*.php";
 
 @plugin "daisyui" {
-    themes: smooth;
+    themes: ["corporate","smooth"];
   }
 
 @plugin "daisyui/theme" {

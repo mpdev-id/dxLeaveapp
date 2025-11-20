@@ -96,8 +96,8 @@
                 <thead>
                     <tr>
                         <th>Name</th>
-                        <th>Department</th>
-                        <th>Hire Date</th>
+                        <th>Level</th>
+                        <th>Join Date</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
@@ -123,19 +123,19 @@
                                         </div>
                                     </div>
                                     <div>
-                                        <div class="font-bold" x-text="user.name"></div>
+                                        <div class="font-bold " x-text="user.name"></div>
                                         <div class="text-sm opacity-50" x-text="user.email"></div>
                                     </div>
                                 </div>
                             </td>
-                            <td x-text="user.department ? user.department.name : 'N/A'"></td>
+                            <td class="badge badge-primary rounded-3xl " x-text="user.roles.length > 0 ? user.roles[0].name : 'N/A'"></td>
                             <td x-text="user.hire_date ? new Date(user.hire_date).toLocaleDateString() : 'N/A'"></td>
                             <td>
-                                <span class="badge" :class="user.status === 'active' ? 'badge-success' : 'badge-error'" x-text="user.status"></span>
+                                <span class="badge  rounded-3xl " :class="user.status === 'active' ? 'badge-success' : 'badge-error'" x-text="user.status"></span>
                             </td>
                             <td>
-                                <button class="btn btn-sm btn-info" @click="openEditModal(user)">Edit</button>
-                                <button class="btn btn-sm btn-error" @click="confirmDelete(user.id)">Delete</button>
+                                <button class="btn btn-sm btn-info  rounded-3xl" @click="openEditModal(user)">Edit</button>
+                                <button class="btn btn-sm btn-error  rounded-3xl" @click="confirmDelete(user.id)">Delete</button>
                             </td>
                         </tr>
                     </template>
@@ -145,6 +145,7 @@
         <div class="flex justify-between items-center mt-4">
             <div class="flex items-center gap-2">
                 <select x-model="perPage" @change="fetchUsers" class="select select-bordered">
+                    <option value="5">5 per page</option>
                     <option value="10">10 per page</option>
                     <option value="25">25 per page</option>
                     <option value="50">50 per page</option>

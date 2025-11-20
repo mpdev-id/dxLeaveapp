@@ -294,7 +294,7 @@
                     }
                 });
             },
-            async deleteEntitlement(entitlementId) {.
+            async deleteEntitlement(entitlementId) {
                 try {
                     const token = localStorage.getItem('authToken');
                     const response = await fetch(`${baseApiUrl}/admin/master/employee-entitlements/${entitlementId}`, {
