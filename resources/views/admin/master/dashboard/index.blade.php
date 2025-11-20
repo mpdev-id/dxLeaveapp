@@ -4,7 +4,7 @@
 
 @section('content')
     {{-- Stats --}}
-    <div x-data="dashboardStats('{{ config('app.base_api') }}')" x-init="fetchStats()" class="mb-6">
+    <div x-data="dashboardData('{{ config('app.base_api') }}')" x-init="fetchData()" class="mb-6">
         <div class="stats shadow w-full">
             {{-- Stat Items --}}
             <div class="stat">
@@ -12,7 +12,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block h-8 w-8 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                 </div>
                 <div class="stat-title">Total Members</div>
-                <div class="stat-value text-primary" x-text="loading ? '...' : stats.total_users">...</div>
+                <div class="stat-value text-primary" x-text="loadingStats ? '...' : stats.total_users">...</div>
                 <div class="stat-desc">All registered users</div>
             </div>
             
@@ -21,7 +21,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block h-8 w-8 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </div>
                 <div class="stat-title">Approved This Month</div>
-                <div class="stat-value text-secondary" x-text="loading ? '...' : stats.approved_this_month">...</div>
+                <div class="stat-value text-secondary" x-text="loadingStats ? '...' : stats.approved_this_month">...</div>
                 <div class="stat-desc">Leave requests in current month</div>
             </div>
             
@@ -30,14 +30,45 @@
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block h-8 w-8 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </div>
                 <div class="stat-title">Pending Requests</div>
-                <div class="stat-value text-accent" x-text="loading ? '...' : stats.pending_requests">...</div>
+                <div class="stat-value text-accent" x-text="loadingStats ? '...' : stats.pending_requests">...</div>
                 <div class="stat-desc">Waiting for approval</div>
+            </div>
+        </div>
+
+        {{-- User Leave Balances --}}
+        <div class="card bg-base-100 shadow-xl mt-6">
+            <div class="card-body">
+                <h2 class="card-title">My Leave Balances (Current Year)</h2>
+                <div x-show="loadingBalances" class="text-center">Loading leave balances...</div>
+                <div x-show="!loadingBalances && leaveBalances.length === 0" class="text-center">No leave balances found.</div>
+                <div x-show="!loadingBalances && leaveBalances.length > 0" class="overflow-x-auto">
+                    <table class="table w-full">
+                        <thead>
+                            <tr>
+                                <th>Leave Type</th>
+                                <th>Remaining Days</th>
+                                <th>Days Taken</th>
+                                <th>Total Entitlement</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template x-for="balance in leaveBalances" :key="balance.leave_type_id">
+                                <tr>
+                                    <td x-text="balance.leave_type_name"></td>
+                                    <td x-text="balance.remaining_days"></td>
+                                    <td x-text="balance.days_taken"></td>
+                                    <td x-text="balance.total_entitlement"></td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 
     {{-- Calendar --}}
-    <div class="card bg-base-100 shadow-xl">
+    <div class="card bg-base-100 shadow-xl mt-6">
         <div class="card-body">
             <h2 class="card-title">Leave & Holiday Calendar</h2>
             <div id='calendar' class="w-full h-[70vh]"></div>
@@ -183,34 +214,138 @@ document.addEventListener('DOMContentLoaded', function() {
         eventClick: function(info) {
             const event = info.event;
             const props = event.extendedProps;
+            
+            // Helper function for date formatting
+            const formatDate = (dateString) => {
+                if (!dateString) return 'N/A';
+                const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                return new Date(dateString).toLocaleDateString(undefined, options);
+            };
 
-            modalTitle.innerText = event.title;
-            let bodyContent = '';
+            // Helper function for status badge class
+            const getBadgeClass = (status) => {
+                switch (status) {
+                    case 'Pending': return 'badge-warning';
+                    case 'Approved': return 'badge-success';
+                    case 'Rejected':
+                    case 'Canceled': return 'badge-error';
+                    case 'Draft': return 'badge-ghost';
+                    default: return '';
+                }
+            };
+
+            // Helper function for period formatting
+            const formatPeriod = (period) => {
+                if (!period) return 'N/A';
+                return period.replace(/_/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+            };
+
 
             if (props.type === 'leave') {
                 const details = props.details;
-                const startDate = new Date(details.start_date).toLocaleDateString();
-                const endDate = new Date(details.end_date).toLocaleDateString();
+                modalTitle.innerText = 'Leave Request Details';
 
-                bodyContent = `
-                    <p><strong>Employee:</strong> ${details.user.name}</p>
-                    <p><strong>Department:</strong> ${details.department ? details.department.name : 'N/A'}</p>
-                    <p><strong>Leave Type:</strong> ${details.leave_type.name}</p>
-                    <p><strong>Dates:</strong> ${startDate} to ${endDate}</p>
-                    <p><strong>Reason:</strong> ${details.reason}</p>
-                    <p><strong>Status:</strong> <span class="badge badge-primary">${details.current_status}</span></p>
+                let attachmentHtml = '';
+                if (details.supporting_attachment_path) {
+                    attachmentHtml = `
+                        <div>
+                            <p class="font-semibold">Attachment</p>
+                            <a href="/storage/${details.supporting_attachment_path}" target="_blank" class="link link-primary">View Document</a>
+                        </div>
+                    `;
+                }
+
+                let approvalHistoryHtml = '';
+                if (details.approvals && details.approvals.length > 0) {
+                    approvalHistoryHtml = `
+                        <div class="mt-6">
+                            <h4 class="font-bold mb-2">Approval History</h4>
+                            <ul class="timeline timeline-snap-icon max-md:timeline-compact timeline-vertical">
+                    `;
+                    details.approvals.forEach((approval, index) => {
+                        const approvalDate = new Date(approval.created_at).toLocaleString();
+                        const approvalStatusClass = getBadgeClass(approval.status); // Reusing getBadgeClass for consistency
+                        const iconColorClass = approval.status === 'Approved' ? 'text-success' : (approval.status === 'Rejected' ? 'text-error' : 'text-warning');
+                        const timelinePosition = index % 2 === 0 ? 'timeline-start md:text-end' : 'timeline-end';
+
+                        approvalHistoryHtml += `
+                            <li>
+                                <div class="timeline-middle">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-5 w-5 ${iconColorClass}">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div class="${timelinePosition} mb-10">
+                                    <time class="font-mono italic text-xs">${approvalDate}</time>
+                                    <div class="text-lg font-black">${approval.status}</div>
+                                    <p class="text-sm">by <span>${approval.approver?.name || 'N/A'}</span></p>
+                                    ${approval.comments ? `<p class="mt-1 bg-base-200 p-2 rounded text-xs">${approval.comments}</p>` : ''}
+                                </div>
+                                ${index < details.approvals.length - 1 ? '<hr />' : ''}
+                            </li>
+                        `;
+                    });
+                    approvalHistoryHtml += `</ul></div>`;
+                }
+
+                modalBody.innerHTML = `
+                    <div class="py-4">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                            <div>
+                                <p class="font-semibold">Employee</p>
+                                <p>${details.user?.name || 'N/A'}</p>
+                            </div>
+                            <div>
+                                <p class="font-semibold">Department</p>
+                                <p>${details.user?.department?.name || 'N/A'}</p>
+                            </div>
+                            <div>
+                                <p class="font-semibold">Submitted On</p>
+                                <p>${new Date(details.created_at).toLocaleString()}</p>
+                            </div>
+                            <div>
+                                <p class="font-semibold">Leave Type</p>
+                                <p>${details.leave_type?.name || 'N/A'}</p>
+                            </div>
+                            <div>
+                                <p class="font-semibold">Dates</p>
+                                <p>${formatDate(details.start_date)} to ${formatDate(details.end_date)}</p>
+                            </div>
+                            <div>
+                                <p class="font-semibold">Duration</p>
+                                <p>${details.duration_days} day(s)</p>
+                            </div>
+                            <div>
+                                <p class="font-semibold">Remaining Leave</p>
+                                <p>${details.remaining_leave_balance !== undefined ? details.remaining_leave_balance + ' day(s)' : 'N/A'}</p>
+                            </div>
+                            <div>
+                                <p class="font-semibold">Period</p>
+                                <p class="capitalize">${formatPeriod(details.leave_period)}</p>
+                            </div>
+                            <div>
+                                <p class="font-semibold">Status</p>
+                                <p><span class="badge ${getBadgeClass(details.current_status)}">${details.current_status}</span></p>
+                            </div>
+                            ${attachmentHtml}
+                            <div class="md:col-span-3">
+                                <p class="font-semibold">Reason</p>
+                                <p class="whitespace-pre-wrap bg-base-200 p-2 rounded-md">${details.reason || 'N/A'}</p>
+                            </div>
+                        </div>
+                        ${approvalHistoryHtml}
+                    </div>
                 `;
             } else if (props.type === 'holiday') {
                 const details = props.details;
-                const holidayDate = new Date(details.date).toLocaleDateString();
-                bodyContent = `
+                modalTitle.innerText = 'Public Holiday Details';
+                modalBody.innerHTML = `
                     <p><strong>Holiday:</strong> ${details.name}</p>
-                    <p><strong>Date:</strong> ${holidayDate}</p>
+                    <p><strong>Date:</strong> ${formatDate(details.date)}</p>
                     <p class="badge badge-success text-white mt-2">Public Holiday</p>
                 `;
             }
             
-            modalBody.innerHTML = bodyContent;
             modal.showModal();
         },
         dateClick: function(info) {
@@ -278,46 +413,84 @@ document.addEventListener('DOMContentLoaded', function() {
     calendar.render();
 });
 
-function dashboardStats(baseApiUrl) {
+function dashboardData(baseApiUrl) {
     return {
         stats: {
             total_users: 0,
             approved_this_month: 0,
             pending_requests: 0,
         },
-        loading: true,
-        fetchStats() {
-            const token = localStorage.getItem('authToken');
-            if (!token) return;
+        leaveBalances: [],
+        loadingStats: true,
+        loadingBalances: true,
 
-            fetch(`${baseApiUrl}/admin/dashboard/stats`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => {
+        async fetchData() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                // Already handled in main DOMContentLoaded, but good to have here too
+                console.error('No auth token found. Redirecting to login.');
+                return;
+            }
+            await Promise.all([
+                this.fetchStats(token),
+                this.fetchLeaveBalances(token)
+            ]);
+        },
+
+        async fetchStats(token) {
+            this.loadingStats = true;
+            try {
+                const response = await fetch(`${baseApiUrl}/admin/dashboard/stats`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json'
+                    }
+                });
                 if (!response.ok) {
-                    throw new Error('Network response was not ok');
+                    throw new Error('Network response was not ok for stats');
                 }
-                return response.json();
-            })
-            .then(data => {
-                if(data.data) {
+                const data = await response.json();
+                if (data.data) {
                     this.stats = data.data;
                 }
-            })
-            .catch(error => {
+            } catch (error) {
                 console.error('Error fetching stats:', error);
                 Swal.fire({
                     icon: 'error',
                     title: 'Oops...',
-                    text: 'Could not fetch dashboard stats.',
+                    text: 'Could not fetch dashboard statistics.',
                 });
-            })
-            .finally(() => {
-                this.loading = false;
-            });
+            } finally {
+                this.loadingStats = false;
+            }
+        },
+
+        async fetchLeaveBalances(token) {
+            this.loadingBalances = true;
+            try {
+                const response = await fetch(`${baseApiUrl}/user/leave-balances`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json'
+                    }
+                });
+                if (!response.ok) {
+                    throw new Error('Network response was not ok for leave balances');
+                }
+                const data = await response.json();
+                if (data.data) {
+                    this.leaveBalances = data.data;
+                }
+            } catch (error) {
+                console.error('Error fetching leave balances:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Could not fetch user leave balances.',
+                });
+            } finally {
+                this.loadingBalances = false;
+            }
         }
     }
 }

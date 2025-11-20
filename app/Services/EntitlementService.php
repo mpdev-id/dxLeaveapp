@@ -158,4 +158,55 @@ class EntitlementService
             Log::warning("Entitlement record not found for user {$leaveRequest->user_id} for leave type {$leaveRequest->leave_type_id} in year {$year}. Could not deduct leave days.");
         }
     }
+
+    /**
+     * Retrieves all leave entitlements and calculated remaining balances for a specific user and year.
+     *
+     * @param User $user The user to retrieve leave balances for.
+     * @param int $year The year for which to retrieve balances.
+     * @return array An array of associative arrays, each containing leave type details and balance information.
+     */
+    public function getUserLeaveBalances(User $user, int $year): array
+    {
+        $entitlements = EmployeeEntitlement::with('leaveType')
+            ->where('user_id', $user->id)
+            ->where('year', $year)
+            ->get();
+
+        $balances = [];
+        foreach ($entitlements as $entitlement) {
+            $remaining = $entitlement->initial_balance + $entitlement->carry_over_days - $entitlement->days_taken;
+            $balances[] = [
+                'leave_type_id' => $entitlement->leaveType->id,
+                'leave_type_name' => $entitlement->leaveType->name,
+                'remaining_days' => $remaining,
+                'total_entitlement' => $entitlement->initial_balance + $entitlement->carry_over_days,
+                'days_taken' => $entitlement->days_taken,
+                'year' => $entitlement->year
+            ];
+        }
+        return $balances;
+    }
+
+    /**
+     * Calculates the remaining leave balance for a specific leave type for a user in a given year.
+     *
+     * @param User $user The user.
+     * @param int $leaveTypeId The ID of the leave type.
+     * @param int $year The year.
+     * @return float The remaining balance, or 0.0 if no entitlement is found.
+     */
+    public function getRemainingBalanceForLeaveType(User $user, int $leaveTypeId, int $year): float
+    {
+        $entitlement = EmployeeEntitlement::where('user_id', $user->id)
+            ->where('leave_type_id', $leaveTypeId)
+            ->where('year', $year)
+            ->first();
+
+        if (!$entitlement) {
+            return 0.0;
+        }
+
+        return (float) ($entitlement->initial_balance + $entitlement->carry_over_days - $entitlement->days_taken);
+    }
 }

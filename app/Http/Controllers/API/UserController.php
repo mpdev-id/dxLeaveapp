@@ -253,4 +253,23 @@ class UserController extends Controller
             return ResponseFormatter::error(null, 'Failed to fetch user: ' . $e->getMessage(), 500);
         }
     }
+
+    /**
+     * Get the authenticated user's leave balances for the current year.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getLeaveBalances(Request $request)
+    {
+        try {
+            $user = $request->user();
+            $currentYear = Carbon::now()->year;
+            $balances = $this->entitlementService->getUserLeaveBalances($user, $currentYear);
+
+            return ResponseFormatter::success($balances, 'User leave balances retrieved successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to retrieve leave balances: ' . $e->getMessage(), 500);
+        }
+    }
 }

@@ -34,6 +34,10 @@
                         <p class="font-semibold">Duration</p>
                         <p x-text="selectedRequest.duration_days + ' day(s)'"></p>
                     </div>
+                    <div x-show="typeof selectedRequest.remaining_leave_balance !== 'undefined'">
+                        <p class="font-semibold">Remaining Leave</p>
+                        <p x-text="selectedRequest.remaining_leave_balance + ' day(s)'"></p>
+                    </div>
                     <div>
                         <p class="font-semibold">Period</p>
                         <p class="capitalize" x-text="selectedRequest.leave_period?.replace('_', ' ')"></p>

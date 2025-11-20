@@ -10,9 +10,16 @@ use App\Models\LeaveRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use App\Models\PublicHoliday;
+use App\Services\EntitlementService;
 
 class DashboardController extends Controller
 {
+    protected $entitlementService;
+
+    public function __construct(EntitlementService $entitlementService)
+    {
+        $this->entitlementService = $entitlementService;
+    }
     public function getStats()
     {
         try {
@@ -105,6 +112,18 @@ class DashboardController extends Controller
 
             $leaveEvents = $leaveRequests->map(function ($leave) {
                 $endDate = Carbon::parse($leave->end_date)->addDay()->toDateString();
+                $currentYear = Carbon::now()->year; // Or $leave->start_date->year if entitlement year matches leave year
+
+                // Get remaining balance for this specific leave type of the user
+                $remainingBalance = $this->entitlementService->getRemainingBalanceForLeaveType(
+                    $leave->user,
+                    $leave->leave_type_id,
+                    $currentYear
+                );
+                
+                $details = $leave->load('user', 'leaveType')->toArray();
+                $details['remaining_leave_balance'] = $remainingBalance;
+
                 return [
                     'id' => 'leave-' . $leave->id,
                     'title' => $leave->user->name . ' - ' . $leave->leaveType->name,
@@ -113,7 +132,7 @@ class DashboardController extends Controller
                     'allDay' => true,
                     'extendedProps' => [
                         'type' => 'leave',
-                        'details' => $leave->load('user', 'leaveType'),
+                        'details' => $details,
                     ]
                 ];
             });

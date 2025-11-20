@@ -24,6 +24,7 @@ Route::post('reset-password', [UserController::class, 'resetPassword']);
 Route::middleware('auth:sanctum')->group(function () {
     // Rute User Standar
     Route::get('user', [UserController::class, 'fetch']);
+    Route::get('user/leave-balances', [UserController::class, 'getLeaveBalances']);
     Route::post('logout', [UserController::class, 'logout']);
 
     // --- Rute Modul Cuti (Leave Requests) ---

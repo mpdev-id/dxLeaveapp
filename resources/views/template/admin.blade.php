@@ -82,8 +82,8 @@
 
                             <ul>
                                 <li><a href="{{ route('admin.leave-request') }}">Leave Request</a></li>
-                                {{-- <li><a href="{{ route('admin.leave-log') }}">Leave Log</a></li>
-                                <li><a href="{{ route('admin.leave-print') }}">Leave Print</a></li> --}}
+                                <li><a href="{{ route('admin.leave-log') }}">Leave Log</a></li>
+                                {{-- <li><a href="{{ route('admin.leave-print') }}">Leave Print</a></li> --}}
                             </ul>
                         </details>
                     </li>
