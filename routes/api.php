@@ -42,6 +42,7 @@ Route::get('departments', [DepartmentController::class,'index'])->name('globalDe
 // --- Rute Administrasi Data Master (Hanya untuk Admin) ---
 Route::middleware(['auth:sanctum', 'role:Super Admin'])->prefix('admin/master')->group(function () {
     Route::apiResource('users', AdminUserController::class);
+    Route::get('users/{user}/leave-requests', [AdminLeaveRequestController::class, 'getEmployeeLeaveRequests']);
     Route::apiResource('departments', DepartmentController::class);
     Route::apiResource('leave-types', LeaveTypeController::class);
     Route::apiResource('public-holidays', PublicHolidayController::class);

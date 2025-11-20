@@ -34,6 +34,7 @@ class LeaveRequestResource extends JsonResource
             
             'current_status' => $this->current_status,
             'current_step' => $this->whenLoaded('currentStep'),
+            'remaining_leave_balance' => $this->remaining_leave_balance,
 
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),

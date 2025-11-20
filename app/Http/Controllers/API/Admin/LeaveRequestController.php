@@ -323,4 +323,35 @@ class LeaveRequestController extends Controller
             return ResponseFormatter::error(null, 'Failed to submit leave request: ' . $e->getMessage(), 500);
         }
     }
+
+    /**
+     * Get all leave requests for a specific employee.
+     *
+     * @param User $user
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getEmployeeLeaveRequests(User $user)
+    {
+        try {
+            $leaveRequests = LeaveRequest::with(['leaveType', 'user', 'user.department', 'approvals.approver'])
+                ->where('user_id', $user->id)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            $leaveRequests->each(function ($leaveRequest) {
+                $currentYear = Carbon::now()->year;
+                $remainingBalance = $this->entitlementService->getRemainingBalanceForLeaveType(
+                    $leaveRequest->user, // User of the leave request
+                    $leaveRequest->leave_type_id,
+                    $currentYear
+                );
+                $leaveRequest->remaining_leave_balance = $remainingBalance;
+                // dd($leaveRequest); // Debugging line to inspect the model
+            });
+
+            return ResponseFormatter::success(LeaveRequestResource::collection($leaveRequests), 'Employee leave requests retrieved successfully.');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to retrieve employee leave requests: ' . $e->getMessage(), 500);
+        }
+    }
 }

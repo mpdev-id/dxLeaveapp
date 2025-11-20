@@ -11,4 +11,14 @@ class UserController extends Controller
     {
         return view('admin.master.users.index');
     }
+
+    /**
+     * Display a listing of employees for the leave log.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function leaveLogIndex()
+    {
+        return view('admin.leave-log.index');
+    }
 }
