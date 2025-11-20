@@ -24,7 +24,7 @@ class DashboardController extends Controller
                     ->count(),
             ];
 
-            return ResponseFormatter::success(['data' => $stats]);
+            return ResponseFormatter::success($stats);
         } catch (\Exception $e) {
             return ResponseFormatter::error(null, 'Failed to retrieve stats: ' . $e->getMessage(), 500);
         }
@@ -58,6 +58,39 @@ class DashboardController extends Controller
             return ResponseFormatter::success(['data' => $upcomingLeaves]);
         } catch (\Exception $e) {
             return ResponseFormatter::error(null, 'Failed to retrieve upcoming leaves: ' . $e->getMessage(), 500);
+        }
+    }
+
+    public function getLeaveCalendar(Request $request)
+    {
+        try {
+            $query = LeaveRequest::with('user')
+                ->where('current_status', 'approved');
+
+            if ($request->has('start') && $request->has('end')) {
+                $query->where(function($q) use ($request) {
+                    $q->whereBetween('start_date', [$request->start, $request->end])
+                      ->orWhereBetween('end_date', [$request->start, $request->end]);
+                });
+            }
+
+            $leaveRequests = $query->get();
+
+            $events = $leaveRequests->map(function ($leave) {
+                // Adjust end date for FullCalendar (it's exclusive)
+                $endDate = Carbon::parse($leave->end_date)->addDay()->toDateString();
+                return [
+                    'title' => $leave->user->name,
+                    'start' => $leave->start_date,
+                    'end' => $endDate,
+                    'allDay' => true
+                ];
+            });
+
+            return response()->json($events);
+
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to retrieve calendar data: ' . $e->getMessage(), 500);
         }
     }
 }

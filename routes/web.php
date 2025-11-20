@@ -35,6 +35,9 @@ Route::post('forgot-password', function (Request $request) {
 
 
 Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', function () {
+        return view('admin.master.dashboard.index');
+    })->name('dashboard.index');
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
     Route::get('/departments', [DepartmentController::class, 'index'])->name('departments.index');
     Route::get('/leave-types', [LeaveTypeController::class, 'index'])->name('leave-types.index');
