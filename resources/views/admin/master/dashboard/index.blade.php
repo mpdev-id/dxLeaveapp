@@ -3,8 +3,10 @@
 @section('title', 'Dashboard')
 
 @section('content')
+    {{-- Stats --}}
     <div x-data="dashboardStats('{{ config('app.base_api') }}')" x-init="fetchStats()" class="mb-6">
         <div class="stats shadow w-full">
+            {{-- Stat Items --}}
             <div class="stat">
                 <div class="stat-figure text-primary">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block h-8 w-8 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
@@ -34,19 +36,38 @@
         </div>
     </div>
 
+    {{-- Calendar --}}
     <div class="card bg-base-100 shadow-xl">
         <div class="card-body">
-            <h2 class="card-title">Leave Calendar</h2>
+            <h2 class="card-title">Leave & Holiday Calendar</h2>
             <div id='calendar' class="w-full h-[70vh]"></div>
         </div>
     </div>
+
+    {{-- Event Detail Modal --}}
+    <dialog id="event_modal" class="modal">
+        <div class="modal-box">
+            <h3 id="modal_title" class="font-bold text-lg"></h3>
+            <div id="modal_body" class="py-4">
+                {{-- Content will be injected by JS --}}
+            </div>
+            <div class="modal-action">
+                <form method="dialog">
+                    <button class="btn">Close</button>
+                </form>
+            </div>
+        </div>
+    </dialog>
 @endsection
 
 @push('scripts')
-<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const calendarEl = document.getElementById('calendar');
+    const modal = document.getElementById('event_modal');
+    const modalTitle = document.getElementById('modal_title');
+    const modalBody = document.getElementById('modal_body');
+
     const baseApiUrl = '{{ config('app.base_api') }}';
     const token = localStorage.getItem('authToken');
 
@@ -73,11 +94,47 @@ document.addEventListener('DOMContentLoaded', function() {
                 'Accept': 'application/json'
             },
             failure: function(error) {
-                console.error('Error fetching calendar events:', error);
-                alert('Could not fetch calendar data. Please try again.');
-            },
-            color: '#3788d8', // a default color for all events
+                console.error('Error fetching calendar events:', error.message);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Could not fetch calendar data. Please try again.',
+                });
+            }
         },
+        eventClick: function(info) {
+            const event = info.event;
+            const props = event.extendedProps;
+
+            modalTitle.innerText = event.title;
+            let bodyContent = '';
+
+            if (props.type === 'leave') {
+                const details = props.details;
+                const startDate = new Date(details.start_date).toLocaleDateString();
+                const endDate = new Date(details.end_date).toLocaleDateString();
+
+                bodyContent = `
+                    <p><strong>Employee:</strong> ${details.user.name}</p>
+                    <p><strong>Department:</strong> ${details.user.department ? details.user.department.name : 'N/A'}</p>
+                    <p><strong>Leave Type:</strong> ${details.leave_type.name}</p>
+                    <p><strong>Dates:</strong> ${startDate} to ${endDate}</p>
+                    <p><strong>Reason:</strong> ${details.reason}</p>
+                    <p><strong>Status:</strong> <span class="badge badge-primary">${details.current_status}</span></p>
+                `;
+            } else if (props.type === 'holiday') {
+                const details = props.details;
+                const holidayDate = new Date(details.date).toLocaleDateString();
+                bodyContent = `
+                    <p><strong>Holiday:</strong> ${details.name}</p>
+                    <p><strong>Date:</strong> ${holidayDate}</p>
+                    <p class="badge badge-success text-white mt-2">Public Holiday</p>
+                `;
+            }
+            
+            modalBody.innerHTML = bodyContent;
+            modal.showModal();
+        }
     });
 
     calendar.render();
@@ -114,7 +171,11 @@ function dashboardStats(baseApiUrl) {
             })
             .catch(error => {
                 console.error('Error fetching stats:', error);
-                alert('Could not fetch dashboard stats.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Could not fetch dashboard stats.',
+                });
             })
             .finally(() => {
                 this.loading = false;

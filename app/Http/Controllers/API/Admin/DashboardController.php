@@ -64,28 +64,64 @@ class DashboardController extends Controller
     public function getLeaveCalendar(Request $request)
     {
         try {
-            $query = LeaveRequest::with('user')
+            $events = collect();
+
+            // Fetch Approved Leave Requests
+            $leaveQuery = LeaveRequest::with(['user.department', 'leaveType'])
                 ->where('current_status', 'approved');
 
             if ($request->has('start') && $request->has('end')) {
-                $query->where(function($q) use ($request) {
+                $leaveQuery->where(function ($q) use ($request) {
                     $q->whereBetween('start_date', [$request->start, $request->end])
                       ->orWhereBetween('end_date', [$request->start, $request->end]);
                 });
             }
 
-            $leaveRequests = $query->get();
+            $leaveRequests = $leaveQuery->get();
 
-            $events = $leaveRequests->map(function ($leave) {
-                // Adjust end date for FullCalendar (it's exclusive)
+            $leaveEvents = $leaveRequests->map(function ($leave) {
                 $endDate = Carbon::parse($leave->end_date)->addDay()->toDateString();
                 return [
-                    'title' => $leave->user->name,
+                    'id' => 'leave-' . $leave->id,
+                    'title' => $leave->user->name . ' - ' . $leave->leaveType->name,
                     'start' => $leave->start_date,
                     'end' => $endDate,
-                    'allDay' => true
+                    'allDay' => true,
+                    'extendedProps' => [
+                        'type' => 'leave',
+                        'details' => $leave->load('user', 'leaveType'),
+                    ]
                 ];
             });
+
+            $events = $events->merge($leaveEvents);
+
+
+            // Fetch Public Holidays
+            $holidayQuery = PublicHoliday::query();
+
+            if ($request->has('start') && $request->has('end')) {
+                $holidayQuery->whereBetween('date', [$request->start, $request->end]);
+            }
+
+            $publicHolidays = $holidayQuery->get();
+
+            $holidayEvents = $publicHolidays->map(function ($holiday) {
+                return [
+                    'id' => 'holiday-' . $holiday->id,
+                    'title' => $holiday->name,
+                    'start' => $holiday->date,
+                    'allDay' => true,
+                    'className' => 'bg-success text-white',
+                    'extendedProps' => [
+                        'type' => 'holiday',
+                        'details' => $holiday,
+                    ]
+                ];
+            });
+
+            $events = $events->merge($holidayEvents);
+
 
             return response()->json($events);
 
