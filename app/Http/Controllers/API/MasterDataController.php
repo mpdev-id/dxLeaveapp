@@ -14,8 +14,28 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Spatie\Permission\Models\Role;
 
+use App\Http\Resources\UserResource;
+use App\Models\User;
+
 class MasterDataController extends Controller
 {
+
+    public function getAllMasterData()
+    {
+        try {
+            $users = User::all();
+            $leaveTypes = LeaveType::all();
+
+            return ResponseFormatter::success([
+                'users' => UserResource::collection($users),
+                'leave_types' => LeaveTypeResource::collection($leaveTypes),
+            ], 'Master data retrieved successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to retrieve master data: ' . $e->getMessage(), 500);
+        }
+    }
+
+
     //====================== DEPARTMENTS ======================
 
     public function getDepartments()

@@ -243,7 +243,7 @@ class LeaveRequestController extends Controller
                     'start_date' => 'required|date',
                     'end_date' => 'required|date|after_or_equal:start_date',
                     'reason' => 'required|string|max:500',
-                    'leave_period' => 'required',
+                    'leave_period' => ['required', Rule::in(['full_day', 'half_day_morning', 'half_day_afternoon'])],
                 ])->validate();
 
                 // Cek kembali jatah cuti dengan durasi final

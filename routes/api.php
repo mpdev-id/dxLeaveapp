@@ -11,6 +11,9 @@ use App\Http\Controllers\API\Admin\LeaveRequestController as AdminLeaveRequestCo
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+Route::get('master-data', [\App\Http\Controllers\API\MasterDataController::class, 'getAllMasterData']);
+
+
 // --- Rute Autentikasi Publik ---
 Route::post('register', [UserController::class, 'register']);
 Route::post('login', [UserController::class, 'login']);
@@ -43,6 +46,9 @@ Route::middleware(['auth:sanctum', 'role:Super Admin'])->prefix('admin/master')-
     Route::apiResource('public-holidays', PublicHolidayController::class);
     Route::apiResource('employee-entitlements', EmployeeEntitlementController::class);
     Route::apiResource('leave-requests', AdminLeaveRequestController::class)->names('admin.leave-requests');
+    Route::patch('leave-requests/{leaveRequest}/handle-approval', [AdminLeaveRequestController::class, 'handleApproval'])->name('admin.leave-requests.handle-approval');
+    Route::post('leave-requests/{leaveRequest}/submit', [AdminLeaveRequestController::class, 'submit'])->name('admin.leave-requests.submit');
+
     Route::get('users/{user}/status', [AdminUserController::class, 'getStatus'])->name('admin.users.status');
     Route::get('roles', [\App\Http\Controllers\API\MasterDataController::class, 'roles'])->name('admin.roles.index');
 });

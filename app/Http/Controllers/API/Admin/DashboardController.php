@@ -18,7 +18,7 @@ class DashboardController extends Controller
             $stats = [
                 'total_users' => User::count(),
                 'total_departments' => Department::count(),
-                'pending_requests' => LeaveRequest::where('current_status', 'Pending')->count(),
+                'pending_requests'  => LeaveRequest::where('current_status', ['Pending','In Progress'])->count(),
                 'approved_this_month' => LeaveRequest::where('current_status', 'Approved')
                     ->whereMonth('start_date', Carbon::now()->month)
                     ->count(),

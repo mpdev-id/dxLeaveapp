@@ -43,4 +43,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/leave-types', [LeaveTypeController::class, 'index'])->name('leave-types.index');
     Route::get('/public-holidays', [PublicHolidayController::class, 'index'])->name('public-holidays.index');
     Route::get('/employee-entitlements', [EmployeeEntitlementController::class, 'index'])->name('employee-entitlements.index');
+    Route::get('/leave-request', function () {
+        return view('admin.master.leave-request.index');
+    })->name('leave-request');
 });
