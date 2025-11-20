@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>{{ config('app.name', 'SIAL') }}</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -18,10 +18,10 @@
     <div class="hero min-h-screen bg-base-200">
         <div class="hero-content flex-col lg:flex-row-reverse">
             <div class="text-center lg:text-left px-8">
-                <h1 class="text-5xl font-bold">{{ config('app.name', 'Laravel') }}</h1>
-                <p class="py-6">Welcome! Please log in to access your account and manage your leave requests.</p>
+                <h1 class="text-5xl font-bold">{{ config('app.name', 'SIAL') }}</h1>
+                <p class="py-6">Sistem Informasi Admin LeaveApp! Please log in to access your account and manage your leave requests.</p>
             </div>
-            <div class="card shrink-0 w-full max-w-sm shadow-2xl bg-base-100">
+            <div class="card shrink-0 w-full w-sm">
                 <div class="card-body">
                     @yield('content')
                 </div>

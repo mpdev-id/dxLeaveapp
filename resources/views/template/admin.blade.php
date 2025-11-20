@@ -140,11 +140,11 @@
                 }
             });
         });
-    </script>
-    @push('scripts')
-    <script>
+
         function logoutApi(event, baseApiUrl) {
             event.preventDefault();
+            const form = event.currentTarget.closest('form');
+            
             fetch(`${baseApiUrl}/logout`, {
                 method: 'POST',
                 headers: {
@@ -152,18 +152,15 @@
                     'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                 }
             })
-            .then(response => response.json())
-            .then(() => {
+            .finally(() => {
                 localStorage.removeItem('authToken');
-                window.location.href = '/login';
-            })
-            .catch(error => {
-                console.error('Error logging out:', error);
-                localStorage.removeItem('authToken');
-                window.location.href = '/login';
+                if (form) {
+                    form.submit(); // Submit the original form to logout from web session
+                } else {
+                    window.location.href = '/login'; // Fallback if something is wrong
+                }
             });
         }
     </script>
-    @endpush
 </body>
 </html>

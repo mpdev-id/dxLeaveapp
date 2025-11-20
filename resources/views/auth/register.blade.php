@@ -14,7 +14,7 @@
 
             <form @submit.prevent="submitForm" class="space-y-4">
                 @csrf
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="flex flex-col w-full gap-4">
                     {{-- Full Name --}}
                     <div class="form-control">
                         <label class="label" for="name"><span class="label-text flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>Full Name</span></label>
@@ -32,7 +32,7 @@
                     {{-- Email --}}
                     <div class="form-control">
                         <label class="label" for="email"><span class="label-text flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>Email</span></label>
-                        <input type="email" id="email" x-model="formData.email" placeholder="your.email@example.com" class="input input-bordered w-full" :class="{'input-error': errors.email}" required />
+                        <input type="email" id="email" x-model="formData.email" placeholder="your.email@example.com" class="input input-bordered w-full" :class="{'input-error': errors.email}" required pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,63}$" />
                         <div x-show="errors.email" x-text="errors.email ? errors.email[0] : ''" class="text-error text-sm mt-1"></div>
                     </div>
 
@@ -41,6 +41,7 @@
                         <label class="label" for="phone_number"><span class="label-text flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>Phone Number</span></label>
                         <input type="tel" id="phone_number" x-model="formData.phone_number" placeholder="e.g., 08123456789" class="input input-bordered w-full" :class="{'input-error': errors.phone_number}" required />
                         <div x-show="errors.phone_number" x-text="errors.phone_number ? errors.phone_number[0] : ''" class="text-error text-sm mt-1"></div>
+                      
                     </div>
 
                     {{-- Password --}}
@@ -76,10 +77,10 @@
                     </div>
 
                     {{-- Status --}}
-                    <div class="form-control md:col-span-2">
+                    <div class="form-control md:col-span-2 hidden" aria-disabled="true">
                         <label class="label" for="status"><span class="label-text flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>Status</span></label>
                         <select id="status" x-model="formData.status" class="select select-bordered w-full" :class="{'select-error': errors.status}">
-                            <option value="active">Active</option>
+                            <option value="active" selected>Active</option>
                             <option value="inactive">Inactive</option>
                         </select>
                         <div x-show="errors.status" x-text="errors.status ? errors.status[0] : ''" class="text-error text-sm mt-1"></div>
@@ -104,6 +105,14 @@
 
 @push('scripts')
 <script>
+    const phoneInput = document.getElementById('phone_number');
+    phoneInput.addEventListener('input', function(e) {
+        const val = e.target.value;
+        if (val.startsWith('08')) {
+            e.target.value = '628' + val.slice(2);
+        }
+    });
+
     function registrationForm(baseApiUrl) {
         return {
             formData: {

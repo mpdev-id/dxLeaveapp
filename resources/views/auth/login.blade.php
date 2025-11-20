@@ -42,7 +42,7 @@
                             <input type="password" id="password" x-model="formData.password" class="grow" placeholder="Password" required />
                         </label>
                         <div x-show="errors.password" class="text-error text-sm mt-1" x-text="errors.password ? errors.password[0] : ''"></div>
-_
+
                     </div>
 
                     <div class="flex items-center justify-between mt-4">
