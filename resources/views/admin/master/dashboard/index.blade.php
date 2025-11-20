@@ -86,20 +86,98 @@ document.addEventListener('DOMContentLoaded', function() {
         editable: false,
         selectable: true,
         dayMaxEvents: true, // allow "more" link when too many events
-        events: {
-            url: `${baseApiUrl}/admin/dashboard/leave-calendar`,
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Accept': 'application/json'
-            },
-            failure: function(error) {
-                console.error('Error fetching calendar events:', error.message);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Oops...',
-                    text: 'Could not fetch calendar data. Please try again.',
-                });
+        events: function(fetchInfo, successCallback, failureCallback) {
+            fetch(`${baseApiUrl}/admin/dashboard/leave-calendar?start=${fetchInfo.startStr}&end=${fetchInfo.endStr}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                if (response.redirected) {
+                    // If redirected, it's likely an authentication issue
+                    console.error('Authentication failed, redirected to login.');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Authentication Required',
+                        text: 'Your session has expired or you are not authorized. Please log in again.',
+                        didClose: () => {
+                            window.location.href = '/login'; // Redirect to login
+                        }
+                    });
+                    failureCallback({ message: 'Authentication failed' });
+                    return;
+                }
+                if (!response.ok) {
+                    // Attempt to parse JSON error, or fall back to generic message
+                    return response.json().then(err => {
+                        failureCallback({ message: err.message || 'Network response was not ok' });
+                        throw new Error(err.message || 'Network response was not ok');
+                    }).catch(() => {
+                        // If it's not JSON, throw a generic network error
+                        failureCallback({ message: 'Network response was not ok and not JSON' });
+                        throw new Error('Network response was not ok and not JSON');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.data) { // Assuming ResponseFormatter::success returns data in a 'data' key
+                    const events = data.data.map(event => {
+                        if (event.extendedProps.type === 'leave') {
+                             const details = event.extendedProps.details;
+                             return {
+                                id: event.id,
+                                title: details.user.name + ' - ' + details.leave_type.name,
+                                start: event.start, // Use top-level start
+                                end: event.end,   // Use top-level end
+                                allDay: true,
+                                color: '#3788d8', // Default color for leave requests (blue)
+                                extendedProps: {
+                                    type: 'leave',
+                                    details: details,
+                                }
+                            };
+                        } else if (event.extendedProps.type === 'holiday') {
+                            const details = event.extendedProps.details;
+                            return {
+                                id: event.id,
+                                title: details.name,
+                                start: event.start, // Use top-level start
+                                allDay: true,
+                                color: '#28a745', // Green color for public holidays
+                                className: 'bg-success text-white',
+                                extendedProps: {
+                                    type: 'holiday',
+                                    details: details,
+                                }
+                            };
+                        }
+                        return null; // Should not happen
+                    }).filter(Boolean); // Filter out nulls
+                    console.log('Events array sent to FullCalendar:', events); // Added for debugging
+                    successCallback(events);
+                } else {
+                    console.log('No events data or unexpected format received.'); // Added for debugging
+                    successCallback([]); // No data or unexpected format
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching calendar events:', error);
+                // Swal.fire is already handled in the redirected check or specific error parsing
+                // failureCallback(error); // This is handled by the specific error parsing above
+            });
+        },
+        eventDidMount: function(info) {
+            // Log event details to console for debugging
+            console.log('Event Mounted:', info.event);
+
+            // Optional: Add a custom class based on event type if needed for further styling
+            if (info.event.extendedProps.type === 'leave') {
+                info.el.classList.add('fc-event-leave');
+            } else if (info.event.extendedProps.type === 'holiday') {
+                info.el.classList.add('fc-event-holiday');
             }
         },
         eventClick: function(info) {
@@ -116,7 +194,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 bodyContent = `
                     <p><strong>Employee:</strong> ${details.user.name}</p>
-                    <p><strong>Department:</strong> ${details.user.department ? details.user.department.name : 'N/A'}</p>
+                    <p><strong>Department:</strong> ${details.department ? details.department.name : 'N/A'}</p>
                     <p><strong>Leave Type:</strong> ${details.leave_type.name}</p>
                     <p><strong>Dates:</strong> ${startDate} to ${endDate}</p>
                     <p><strong>Reason:</strong> ${details.reason}</p>
@@ -134,6 +212,66 @@ document.addEventListener('DOMContentLoaded', function() {
             
             modalBody.innerHTML = bodyContent;
             modal.showModal();
+        },
+        dateClick: function(info) {
+            Swal.fire({
+                title: 'Loading Leave Requests...',
+                text: 'Please wait while we fetch data for ' + info.dateStr,
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            fetch(`${baseApiUrl}/admin/dashboard/leave-requests-by-date?date=${info.dateStr}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw new Error(err.message || 'Network response was not ok'); });
+                }
+                return response.json();
+            })
+            .then(data => {
+                Swal.close();
+                if (data.data && data.data.length > 0) {
+                    modalTitle.innerText = 'Leave Requests on ' + info.dateStr;
+                    let bodyContent = `<ul class="list-disc list-inside">`;
+                    data.data.forEach(request => {
+                        const startDate = new Date(request.start_date).toLocaleDateString();
+                        const endDate = new Date(request.end_date).toLocaleDateString();
+                        bodyContent += `
+                            <li class="mb-2">
+                                <strong>${request.user.name}</strong> (${request.user.department ? request.user.department.name : 'N/A'})<br>
+                                ${request.leave_type.name}: ${startDate} to ${endDate}<br>
+                                Status: <span class="badge badge-outline-primary">${request.current_status}</span>
+                            </li>
+                        `;
+                    });
+                    bodyContent += `</ul>`;
+                    modalBody.innerHTML = bodyContent;
+                    modal.showModal();
+                } else {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'No Leave Requests',
+                        text: 'No approved leave requests found for ' + info.dateStr + '.',
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.close();
+                console.error('Error fetching leave requests by date:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Error fetching leave requests for ' + info.dateStr + ': ' + error.message,
+                });
+            });
         }
     });
 

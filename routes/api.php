@@ -58,5 +58,6 @@ Route::middleware(['auth:sanctum', 'role:Super Admin'])->prefix('admin/dashboard
     Route::get('recent-activity', [\App\Http\Controllers\API\Admin\DashboardController::class, 'getRecentActivity']);
     Route::get('upcoming-leaves', [\App\Http\Controllers\API\Admin\DashboardController::class, 'getUpcomingLeaves']);
     Route::get('leave-calendar', [\App\Http\Controllers\API\Admin\DashboardController::class, 'getLeaveCalendar']);
+    Route::get('leave-requests-by-date', [\App\Http\Controllers\API\Admin\DashboardController::class, 'getLeaveRequestsByDate']);
 });
 

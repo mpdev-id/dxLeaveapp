@@ -9,6 +9,7 @@ use App\Models\Department;
 use App\Models\LeaveRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use App\Models\PublicHoliday;
 
 class DashboardController extends Controller
 {
@@ -61,6 +62,29 @@ class DashboardController extends Controller
         }
     }
 
+    public function getLeaveRequestsByDate(Request $request)
+    {
+        try {
+            $request->validate([
+                'date' => 'required|date_format:Y-m-d',
+            ]);
+
+            $date = Carbon::parse($request->date);
+
+            $leaveRequests = LeaveRequest::with(['user.department', 'leaveType'])
+                ->where('current_status', 'Approved')
+                ->where(function ($query) use ($date) {
+                    $query->whereDate('start_date', '<=', $date)
+                          ->whereDate('end_date', '>=', $date);
+                })
+                ->get();
+
+            return ResponseFormatter::success($leaveRequests, 'Leave requests for selected date retrieved successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to retrieve leave requests for date: ' . $e->getMessage(), 500);
+        }
+    }
+
     public function getLeaveCalendar(Request $request)
     {
         try {
@@ -68,7 +92,7 @@ class DashboardController extends Controller
 
             // Fetch Approved Leave Requests
             $leaveQuery = LeaveRequest::with(['user.department', 'leaveType'])
-                ->where('current_status', 'approved');
+                ->whereNotIn('current_status', ['Draft']);
 
             if ($request->has('start') && $request->has('end')) {
                 $leaveQuery->where(function ($q) use ($request) {
@@ -123,7 +147,7 @@ class DashboardController extends Controller
             $events = $events->merge($holidayEvents);
 
 
-            return response()->json($events);
+            return ResponseFormatter::success($events, 'Calendar data retrieved successfully');
 
         } catch (\Exception $e) {
             return ResponseFormatter::error(null, 'Failed to retrieve calendar data: ' . $e->getMessage(), 500);
