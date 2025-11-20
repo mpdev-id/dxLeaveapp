@@ -4,6 +4,7 @@
     <title>@yield('title') - {{ config('app.name', 'Laravel') }}</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
 </head>
@@ -79,9 +80,9 @@
                             </summary>
 
                             <ul>
-                                <li><a href="{{ route('admin.users.index') }}">Leave Request</a></li>
-                                <li><a href="{{ route('admin.departments.index') }}">Leave Log</a></li>
-                                <li><a href="{{ route('admin.leave-types.index') }}">Leave Print</a></li>
+                                <li><a href="{{ route('admin.leave-request') }}">Leave Request</a></li>
+                                {{-- <li><a href="{{ route('admin.leave-log') }}">Leave Log</a></li>
+                                <li><a href="{{ route('admin.leave-print') }}">Leave Print</a></li> --}}
                             </ul>
                         </details>
                     </li>

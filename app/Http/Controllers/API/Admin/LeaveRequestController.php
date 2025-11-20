@@ -115,7 +115,7 @@ class LeaveRequestController extends Controller
 
             $startDate = Carbon::parse($validatedData['start_date']);
             $endDate = Carbon::parse($validatedData['end_date']);
-            $duration = ($in_array($validatedData['leave_period'], ['half_day_morning', 'half_day_afternoon'])) ? 0.5 : $startDate->diffInDays($endDate) + 1;
+            $duration = (in_array($validatedData['leave_period'], ['half_day_morning', 'half_day_afternoon'])) ? 0.5 : $startDate->diffInDays($endDate) + 1;
 
 
             if (!$this->entitlementService->hasSufficientBalance($user, $validatedData['leave_type_id'], $duration)) {
