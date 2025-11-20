@@ -13,37 +13,67 @@
                 <form method="dialog">
                     <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" @click="errors = {}">✕</button>
                 </form>
-                <h3 class="font-bold text-lg" x-text="isEdit ? 'Edit User' : 'Add New User'"></h3>
-                <form @submit.prevent="isEdit ? updateUser() : addUser()">
+                <h3 class="font-bold text-lg mb-4" x-text="isEdit ? 'Edit User' : 'Add New User'"></h3>
+                <form @submit.prevent="isEdit ? updateUser() : addUser()" class="space-y-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="form-control">
-                            <label class="label">Name</label>
-                            <input type="text" x-model="newUser.name" class="input input-bordered" :class="{'input-error': errors.name}" required>
+                            <label class="label">
+                                <span class="label-text flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                    Name
+                                </span>
+                            </label>
+                            <input type="text" x-model="newUser.name" placeholder="Full Name" class="input input-bordered w-full" :class="{'input-error': errors.name}" required>
                             <div x-show="errors.name" class="text-error text-sm mt-1" x-text="errors.name ? errors.name[0] : ''"></div>
                         </div>
                         <div class="form-control">
-                            <label class="label">Email</label>
-                            <input type="email" x-model="newUser.email" class="input input-bordered" :class="{'input-error': errors.email}" required>
+                            <label class="label">
+                                <span class="label-text flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                    Email
+                                </span>
+                            </label>
+                            <input type="email" x-model="newUser.email" placeholder="email@example.com" class="input input-bordered w-full" :class="{'input-error': errors.email}" required>
                             <div x-show="errors.email" class="text-error text-sm mt-1" x-text="errors.email ? errors.email[0] : ''"></div>
                         </div>
                         <div class="form-control">
-                            <label class="label">Employee Code</label>
-                            <input type="text" x-model="newUser.employee_code" class="input input-bordered" :class="{'input-error': errors.employee_code}">
+                            <label class="label">
+                                <span class="label-text flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                                    Employee Code
+                                </span>
+                            </label>
+                            <input type="text" x-model="newUser.employee_code" placeholder="e.g., EMP001" class="input input-bordered w-full" :class="{'input-error': errors.employee_code}">
                              <div x-show="errors.employee_code" class="text-error text-sm mt-1" x-text="errors.employee_code ? errors.employee_code[0] : ''"></div>
                         </div>
                         <div class="form-control">
-                            <label class="label">Phone Number</label>
-                            <input type="text" x-model="newUser.phone_number" class="input input-bordered" :class="{'input-error': errors.phone_number}">
+                            <label class="label">
+                                <span class="label-text flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                                    Phone Number
+                                </span>
+                            </label>
+                            <input type="text" x-model="newUser.phone_number" placeholder="e.g., +628123456789" class="input input-bordered w-full" :class="{'input-error': errors.phone_number}">
                              <div x-show="errors.phone_number" class="text-error text-sm mt-1" x-text="errors.phone_number ? errors.phone_number[0] : ''"></div>
                         </div>
                         <div class="form-control">
-                            <label class="label">Password (leave blank if not changing)</label>
-                            <input type="password" x-model="newUser.password" class="input input-bordered" :class="{'input-error': errors.password}">
+                            <label class="label">
+                                <span class="label-text flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                                    Password (leave blank if not changing)
+                                </span>
+                            </label>
+                            <input type="password" x-model="newUser.password" placeholder="********" class="input input-bordered w-full" :class="{'input-error': errors.password}">
                              <div x-show="errors.password" class="text-error text-sm mt-1" x-text="errors.password ? errors.password[0] : ''"></div>
                         </div>
                         <div class="form-control">
-                            <label class="label">Department</label>
-                            <select x-model="newUser.department_id" class="select select-bordered" :class="{'input-error': errors.department_id}">
+                            <label class="label">
+                                <span class="label-text flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+                                    Department
+                                </span>
+                            </label>
+                            <select x-model="newUser.department_id" class="select select-bordered w-full" :class="{'select-error': errors.department_id}">
                                 <option value="">Select Department</option>
                                 <template x-for="department in departments" :key="department.id">
                                     <option :value="department.id" x-text="department.name"></option>
@@ -52,8 +82,13 @@
                              <div x-show="errors.department_id" class="text-error text-sm mt-1" x-text="errors.department_id ? errors.department_id[0] : ''"></div>
                         </div>
                         <div class="form-control">
-                            <label class="label">Manager</label>
-                            <select x-model="newUser.manager_id" class="select select-bordered" :class="{'input-error': errors.manager_id}">
+                            <label class="label">
+                                <span class="label-text flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h2a2 2 0 002-2V8a2 2 0 00-2-2h-2M14 10l-4 4-4-4m8 4H5" /></svg>
+                                    Manager
+                                </span>
+                            </label>
+                            <select x-model="newUser.manager_id" class="select select-bordered w-full" :class="{'select-error': errors.manager_id}">
                                 <option value="">Select Manager</option>
                                 <template x-for="manager in users" :key="manager.id">
                                     <option :value="manager.id" x-text="manager.name"></option>
@@ -62,21 +97,36 @@
                              <div x-show="errors.manager_id" class="text-error text-sm mt-1" x-text="errors.manager_id ? errors.manager_id[0] : ''"></div>
                         </div>
                         <div class="form-control">
-                            <label class="label">Status</label>
-                            <select x-model="newUser.status" class="select select-bordered" :class="{'input-error': errors.status}">
+                            <label class="label">
+                                <span class="label-text flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    Status
+                                </span>
+                            </label>
+                            <select x-model="newUser.status" class="select select-bordered w-full" :class="{'select-error': errors.status}">
                                 <option value="active">Active</option>
                                 <option value="inactive">Inactive</option>
                             </select>
                              <div x-show="errors.status" class="text-error text-sm mt-1" x-text="errors.status ? errors.status[0] : ''"></div>
                         </div>
                         <div class="form-control">
-                            <label class="label">Hire Date</label>
-                            <input type="date" x-model="newUser.hire_date" class="input input-bordered" :class="{'input-error': errors.hire_date}">
+                            <label class="label">
+                                <span class="label-text flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                    Hire Date
+                                </span>
+                            </label>
+                            <input type="date" x-model="newUser.hire_date" class="input input-bordered w-full" :class="{'input-error': errors.hire_date}">
                              <div x-show="errors.hire_date" class="text-error text-sm mt-1" x-text="errors.hire_date ? errors.hire_date[0] : ''"></div>
                         </div>
                         <div class="form-control">
-                            <label class="label">Roles</label>
-                            <select x-model="newUser.roles" class="select select-bordered" :class="{'input-error': errors.roles}" multiple>
+                            <label class="label">
+                                <span class="label-text flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm-6-6a4 4 0 100-8 4 4 0 000 8zm6 11l6-6-6-6v12z" /></svg>
+                                    Roles
+                                </span>
+                            </label>
+                            <select x-model="newUser.roles" class="select select-bordered w-full" :class="{'select-error': errors.roles}" multiple>
                                 <template x-for="role in roles" :key="role.id">
                                     <option :value="role.name" x-text="role.name"></option>
                                 </template>
@@ -84,9 +134,9 @@
                              <div x-show="errors.roles" class="text-error text-sm mt-1" x-text="errors.roles ? errors.roles[0] : ''"></div>
                         </div>
                     </div>
-                    <div class="modal-action mt-4">
-                        <button type="button" class="btn" @click="user_modal.close(); errors = {}">Cancel</button>
-                        <button type="submit" class="btn btn-primary" x-text="isEdit ? 'Update' : 'Create'"></button>
+                    <div class="modal-action mt-6">
+                        <button type="button" class="btn btn-ghost" @click="document.getElementById('user_modal').close(); errors = {}">Cancel</button>
+                        <button type="submit" class="btn btn-primary" :disabled="loading" x-text="isEdit ? 'Update' : 'Create'"></button>
                     </div>
                 </form>
             </div>

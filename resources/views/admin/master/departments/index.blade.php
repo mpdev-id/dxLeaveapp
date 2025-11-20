@@ -13,16 +13,21 @@
                 <form method="dialog">
                     <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" @click="errors = {}">✕</button>
                 </form>
-                <h3 class="font-bold text-lg" x-text="isEdit ? 'Edit Department' : 'Add New Department'"></h3>
-                <form @submit.prevent="isEdit ? updateDepartment() : addDepartment()">
+                <h3 class="font-bold text-lg mb-4" x-text="isEdit ? 'Edit Department' : 'Add New Department'"></h3>
+                <form @submit.prevent="isEdit ? updateDepartment() : addDepartment()" class="space-y-4">
                     <div class="form-control">
-                        <label class="label">Name</label>
-                        <input type="text" x-model="newDepartment.name" class="input input-bordered" :class="{'input-error': errors.name}" required>
+                        <label class="label">
+                            <span class="label-text flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+                                Name
+                            </span>
+                        </label>
+                        <input type="text" x-model="newDepartment.name" placeholder="e.g., Human Resources" class="input input-bordered w-full" :class="{'input-error': errors.name}" required>
                         <div x-show="errors.name" class="text-error text-sm mt-1" x-text="errors.name ? errors.name[0] : ''"></div>
                     </div>
                     <div class="modal-action">
-                        <button type="button" class="btn" @click="department_modal.close(); errors = {}">Cancel</button>
-                        <button type="submit" class="btn btn-primary" x-text="isEdit ? 'Update' : 'Create'"></button>
+                        <button type="button" class="btn btn-ghost" @click="department_modal.close(); errors = {}">Cancel</button>
+                        <button type="submit" class="btn btn-primary" :disabled="loading" x-text="isEdit ? 'Update' : 'Create'"></button>
                     </div>
                 </form>
             </div>

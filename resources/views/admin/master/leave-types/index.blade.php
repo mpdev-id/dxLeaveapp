@@ -13,21 +13,31 @@
                 <form method="dialog">
                     <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" @click="errors = {}">✕</button>
                 </form>
-                <h3 class="font-bold text-lg" x-text="isEdit ? 'Edit Leave Type' : 'Add New Leave Type'"></h3>
-                <form @submit.prevent="isEdit ? updateLeaveType() : addLeaveType()">
+                <h3 class="font-bold text-lg mb-4" x-text="isEdit ? 'Edit Leave Type' : 'Add New Leave Type'"></h3>
+                <form @submit.prevent="isEdit ? updateLeaveType() : addLeaveType()" class="space-y-4">
                     <div class="form-control">
-                        <label class="label">Name</label>
-                        <input type="text" x-model="newLeaveType.name" class="input input-bordered" :class="{'input-error': errors.name}" required>
+                        <label class="label">
+                            <span class="label-text flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v2a2 2 0 01-2 2h-5m-5 0a2 2 0 01-2-2v-2a2 2 0 012-2h5m-9 0a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                Name
+                            </span>
+                        </label>
+                        <input type="text" x-model="newLeaveType.name" placeholder="e.g., Annual Leave" class="input input-bordered w-full" :class="{'input-error': errors.name}" required>
                         <div x-show="errors.name" class="text-error text-sm mt-1" x-text="errors.name ? errors.name[0] : ''"></div>
                     </div>
                     <div class="form-control">
-                        <label class="label">Days</label>
-                        <input type="number" x-model="newLeaveType.days" class="input input-bordered" :class="{'input-error': errors.days}" required>
+                        <label class="label">
+                            <span class="label-text flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                Days
+                            </span>
+                        </label>
+                        <input type="number" x-model="newLeaveType.days" placeholder="e.g., 12" class="input input-bordered w-full" :class="{'input-error': errors.days}" required>
                         <div x-show="errors.days" class="text-error text-sm mt-1" x-text="errors.days ? errors.days[0] : ''"></div>
                     </div>
                     <div class="modal-action">
-                        <button type="button" class="btn" @click="leavetype_modal.close(); errors = {}">Cancel</button>
-                        <button type="submit" class="btn btn-primary" x-text="isEdit ? 'Update' : 'Create'"></button>
+                        <button type="button" class="btn btn-ghost" @click="leavetype_modal.close(); errors = {}">Cancel</button>
+                        <button type="submit" class="btn btn-primary" :disabled="loading" x-text="isEdit ? 'Update' : 'Create'"></button>
                     </div>
                 </form>
             </div>
