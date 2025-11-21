@@ -7,13 +7,21 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Spatie\Permission\Models\Role;
-
+use App\Services\EntitlementService;
 class UserController extends Controller
 {
+    protected $entitlementService;
+
+    public function __construct(EntitlementService $entitlementService)
+    {
+        $this->entitlementService = $entitlementService;
+    }
+
     public function index(Request $request)
     {
         try {
@@ -54,7 +62,7 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'employee_code' => ['nullable', 'string', 'max:255', 'unique:users'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'phone_number' => ['nullable', 'string', 'max:255', 'unique:users'],
+            'phone_number' => ['nullable', 'string', 'max:255'],
             'password' => ['required', 'string', 'min:8'],
             'department_id' => ['nullable', 'exists:departments,id'],
             'manager_id' => ['nullable', 'exists:users,id'],
@@ -86,6 +94,20 @@ class UserController extends Controller
                     $newUser->syncRoles($request->roles);
                 }
 
+                
+                // 3. Automatically create annual leave entitlement for the new user
+                // Assuming '1' is the ID for 'Cuti Tahunan' (Annual Leave) and '2' is the ID for 'Cuti Bulanan' (Monthly Leave)
+                $currentYear = Carbon::now()->year;
+                $leaveTypeId = $currentYear === Carbon::parse($request->hire_date)->year ? 6 : 1;
+                $this->entitlementService->createEntitlement([
+                    'user_id' => $newUser->id,
+                    'leave_type_id' => $leaveTypeId,
+                    'year' => $request->hire_date ? Carbon::parse($request->hire_date)->year : null,
+                    'initial_balance' => 12, // Default 12 days
+                    'days_taken' => 0,
+                    'carry_over_days' => 0,
+                ]);
+
                 return $newUser;
             });
 
@@ -114,7 +136,7 @@ class UserController extends Controller
                 'name' => ['string', 'max:255'],
                 'employee_code' => ['string', 'max:255', 'unique:users,employee_code,' . $user->id],
                 'email' => ['string', 'email', 'max:255', 'unique:users,email,' . $user->id],
-                'phone_number' => ['nullable', 'string', 'max:255', 'unique:users,phone_number,' . $user->id],
+                'phone_number' => ['nullable', 'string', 'max:255'],
                 'password' => ['nullable', 'string', 'min:8'],
                 'department_id' => ['nullable', 'exists:departments,id'],
                 'manager_id' => ['nullable', 'exists:users,id'],
@@ -160,6 +182,19 @@ class UserController extends Controller
             return ResponseFormatter::success($user->status, 'User status retrieved successfully');
         } catch (\Exception $e) {
             return ResponseFormatter::error(null, 'Failed to retrieve user status: ' . $e->getMessage(), 500);
+        }
+    }
+  
+    public function getLeaveBalances(Request $request)
+    {
+        try {
+            $user = $request->user();
+            $currentYear = Carbon::now()->year;
+            $balances = $this->entitlementService->getUserLeaveBalances($user, $currentYear);
+
+            return ResponseFormatter::success($balances, 'User leave balances retrieved successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to retrieve leave balances: ' . $e->getMessage(), 500);
         }
     }
 }

@@ -41,17 +41,19 @@ class EmployeeEntitlementController extends Controller
     public function store(Request $request)
     {
         try {
-            $entitlement = $this->entitlementService->createEntitlement($request->all());
+            $data = $request->merge([
+                'days_taken' => 0,
+                'carry_over_days' => 0,
+            ]);
+            $entitlement = $this->entitlementService->createEntitlement($data);
             return ResponseFormatter::success(
                 new EmployeeEntitlementResource($entitlement),
                 'Employee entitlement created successfully'
             );
         } catch (ValidationException $e) {
-            return ResponseFormatter::error(
-                ['errors' => $e->errors()],
-                'Validation failed',
-                422
-            );
+            return ResponseFormatter::error([
+                'errors' => $e->errors(),
+            ], 'Validation failed', 422);
         }
     }
 

@@ -124,7 +124,7 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'employee_code' => ['required', 'string', 'max:255', 'unique:users'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'phone_number' => ['required', 'string', 'max:255', 'unique:users'],
+            'phone_number' => ['required', 'string', 'max:255'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'department_id' => ['nullable', 'exists:departments,id'],
             'manager_id' => ['nullable', 'exists:users,id'],
@@ -158,11 +158,13 @@ class UserController extends Controller
                 }
 
                 // 3. Automatically create annual leave entitlement for the new user
-                // Assuming '1' is the ID for 'Cuti Tahunan' (Annual Leave)
+                // Assuming '1' is the ID for 'Cuti Tahunan' (Annual Leave) and '2' is the ID for 'Cuti Bulanan' (Monthly Leave)
+                $currentYear = Carbon::now()->year;
+                $leaveTypeId = $currentYear === Carbon::parse($request->hire_date)->year ? 6 : 1;
                 $this->entitlementService->createEntitlement([
                     'user_id' => $newUser->id,
-                    'leave_type_id' => 1, // Default to Annual Leave
-                    'year' => Carbon::now()->year,
+                    'leave_type_id' => $leaveTypeId,
+                    'year' => $request->hire_date ? Carbon::parse($request->hire_date)->year : null,
                     'initial_balance' => 12, // Default 12 days
                     'days_taken' => 0,
                     'carry_over_days' => 0,
