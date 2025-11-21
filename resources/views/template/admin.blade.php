@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="corporate">
 <head>
     <title>@yield('title') - {{ config('app.name', 'Laravel') }}</title>
     <meta charset="utf-8">
@@ -9,15 +9,18 @@
     @stack('styles')
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
 </head>
-<body>
+<body class="bg-base-200">
     <div x-data="{ drawerOpen: localStorage.getItem('drawerOpen') === 'true' }" x-init="$watch('drawerOpen', value => localStorage.setItem('drawerOpen', value))">
-        <div class="drawer lg:drawer-open rounded-3xl" :class="{'lg:drawer-open': drawerOpen, 'lg:drawer-close': !drawerOpen}">
-            <input id="my-drawer" type="checkbox" class="drawer-toggle" :checked="drawerOpen" />
-            
+        <div class="drawer" :class="{'lg:drawer-open': drawerOpen, 'lg:drawer-close': !drawerOpen}">
+            <input id="my-drawer" type="checkbox" class="drawer-toggle" />
+
             {{-- Page Content --}}
             <div class="drawer-content flex flex-col">
-                <div class="navbar bg-base-100">
-                    <div class="flex-none">
+                <div class="navbar bg-base-100 shadow-lg">
+                    <div class="flex-none lg:hidden">
+                        {{-- This is for the mobile view, but the menu is now on the bottom nav --}}
+                    </div>
+                    <div class="flex-none hidden lg:block">
                         <label for="my-drawer" @click="drawerOpen = !drawerOpen" aria-label="open sidebar" class="btn btn-square btn-ghost">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-5 h-5 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                         </label>
@@ -26,15 +29,17 @@
                         <a class="btn btn-ghost text-xl">@yield('title')</a>
                     </div>
                 </div>
-                
-                <main class="p-6">
-                    @yield('content')
+
+                <main class="p-4 md:p-6 pb-24 lg:pb-6">
+                    <div class="bg-base-100 rounded-box shadow p-4 md:p-6">
+                        @yield('content')
+                    </div>
                 </main>
             </div> 
-            
+
             {{-- Drawer Sidebar --}}
-            <div class="drawer-side rounded-r-4xl">
-                <label for="my-drawer" @click="drawerOpen = false" aria-label="close sidebar" class="drawer-overlay"></label>
+            <div class="drawer-side">
+                <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
                 <ul class="menu p-4 w-60 min-h-full bg-base-200 text-base-content">
                     <li class="text-2xl font-bold p-4">{{ config('app.name', 'Laravel') }}</li>
                     <li>
@@ -48,21 +53,17 @@
                             <summary>
                                 <svg class="w-5 h-5" id='Squared_Menu_24' width='24' height='24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'>
                                     <rect width='24' height='24' stroke='none' fill='#000000' opacity='0' />
-
-
                                     <g transform="matrix(0.59 0 0 0.59 12 12)">
                                         <path style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(253 253 253); fill-rule: nonzero; opacity: 1;" transform=" translate(-24, -24)" d="M 15 15 L 7 15 L 7 7 L 15 7 L 15 15 z M 28 15 L 20 15 L 20 7 L 28 7 L 28 15 z M 41 15 L 33 15 L 33 7 L 41 7 L 41 15 z M 15 28 L 7 28 L 7 20 L 15 20 L 15 28 z M 28 28 L 20 28 L 20 20 L 28 20 L 28 28 z M 41 28 L 33 28 L 33 20 L 41 20 L 41 28 z M 15 41 L 7 41 L 7 33 L 15 33 L 15 41 z M 28 41 L 20 41 L 20 33 L 28 33 L 28 41 z M 41 41 L 33 41 L 33 33 L 41 33 L 41 41 z" stroke-linecap="round" />
                                     </g>
                                 </svg>
                                 Master Data
                             </summary>
-
                             <ul>
                                 <li><a href="{{ route('admin.users.index') }}">Employees</a></li>
                                 <li><a href="{{ route('admin.employee-entitlements.index') }}">Employee Entitlements</a></li>
                                 <li><a href="{{ route('admin.departments.index') }}">Departments</a></li>
                                 <li><a href="{{ route('admin.leave-types.index') }}">Leave Types</a></li>
-                                {{-- <li><a href="{{ route('admin.public-holidays.index') }}">Public Holidays</a></li> --}}
                             </ul>
                         </details>
                     </li>
@@ -71,19 +72,15 @@
                             <summary>
                                 <svg class="w-5 h-5" id='Squared_Menu_24' width='24' height='24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'>
                                     <rect width='24' height='24' stroke='none' fill='#000000' opacity='0' />
-
-
                                     <g transform="matrix(0.59 0 0 0.59 12 12)">
                                         <path style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(253 253 253); fill-rule: nonzero; opacity: 1;" transform=" translate(-24, -24)" d="M 15 15 L 7 15 L 7 7 L 15 7 L 15 15 z M 28 15 L 20 15 L 20 7 L 28 7 L 28 15 z M 41 15 L 33 15 L 33 7 L 41 7 L 41 15 z M 15 28 L 7 28 L 7 20 L 15 20 L 15 28 z M 28 28 L 20 28 L 20 20 L 28 20 L 28 28 z M 41 28 L 33 28 L 33 20 L 41 20 L 41 28 z M 15 41 L 7 41 L 7 33 L 15 33 L 15 41 z M 28 41 L 20 41 L 20 33 L 28 33 L 28 41 z M 41 41 L 33 41 L 33 33 L 41 33 L 41 41 z" stroke-linecap="round" />
                                     </g>
                                 </svg>
                                 Leave Pra-Request
                             </summary>
-
                             <ul>
                                 <li><a href="{{ route('admin.leave-request') }}">Leave Request</a></li>
                                 <li><a href="{{ route('admin.leave-log') }}">Leave Log</a></li>
-                                {{-- <li><a href="{{ route('admin.leave-print') }}">Leave Print</a></li> --}}
                             </ul>
                         </details>
                     </li>
@@ -95,13 +92,12 @@
                                 Logout
                             </button>
                         </form>
-
-                        
                     </li>
                 </ul>
             </div>
         </div>
     </div>
+    @include('includes.bottom-nav')
 
     @stack('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
