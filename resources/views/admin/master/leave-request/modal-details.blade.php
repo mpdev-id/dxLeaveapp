@@ -64,6 +64,25 @@
                     </div>
                 </div>
 
+                <!-- Approval Workflow -->
+                <div class="mt-6" x-show="selectedRequest.workflow && selectedRequest.workflow.steps && selectedRequest.workflow.steps.length > 0">
+                    <h4 class="font-bold mb-2">Approval Workflow</h4>
+                    <ul class="timeline timeline-horizontal">
+                        <template x-for="(step, index) in selectedRequest.workflow.steps" :key="step.id">
+                            <li>
+                                <hr x-show="index > 0" />
+                                <div class="timeline-start" x-text="step.approver_role.name"></div>
+                                <div class="timeline-middle">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-info"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94l-1.72-1.72z" clip-rule="evenodd" /></svg>
+                                </div>
+                                <div class="timeline-end timeline-box" x-text="step.approver_user ? step.approver_user.name : 'N/A'">
+                                </div>
+                                <hr x-show="index < selectedRequest.workflow.steps.length - 1" />
+                            </li>
+                        </template>
+                    </ul>
+                </div>
+
                 <!-- Approval History Timeline -->
                 <div class="mt-6" x-show="selectedRequest.approvals && selectedRequest.approvals.length > 0">
                     <h4 class="font-bold mb-2">Approval History</h4>

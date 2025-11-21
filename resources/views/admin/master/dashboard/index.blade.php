@@ -295,7 +295,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     approvalHistoryHtml = `
                         <div class="mt-6">
                             <h4 class="font-bold mb-2">Approval History</h4>
-                            <ul class="timeline timeline-horizontal">
+                            <ul class="timeline timeline-vertical">
                     `;
                     details.approvals.forEach((approval, index) => {
                         const approvalDate = new Date(approval.created_at).toLocaleString();
