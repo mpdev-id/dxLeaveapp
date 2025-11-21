@@ -75,6 +75,14 @@ class LeaveRequestController extends Controller
 
             $leaveRequests = $query->paginate($request->input('per_page', 10));
 
+            foreach ($leaveRequests as $leaveRequest) {
+                if ($leaveRequest->workflow) {
+                    foreach ($leaveRequest->workflow->steps as $step) {
+                        $step->approver_user = $this->workflowService->findApproverForStep($leaveRequest->user, $step);
+                    }
+                }
+            }
+
             return ResponseFormatter::success(LeaveRequestResource::collection($leaveRequests), 'Leave requests retrieved successfully');
         } catch (\Exception $e) {
             return ResponseFormatter::error(null, 'Failed to retrieve leave requests: ' . $e->getMessage(), 500);

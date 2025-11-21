@@ -265,12 +265,37 @@ document.addEventListener('DOMContentLoaded', function() {
                     `;
                 }
 
+                let approverTimelineHtml = '';
+                if (details.workflow && details.workflow.steps && details.workflow.steps.length > 0) {
+                    approverTimelineHtml = `
+                        <div class="mt-6">
+                            <h4 class="font-bold mb-2">Approval Workflow</h4>
+                            <ul class="timeline timeline-horizontal">
+                    `;
+                    details.workflow.steps.forEach((step, index) => {
+                        approverTimelineHtml += `
+                            <li>
+                                ${index > 0 ? '<hr />' : ''}
+                                <div class="timeline-start">${step.approver_role.name}</div>
+                                <div class="timeline-middle">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-info"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94l-1.72-1.72z" clip-rule="evenodd" /></svg>
+                                </div>
+                                <div class="timeline-end timeline-box">
+                                    ${step.approver_user ? step.approver_user.name : 'N/A'}
+                                </div>
+                                ${index < details.workflow.steps.length - 1 ? '<hr />' : ''}
+                            </li>
+                        `;
+                    });
+                    approverTimelineHtml += `</ul></div>`;
+                }
+
                 let approvalHistoryHtml = '';
                 if (details.approvals && details.approvals.length > 0) {
                     approvalHistoryHtml = `
                         <div class="mt-6">
                             <h4 class="font-bold mb-2">Approval History</h4>
-                            <ul class="timeline timeline-snap-icon max-md:timeline-compact timeline-vertical">
+                            <ul class="timeline timeline-horizontal">
                     `;
                     details.approvals.forEach((approval, index) => {
                         const approvalDate = new Date(approval.created_at).toLocaleString();
@@ -278,30 +303,27 @@ document.addEventListener('DOMContentLoaded', function() {
                         let iconColorClass = '';
                         if (approval.action === 'Approved') {
                             iconColorClass = 'text-success';
-                        } else if (approval.action === 'Rejected') {
-                            iconColorClass = 'text-error';
-                        } else if (approval.action === 'Canceled') {
+                        } else if (approval.action === 'Rejected' || approval.action === 'Canceled') {
                             iconColorClass = 'text-error';
                         } else if (approval.action === 'Pending') {
                             iconColorClass = 'text-warning';
                         }
 
-                        const timelinePosition = index % 2 === 0 ? 'timeline-start md:text-end' : 'timeline-end';
-
                         approvalHistoryHtml += `
                             <li>
-                                <div class="timeline-middle">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-5 w-5 ${iconColorClass}">
-                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
-                                    </svg>
-                                </div>
-                                <div class="${timelinePosition} mb-10">
-                                    <time class="font-mono italic text-xs">${approvalDate}</time>
+                                ${index > 0 ? '<hr />' : ''}
+                                <div class="timeline-start">
                                     <div class="text-lg font-black">${approval.action}</div>
+                                    <time class="font-mono italic text-xs">${approvalDate}</time>
+                                </div>
+                                <div class="timeline-middle">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 ${iconColorClass}"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 101.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
+                                </div>
+                                <div class="timeline-end timeline-box">
                                     <p class="text-sm">by <span>${approval.approver?.name || ''}</span></p>
                                     ${approval.comments ? `<p class="mt-1 bg-base-200 p-2 rounded text-xs">${approval.comments}</p>` : ''}
                                 </div>
-                                <hr />
+                                ${index < details.approvals.length - 1 ? '<hr />' : ''}
                             </li>
                         `;
                     });
@@ -350,6 +372,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <p class="whitespace-pre-wrap bg-base-200 p-2 rounded-md">${details.reason || 'N/A'}</p>
                             </div>
                         </div>
+                        ${approverTimelineHtml}
                         ${approvalHistoryHtml}
                     </div>
                 `;

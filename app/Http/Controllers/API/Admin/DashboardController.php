@@ -121,7 +121,18 @@ class DashboardController extends Controller
                     $currentYear
                 );
                 
-                $details = $leave->load('user', 'leaveType', 'approvals.approver')->toArray();
+                $leave->load('user', 'leaveType', 'approvals.approver', 'workflow.steps.approverRole');
+
+                $workflowService = app(\App\Services\WorkflowService::class);
+                if ($leave->workflow) {
+                    foreach ($leave->workflow->steps as &$step) {
+                        $approver = $workflowService->findApproverForStep($leave->user, $step);
+                        $step->approver_user = $approver ? $approver->only(['id', 'name', 'email']) : null;
+                    }
+                    unset($step);
+                }
+
+                $details = $leave->toArray();
                 $details['remaining_leave_balance'] = $remainingBalance;
 
                 return [
