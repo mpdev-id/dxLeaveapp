@@ -94,6 +94,29 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const colorClass = (status) => {
+                switch (status) {
+                    case 'Pending': return '#FF5107'; // warna orange
+                    case 'In Progress': return '#FF5107'; // warna yellow
+                    case 'Approved': return '#34c759'; // warna green
+                    case 'Rejected': return '#C40000'; // warna red
+                    case 'Canceled': return '#C40000'; // warna pink
+                    case 'Draft': return '#230202'; // warna grey
+                    default: return '';
+                }
+            };
+
+             // Helper function for status badge class
+             const getBadgeClass = (status) => {
+                switch (status) {
+                    case 'Pending': return 'badge-warning';
+                    case 'Approved': return 'badge-success';
+                    case 'Rejected':
+                    case 'Canceled': return 'badge-error';
+                    case 'Draft': return 'badge-ghost';
+                    default: return '';
+                }
+            };
     const calendarEl = document.getElementById('calendar');
     const modal = document.getElementById('event_modal');
     const modalTitle = document.getElementById('modal_title');
@@ -111,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function() {
         headerToolbar: {
             left: 'prev,next today',
             center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            right: 'dayGridMonth'
         },
         initialView: 'dayGridMonth',
         editable: false,
@@ -160,11 +183,11 @@ document.addEventListener('DOMContentLoaded', function() {
                              const details = event.extendedProps.details;
                              return {
                                 id: event.id,
-                                title: details.user.name + ' - ' + details.leave_type.name,
+                                title: details.current_status + ' | ' +details.user.name ,
                                 start: event.start, // Use top-level start
                                 end: event.end,   // Use top-level end
                                 allDay: true,
-                                color: '#3788d8', // Default color for leave requests (blue)
+                                color: colorClass(details.current_status), 
                                 extendedProps: {
                                     type: 'leave',
                                     details: details,
@@ -177,7 +200,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 title: details.name,
                                 start: event.start, // Use top-level start
                                 allDay: true,
-                                color: '#28a745', // Green color for public holidays
+                                color: '#FF96EC', // Green color for public holidays
                                 className: 'bg-success text-white',
                                 extendedProps: {
                                     type: 'holiday',
@@ -222,24 +245,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 return new Date(dateString).toLocaleDateString(undefined, options);
             };
 
-            // Helper function for status badge class
-            const getBadgeClass = (status) => {
-                switch (status) {
-                    case 'Pending': return 'badge-warning';
-                    case 'Approved': return 'badge-success';
-                    case 'Rejected':
-                    case 'Canceled': return 'badge-error';
-                    case 'Draft': return 'badge-ghost';
-                    default: return '';
-                }
-            };
-
             // Helper function for period formatting
             const formatPeriod = (period) => {
                 if (!period) return 'N/A';
                 return period.replace(/_/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
             };
-
 
             if (props.type === 'leave') {
                 const details = props.details;
@@ -264,8 +274,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     `;
                     details.approvals.forEach((approval, index) => {
                         const approvalDate = new Date(approval.created_at).toLocaleString();
-                        const approvalStatusClass = getBadgeClass(approval.status); // Reusing getBadgeClass for consistency
-                        const iconColorClass = approval.status === 'Approved' ? 'text-success' : (approval.status === 'Rejected' ? 'text-error' : 'text-warning');
+                        
+                        let iconColorClass = '';
+                        if (approval.action === 'Approved') {
+                            iconColorClass = 'text-success';
+                        } else if (approval.action === 'Rejected') {
+                            iconColorClass = 'text-error';
+                        } else if (approval.action === 'Canceled') {
+                            iconColorClass = 'text-error';
+                        } else if (approval.action === 'Pending') {
+                            iconColorClass = 'text-warning';
+                        }
+
                         const timelinePosition = index % 2 === 0 ? 'timeline-start md:text-end' : 'timeline-end';
 
                         approvalHistoryHtml += `
@@ -277,11 +297,11 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </div>
                                 <div class="${timelinePosition} mb-10">
                                     <time class="font-mono italic text-xs">${approvalDate}</time>
-                                    <div class="text-lg font-black">${approval.status}</div>
-                                    <p class="text-sm">by <span>${approval.approver?.name || 'N/A'}</span></p>
+                                    <div class="text-lg font-black">${approval.action}</div>
+                                    <p class="text-sm">by <span>${approval.approver?.name || ''}</span></p>
                                     ${approval.comments ? `<p class="mt-1 bg-base-200 p-2 rounded text-xs">${approval.comments}</p>` : ''}
                                 </div>
-                                ${index < details.approvals.length - 1 ? '<hr />' : ''}
+                                <hr />
                             </li>
                         `;
                     });
@@ -290,22 +310,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 modalBody.innerHTML = `
                     <div class="py-4">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                             <div>
                                 <p class="font-semibold">Employee</p>
                                 <p>${details.user?.name || 'N/A'}</p>
                             </div>
-                            <div>
-                                <p class="font-semibold">Department</p>
-                                <p>${details.user?.department?.name || 'N/A'}</p>
-                            </div>
+                           
                             <div>
                                 <p class="font-semibold">Submitted On</p>
                                 <p>${new Date(details.created_at).toLocaleString()}</p>
                             </div>
                             <div>
                                 <p class="font-semibold">Leave Type</p>
-                                <p>${details.leave_type?.name || 'N/A'}</p>
+                                <p class="badge badge-neutral">${details.leave_type?.name || 'N/A'}</p>
                             </div>
                             <div>
                                 <p class="font-semibold">Dates</p>
@@ -325,7 +342,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                             <div>
                                 <p class="font-semibold">Status</p>
-                                <p><span class="badge ${getBadgeClass(details.current_status)}">${details.current_status}</span></p>
+                                <p><span class="animate-pulse duration-75 badge ${getBadgeClass(details.current_status)}">${details.current_status}</span></p>
                             </div>
                             ${attachmentHtml}
                             <div class="md:col-span-3">
@@ -376,15 +393,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.data && data.data.length > 0) {
                     modalTitle.innerText = 'Leave Requests on ' + info.dateStr;
                     let bodyContent = `<ul class="list-disc list-inside">`;
-                    data.data.forEach(request => {
+                    data.data.forEach((request, index) => {
                         const startDate = new Date(request.start_date).toLocaleDateString();
                         const endDate = new Date(request.end_date).toLocaleDateString();
+                        const separator = index < data.data.length - 1 ? `<hr class="my-2 w-3/5 mx-auto text-amber-400">` : '';
                         bodyContent += `
                             <li class="mb-2">
                                 <strong>${request.user.name}</strong> (${request.user.department ? request.user.department.name : 'N/A'})<br>
                                 ${request.leave_type.name}: ${startDate} to ${endDate}<br>
-                                Status: <span class="badge badge-outline-primary">${request.current_status}</span>
+                                Status: <span class="badge ${getBadgeClass(request.current_status)}">${request.current_status}</span>
                             </li>
+                            ${separator}
                         `;
                     });
                     bodyContent += `</ul>`;

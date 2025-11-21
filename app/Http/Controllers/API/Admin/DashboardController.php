@@ -79,7 +79,7 @@ class DashboardController extends Controller
             $date = Carbon::parse($request->date);
 
             $leaveRequests = LeaveRequest::with(['user.department', 'leaveType'])
-                ->where('current_status', 'Approved')
+                ->whereNotIn('current_status', ['Draft'])
                 ->where(function ($query) use ($date) {
                     $query->whereDate('start_date', '<=', $date)
                           ->whereDate('end_date', '>=', $date);
@@ -121,7 +121,7 @@ class DashboardController extends Controller
                     $currentYear
                 );
                 
-                $details = $leave->load('user', 'leaveType')->toArray();
+                $details = $leave->load('user', 'leaveType', 'approvals.approver')->toArray();
                 $details['remaining_leave_balance'] = $remainingBalance;
 
                 return [

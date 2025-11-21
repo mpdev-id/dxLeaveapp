@@ -38,7 +38,7 @@
         </div>
 
         <!-- Table -->
-        <div x-show="!loading" class="overflow-x-auto bg-base-100 rounded-lg shadow">
+        <div x-show="!loading" class="bg-base-100 rounded-lg shadow">
             <table class="table w-full">
                 <thead>
                     <tr>

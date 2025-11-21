@@ -8,6 +8,20 @@
 
         <form @submit.prevent="saveRequest()">
             <div class="py-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <!-- Leave Period -->
+                  <div>
+                    <label class="label">
+                        <span class="label-text">Leave Period</span>
+                    </label>
+                    <select x-model="formData.leave_period"
+                        @change="if ($event.target.value !== 'full_day' && formData.start_date) formData.end_date = formData.start_date"
+                        class="select select-bordered w-full">
+                        <option value="full_day">Full Day</option>
+                        <option value="half_day_morning">Half Day (Morning)</option>
+                        <option value="half_day_afternoon">Half Day (Afternoon)</option>
+                    </select>
+                     <p x-show="formErrors.leave_period" class="text-error text-sm mt-1" x-text="formErrors.leave_period"></p>
+                </div>
                 <!-- User -->
                 <div>
                     <label class="label">
@@ -59,20 +73,7 @@
                      <p x-show="formErrors.end_date" class="text-error text-sm mt-1" x-text="formErrors.end_date"></p>
                 </div>
 
-                <!-- Leave Period -->
-                <div>
-                    <label class="label">
-                        <span class="label-text">Leave Period</span>
-                    </label>
-                    <select x-model="formData.leave_period"
-                        @change="if ($event.target.value !== 'full_day' && formData.start_date) formData.end_date = formData.start_date"
-                        class="select select-bordered w-full">
-                        <option value="full_day">Full Day</option>
-                        <option value="half_day_morning">Half Day (Morning)</option>
-                        <option value="half_day_afternoon">Half Day (Afternoon)</option>
-                    </select>
-                     <p x-show="formErrors.leave_period" class="text-error text-sm mt-1" x-text="formErrors.leave_period"></p>
-                </div>
+              
                 
                 <!-- Status -->
                 <div x-show="!editMode">
