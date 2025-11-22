@@ -48,6 +48,20 @@
                     </select>
                     <p x-show="formErrors.leave_type_id" class="text-error text-sm mt-1" x-text="formErrors.leave_type_id"></p>
                 </div>
+                
+                <!-- Workflow -->
+                <div>
+                    <label class="label">
+                        <span class="label-text">Workflow</span>
+                    </label>
+                    <select x-model="formData.workflow_id" class="select select-bordered w-full">
+                        <option disabled value="">Select Workflow</option>
+                        <template x-for="workflow in workflows" :key="workflow.id">
+                            <option :value="workflow.id" x-text="workflow.name"></option>
+                        </template>
+                    </select>
+                    <p x-show="formErrors.workflow_id" class="text-error text-sm mt-1" x-text="formErrors.workflow_id"></p>
+                </div>
 
                 <!-- Start Date -->
                 <div>

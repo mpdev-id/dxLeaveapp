@@ -53,4 +53,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/leave-log', [AdminMasterUserController::class, 'leaveLogIndex'])->name('leave-log');
     // New route for Employee's individual Leave Log
     Route::get('/leave-log/{user}', [LeaveLogController::class, 'show'])->name('leave-log.show');
+
+    Route::resource('workflows', \App\Http\Controllers\Admin\Master\WorkflowController::class);
 });

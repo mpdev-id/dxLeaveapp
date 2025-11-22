@@ -204,6 +204,7 @@
                 leaveRequests: [],
                 users: [],
                 leaveTypes: [],
+                workflows: [],
                 pagination: null,
                 search: '',
                 sortBy: 'created_at',
@@ -316,6 +317,7 @@
                         const data = await response.json();
                         this.users = data.data.users;
                         this.leaveTypes = data.data.leave_types;
+                        this.workflows = data.data.workflows;
                     } catch (error) {
                         this.handleError(error);
                     }
@@ -356,6 +358,7 @@
                         id: req.id,
                         user_id: req.user.id,
                         leave_type_id: req.leave_type.id,
+                        workflow_id: req.workflow_id,
                         start_date: this.formatDate(req.start_date),
                         end_date: this.formatDate(req.end_date),
                         leave_period: req.leave_period,
@@ -377,7 +380,7 @@
                     hideModal(id);
                 },
                 resetForm() {
-                    this.formData = { id: null, user_id: '', leave_type_id: '', start_date: '', end_date: '', leave_period: 'full_day', reason: '', current_status: 'Draft', supporting_document: null };
+                    this.formData = { id: null, user_id: '', leave_type_id: '', workflow_id: '', start_date: '', end_date: '', leave_period: 'full_day', reason: '', current_status: 'Draft', supporting_document: null };
                     this.formErrors = {};
                     const fileInput = document.getElementById('supporting_document');
 if (fileInput) fileInput.value = '';

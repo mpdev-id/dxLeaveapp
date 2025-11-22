@@ -104,6 +104,7 @@ class LeaveRequestController extends Controller
                 ],
                 'supporting_document' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
                 'current_status' => 'required|in:Draft,Pending',
+                'workflow_id' => 'required|exists:workflows,id',
             ]);
 
             $user = User::find($validatedData['user_id']);
@@ -130,11 +131,8 @@ class LeaveRequestController extends Controller
                 throw ValidationException::withMessages(['leave' => 'Insufficient leave balance for the user.']);
             }
 
-            $workflow = Workflow::where('applicable_model', LeaveRequest::class)->first();
-            if (!$workflow) {
-                return ResponseFormatter::error(null, 'Leave workflow not found.', 500);
-            }
-
+            $workflow = Workflow::find($validatedData['workflow_id']);
+            
             $leaveRequest = DB::transaction(function () use ($validatedData, $workflow, $duration, $attachmentPath, $user) {
                 $newData = [
                     'user_id' => $user->id,
@@ -205,6 +203,7 @@ class LeaveRequestController extends Controller
                     Rule::in(['full_day', 'half_day_morning', 'half_day_afternoon']),
                 ],
                 'supporting_document' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+                'workflow_id' => 'sometimes|required|exists:workflows,id',
             ]);
 
             $attachmentPath = $leaveRequest->getRawOriginal('supporting_attachment_path');

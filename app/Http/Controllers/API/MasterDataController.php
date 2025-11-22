@@ -17,6 +17,8 @@ use Spatie\Permission\Models\Role;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 
+use App\Models\Workflow;
+
 class MasterDataController extends Controller
 {
 
@@ -25,10 +27,12 @@ class MasterDataController extends Controller
         try {
             $users = User::all();
             $leaveTypes = LeaveType::all();
+            $workflows = Workflow::all();
 
             return ResponseFormatter::success([
                 'users' => UserResource::collection($users),
                 'leave_types' => LeaveTypeResource::collection($leaveTypes),
+                'workflows' => $workflows,
             ], 'Master data retrieved successfully');
         } catch (\Exception $e) {
             return ResponseFormatter::error(null, 'Failed to retrieve master data: ' . $e->getMessage(), 500);
