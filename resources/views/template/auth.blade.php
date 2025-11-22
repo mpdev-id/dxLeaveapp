@@ -15,13 +15,14 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="font-sans antialiased">
-    <div class="hero min-h-screen bg-base-200">
+    <div id="animated-bg" class="fixed top-0 left-0 w-full h-full -z-10"></div>
+    <div class="hero min-h-screen bg-base-200/75 backdrop-blur-sm">
         <div class="hero-content flex-col lg:flex-row-reverse">
             <div class="text-center lg:text-left px-8">
                 <h1 class="text-5xl font-bold">{{ config('app.name', 'SIAL') }}</h1>
                 <p class="py-6">Sistem Informasi Admin LeaveApp! Please log in to access your account and manage your leave requests.</p>
             </div>
-            <div class="card shrink-0 w-full w-sm">
+            <div class="card shrink-0 w-full w-sm auth-card">
                 <div class="card-body">
                     @yield('content')
                 </div>

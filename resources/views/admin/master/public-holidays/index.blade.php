@@ -10,9 +10,7 @@
         <!-- Add/Edit Public Holiday Modal -->
         <dialog id="publicholiday_modal" class="modal">
             <div class="modal-box">
-                <form method="dialog">
-                    <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" @click="errors = {}">✕</button>
-                </form>
+                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" onclick="hideModal('publicholiday_modal')">✕</button>
                 <h3 class="font-bold text-lg mb-4" x-text="isEdit ? 'Edit Public Holiday' : 'Add New Public Holiday'"></h3>
                 <form @submit.prevent="isEdit ? updatePublicHoliday() : addPublicHoliday()" class="space-y-4">
                     <div class="form-control">
@@ -36,7 +34,7 @@
                         <div x-show="errors.date" class="text-error text-sm mt-1" x-text="errors.date ? errors.date[0] : ''"></div>
                     </div>
                     <div class="modal-action">
-                        <button type="button" class="btn btn-ghost" @click="publicholiday_modal.close(); errors = {}">Cancel</button>
+                        <button type="button" class="btn btn-ghost" onclick="hideModal('publicholiday_modal')">Cancel</button>
                         <button type="submit" class="btn btn-primary" :disabled="loading" x-text="isEdit ? 'Update' : 'Create'"></button>
                     </div>
                 </form>
@@ -156,13 +154,13 @@
                 this.isEdit = false;
                 this.newPublicHoliday = { id: null, name: '', date: '' };
                 this.errors = {};
-                publicholiday_modal.showModal();
+                showModal('publicholiday_modal');
             },
             openEditModal(publicHoliday) {
                 this.isEdit = true;
                 this.newPublicHoliday = { ...publicHoliday };
                 this.errors = {};
-                publicholiday_modal.showModal();
+                showModal('publicholiday_modal');
             },
             async addPublicHoliday() {
                 this.errors = {};
@@ -188,7 +186,7 @@
                     }
                     this.fetchPublicHolidays();
                     this.showToast(data.meta.message);
-                    publicholiday_modal.close();
+                    hideModal('publicholiday_modal');
                 } catch (error) {
                     this.showToast('An unexpected error occurred.', 'error');
                     console.error('Error adding public holiday:', error);
@@ -218,7 +216,7 @@
                     }
                     this.fetchPublicHolidays();
                     this.showToast(data.meta.message);
-                    publicholiday_modal.close();
+                    hideModal('publicholiday_modal');
                 } catch (error) {
                     this.showToast('An unexpected error occurred.', 'error');
                     console.error('Error updating public holiday:', error);

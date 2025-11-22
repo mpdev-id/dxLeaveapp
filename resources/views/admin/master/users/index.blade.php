@@ -10,9 +10,7 @@
         <!-- Add/Edit User Modal -->
         <dialog id="user_modal" class="modal">
             <div class="modal-box w-11/12 max-w-5xl">
-                <form method="dialog">
-                    <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" @click="errors = {}">✕</button>
-                </form>
+                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" onclick="hideModal('user_modal')">✕</button>
                 <h3 class="font-bold text-lg mb-4" x-text="isEdit ? 'Edit User' : 'Add New User'"></h3>
                 <form @submit.prevent="isEdit ? updateUser() : addUser()" class="space-y-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -135,7 +133,7 @@
                         </div>
                     </div>
                     <div class="modal-action mt-6">
-                        <button type="button" class="btn btn-ghost" @click="document.getElementById('user_modal').close(); errors = {}">Cancel</button>
+                        <button type="button" class="btn btn-ghost" onclick="hideModal('user_modal')">Cancel</button>
                         <button type="submit" class="btn btn-primary" :disabled="loading" x-text="isEdit ? 'Update' : 'Create'"></button>
                     </div>
                 </form>
@@ -320,7 +318,7 @@
                     hire_date: '', roles: []
                 };
                 this.errors = {};
-                document.getElementById('user_modal').showModal();
+                showModal('user_modal');
             },
             openEditModal(user) {
                 this.isEdit = true;
@@ -333,7 +331,7 @@
                     roles: user.roles ? user.roles.map(role => role.name) : []
                 };
                 this.errors = {};
-                document.getElementById('user_modal').showModal();
+                showModal('user_modal');
             },
             async addUser() {
                 this.errors = {};
@@ -362,7 +360,7 @@
                     }
                     this.fetchUsers();
                     this.showToast(data.meta.message);
-                    document.getElementById('user_modal').close();
+                    hideModal('user_modal');
                 } catch (error) {
                     this.showToast('An unexpected error occurred.', 'error');
                     console.error('Error adding user:', error);
@@ -396,7 +394,7 @@
                     }
                     this.fetchUsers();
                     this.showToast(data.meta.message);
-                    document.getElementById('user_modal').close();
+                    hideModal('user_modal');
                 } catch (error) {
                     this.showToast('An unexpected error occurred.', 'error');
                     console.error('Error updating user:', error);

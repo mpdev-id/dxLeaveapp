@@ -1,9 +1,7 @@
 <!-- Details Modal -->
 <dialog id="details_modal" class="modal">
     <div class="modal-box w-11/12 max-w-3xl">
-        <form method="dialog">
-            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
-        </form>
+        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" onclick="hideModal('details_modal')">✕</button>
         <h3 class="font-bold text-lg">Leave Request Details</h3>
 
         <template x-if="selectedRequest">
@@ -112,9 +110,7 @@
         </template>
 
         <div class="modal-action">
-            <form method="dialog">
-                <button class="btn">Close</button>
-            </form>
+            <button class="btn" onclick="hideModal('details_modal')">Close</button>
         </div>
     </div>
 </dialog>

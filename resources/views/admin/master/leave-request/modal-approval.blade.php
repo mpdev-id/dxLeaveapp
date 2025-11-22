@@ -1,10 +1,8 @@
 <!-- Approval Modal -->
 <dialog id="approval_modal" class="modal">
     <div class="modal-box">
-        <form method="dialog">
-            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-                @click="approvalData.comments = ''">✕</button>
-        </form>
+        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+                @click="approvalData.comments = ''" onclick="hideModal('approval_modal')">✕</button>
         <h3 class="font-bold text-lg">Process Leave Request</h3>
         <p class="py-2 text-sm">You are about to process the leave request for <strong
                 x-text="selectedRequest?.user.name"></strong>.</p>
@@ -30,7 +28,7 @@
             </div>
 
             <div class="modal-action">
-                <button type="button" class="btn" @click="closeModal('approval_modal')">Cancel</button>
+                <button type="button" class="btn" onclick="hideModal('approval_modal')">Cancel</button>
                 <button type="submit" class="btn"
                     :class="{'btn-success': approvalData.action === 'Approve', 'btn-error': approvalData.action === 'Reject'}"
                     x-text="approvalData.action"></button>

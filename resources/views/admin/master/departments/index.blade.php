@@ -10,9 +10,7 @@
         <!-- Add/Edit Department Modal -->
         <dialog id="department_modal" class="modal">
             <div class="modal-box">
-                <form method="dialog">
-                    <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" @click="errors = {}">✕</button>
-                </form>
+                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" onclick="hideModal('department_modal')">✕</button>
                 <h3 class="font-bold text-lg mb-4" x-text="isEdit ? 'Edit Department' : 'Add New Department'"></h3>
                 <form @submit.prevent="isEdit ? updateDepartment() : addDepartment()" class="space-y-4">
                     <div class="form-control">
@@ -26,7 +24,7 @@
                         <div x-show="errors.name" class="text-error text-sm mt-1" x-text="errors.name ? errors.name[0] : ''"></div>
                     </div>
                     <div class="modal-action">
-                        <button type="button" class="btn btn-ghost" @click="department_modal.close(); errors = {}">Cancel</button>
+                        <button type="button" class="btn btn-ghost" onclick="hideModal('department_modal')">Cancel</button>
                         <button type="submit" class="btn btn-primary" :disabled="loading" x-text="isEdit ? 'Update' : 'Create'"></button>
                     </div>
                 </form>
@@ -130,14 +128,14 @@
                 this.isEdit = false;
                 this.newDepartment = { id: null, name: '' };
                 this.errors = {};
-                department_modal.showModal();
+                showModal('department_modal');
             },
 
             openEditModal(department) {
                 this.isEdit = true;
                 this.newDepartment = { ...department };
                 this.errors = {};
-                department_modal.showModal();
+                showModal('department_modal');
             },
 
             async addDepartment() {
@@ -160,7 +158,7 @@
                     }
                     this.fetchDepartments();
                     this.showToast(data.meta.message);
-                    department_modal.close();
+                    hideModal('department_modal');
                 } catch (error) {
                     this.showToast('An unexpected error occurred.', 'error');
                     console.error('Error adding department:', error);
@@ -187,7 +185,7 @@
                     }
                     this.fetchDepartments();
                     this.showToast(data.meta.message);
-                    department_modal.close();
+                    hideModal('department_modal');
                 } catch (error) {
                     this.showToast('An unexpected error occurred.', 'error');
                     console.error('Error updating department:', error);

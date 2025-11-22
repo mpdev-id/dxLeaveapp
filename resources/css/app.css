@@ -40,3 +40,10 @@
   --depth: 1;
   --noise: 1;
 }
+
+.bg-square {
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: 0.25rem;
+}

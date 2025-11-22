@@ -1,9 +1,7 @@
 <!-- Create/Edit Modal -->
 <dialog id="create_edit_modal" class="modal">
     <div class="modal-box w-11/12 max-w-2xl">
-        <form method="dialog">
-            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" @click="resetForm()">✕</button>
-        </form>
+        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" @click="resetForm()" onclick="hideModal('create_edit_modal')">✕</button>
         <h3 class="font-bold text-lg" x-text="editMode ? 'Edit Leave Request' : 'Create New Leave Request'"></h3>
 
         <form @submit.prevent="saveRequest()">
@@ -111,7 +109,7 @@
             </div>
 
             <div class="modal-action">
-                <button type="button" class="btn" @click="closeModal('create_edit_modal')">Cancel</button>
+                <button type="button" class="btn" onclick="hideModal('create_edit_modal')">Cancel</button>
                 <button type="submit" class="btn btn-primary" x-text="editMode ? 'Update' : 'Create'"></button>
             </div>
         </form>

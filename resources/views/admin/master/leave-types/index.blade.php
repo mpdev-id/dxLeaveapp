@@ -10,9 +10,7 @@
         <!-- Add/Edit Leave Type Modal -->
         <dialog id="leavetype_modal" class="modal">
             <div class="modal-box">
-                <form method="dialog">
-                    <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" @click="errors = {}">✕</button>
-                </form>
+                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" onclick="hideModal('leavetype_modal')">✕</button>
                 <h3 class="font-bold text-lg mb-4" x-text="isEdit ? 'Edit Leave Type' : 'Add New Leave Type'"></h3>
                 <form @submit.prevent="isEdit ? updateLeaveType() : addLeaveType()" class="space-y-4">
                     <div class="form-control">
@@ -36,7 +34,7 @@
                         <div x-show="errors.days" class="text-error text-sm mt-1" x-text="errors.days ? errors.days[0] : ''"></div>
                     </div>
                     <div class="modal-action">
-                        <button type="button" class="btn btn-ghost" @click="leavetype_modal.close(); errors = {}">Cancel</button>
+                        <button type="button" class="btn btn-ghost" onclick="hideModal('leavetype_modal')">Cancel</button>
                         <button type="submit" class="btn btn-primary" :disabled="loading" x-text="isEdit ? 'Update' : 'Create'"></button>
                     </div>
                 </form>
@@ -161,14 +159,14 @@
                 this.isEdit = false;
                 this.newLeaveType = { id: null, name: '', days: '' };
                 this.errors = {};
-                leavetype_modal.showModal();
+                showModal('leavetype_modal');
             },
 
             openEditModal(leaveType) {
                 this.isEdit = true;
                 this.newLeaveType = { ...leaveType, days: parseFloat(leaveType.default_entitlement_days) };
                 this.errors = {};
-                leavetype_modal.showModal();
+                showModal('leavetype_modal');
             },
 
             async addLeaveType() {
@@ -195,7 +193,7 @@
                     }
                     this.fetchLeaveTypes();
                     this.showToast(data.meta.message);
-                    leavetype_modal.close();
+                    hideModal('leavetype_modal');
                 } catch (error) {
                     this.showToast('An unexpected error occurred.', 'error');
                     console.error('Error adding leave type:', error);
@@ -226,7 +224,7 @@
                     }
                     this.fetchLeaveTypes();
                     this.showToast(data.meta.message);
-                    leavetype_modal.close();
+                    hideModal('leavetype_modal');
                 } catch (error) {
                     this.showToast('An unexpected error occurred.', 'error');
                     console.error('Error updating leave type:', error);

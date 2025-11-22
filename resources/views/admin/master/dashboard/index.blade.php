@@ -83,9 +83,7 @@
                 {{-- Content will be injected by JS --}}
             </div>
             <div class="modal-action">
-                <form method="dialog">
-                    <button class="btn">Close</button>
-                </form>
+                <button class="btn" onclick="hideModal('event_modal')">Close</button>
             </div>
         </div>
     </dialog>
@@ -386,7 +384,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
             }
             
-            modal.showModal();
+            showModal('event_modal');
         },
         dateClick: function(info) {
             Swal.fire({
@@ -431,7 +429,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                     bodyContent += `</ul>`;
                     modalBody.innerHTML = bodyContent;
-                    modal.showModal();
+                    showModal('event_modal');
                 } else {
                     Swal.fire({
                         icon: 'info',

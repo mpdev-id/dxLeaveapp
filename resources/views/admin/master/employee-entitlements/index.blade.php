@@ -10,9 +10,7 @@
         <!-- Add/Edit Entitlement Modal -->
         <dialog id="entitlement_modal" class="modal">
             <div class="modal-box">
-                <form method="dialog">
-                    <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" @click="errors = {}">✕</button>
-                </form>
+                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" onclick="hideModal('entitlement_modal')">✕</button>
                 <h3 class="font-bold text-lg mb-4" x-text="isEdit ? 'Edit Entitlement' : 'Add New Entitlement'"></h3>
                 <form @submit.prevent="isEdit ? updateEntitlement() : addEntitlement()" class="space-y-4">
                     <div class="form-control">
@@ -66,7 +64,7 @@
                         <div x-show="errors.year" class="text-error text-sm mt-1" x-text="errors.year ? errors.year[0] : ''"></div>
                     </div>
                     <div class="modal-action">
-                        <button type="button" class="btn btn-ghost" @click="entitlement_modal.close(); errors = {}">Cancel</button>
+                        <button type="button" class="btn btn-ghost" onclick="hideModal('entitlement_modal')">Cancel</button>
                         <button type="submit" class="btn btn-primary" :disabled="loading" x-text="isEdit ? 'Update' : 'Create'"></button>
                     </div>
                 </form>
@@ -225,7 +223,7 @@
                 this.isEdit = false;
                 this.newEntitlement = { id: null, user_id: '', leave_type_id: '', initial_balance: '', year: new Date().getFullYear() };
                 this.errors = {};
-                entitlement_modal.showModal();
+                showModal('entitlement_modal');
             },
             openEditModal(entitlement) {
                 this.isEdit = true;
@@ -237,7 +235,7 @@
                     year: entitlement.year
                 };
                 this.errors = {};
-                entitlement_modal.showModal();
+                showModal('entitlement_modal');
             },
             async addEntitlement() {
                 this.errors = {};
@@ -263,7 +261,7 @@
                     }
                     this.fetchEntitlements();
                     this.showToast(data.meta.message);
-                    entitlement_modal.close();
+                    hideModal('entitlement_modal');
                 } catch (error) {
                     this.showToast('An unexpected error occurred.', 'error');
                     console.error('Error adding entitlement:', error);
@@ -293,7 +291,7 @@
                     }
                     this.fetchEntitlements();
                     this.showToast(data.meta.message);
-                    entitlement_modal.close();
+                    hideModal('entitlement_modal');
                 } catch (error) {
                     this.showToast('An unexpected error occurred.', 'error');
                     console.error('Error updating entitlement:', error);

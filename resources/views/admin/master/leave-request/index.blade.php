@@ -343,7 +343,7 @@
                 openCreateModal() {
                     this.resetForm();
                     this.editMode = false;
-                    document.getElementById('create_edit_modal').showModal();
+                    showModal('create_edit_modal');
                 },
                 openEditModal(req) {
                     if (req.current_status !== 'Draft') {
@@ -362,19 +362,19 @@
                         reason: req.reason,
                         supporting_document_path: req.supporting_attachment_path
                     };
-                    document.getElementById('create_edit_modal').showModal();
+                    showModal('create_edit_modal');
                 },
                 openDetailsModal(req) {
                     this.selectedRequest = req;
-                    document.getElementById('details_modal').showModal();
+                    showModal('details_modal');
                 },
                 openApprovalModal(req) {
                     this.selectedRequest = req;
                     this.approvalData = { action: 'Approve', comments: '' };
-                    document.getElementById('approval_modal').showModal();
+                    showModal('approval_modal');
                 },
                 closeModal(id) {
-                    document.getElementById(id).close();
+                    hideModal(id);
                 },
                 resetForm() {
                     this.formData = { id: null, user_id: '', leave_type_id: '', start_date: '', end_date: '', leave_period: 'full_day', reason: '', current_status: 'Draft', supporting_document: null };
