@@ -38,7 +38,7 @@ class LeaveRequestController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = LeaveRequest::with(['user.department', 'leaveType', 'currentStep.approverRole', 'workflow.steps.approverRole', 'approvals.approver'])
+            $query = LeaveRequest::with(['user.department', 'user.manager', 'leaveType', 'currentStep.approverRole', 'workflow.steps.approverRole', 'approvals.approver'])
                 ->select('leave_requests.*');
 
             if ($request->filled('search')) {
@@ -78,7 +78,14 @@ class LeaveRequestController extends Controller
             foreach ($leaveRequests as $leaveRequest) {
                 if ($leaveRequest->workflow) {
                     foreach ($leaveRequest->workflow->steps as $step) {
-                        $step->approver_user = $this->workflowService->findApproverForStep($leaveRequest->user, $step);
+                        $approver = $this->workflowService->findApproverForStep($leaveRequest->user, $step);
+                        if ($approver) {
+                            // Ensure roles are loaded and formatted as expected by frontend (array of names)
+                            $approver->load('roles');
+                            // We can manually attach the role names array to match UserResource format
+                            $approver->role = $approver->getRoleNames(); 
+                            $step->approver_user = $approver;
+                        }
                     }
                 }
             }
@@ -268,16 +275,29 @@ class LeaveRequestController extends Controller
     public function handleApproval(Request $request, LeaveRequest $leaveRequest)
     {
         $request->validate([
-            'action' => 'required|in:Approve,Reject,Cancel',
+            'action' => 'required|in:Approved,Rejected,Canceled',
             'comments' => 'nullable|string',
+            'approver_id' => 'nullable|exists:users,id',
         ]);
 
         try {
             $admin = Auth::user();
             $action = $request->input('action');
             $comments = $request->input('comments');
+            $approverId = $request->input('approver_id');
 
-            $this->leaveRequestService->processApproval($leaveRequest, $admin, $action, $comments);
+            // Allow admin to approve on behalf of another user
+            if ($approverId && $admin->hasRole('Super Admin')) {
+                $approver = User::find($approverId);
+                if (!$approver) {
+                    return ResponseFormatter::error(null, 'Selected approver not found.', 404);
+                }
+                // We use the selected approver to process the approval
+                $this->leaveRequestService->processApproval($leaveRequest, $approver, $action, $comments);
+            } else {
+                // Normal flow: Authenticated user approves
+                $this->leaveRequestService->processApproval($leaveRequest, $admin, $action, $comments);
+            }
 
             return ResponseFormatter::success(new LeaveRequestResource($leaveRequest->fresh()), 'Approval action recorded successfully.');
         } catch (ValidationException $e) {

@@ -14,10 +14,28 @@
                         <span class="label-text">Action</span>
                     </label>
                     <select x-model="approvalData.action" class="select select-bordered w-full">
-                        <option>Approve</option>
-                        <option>Reject</option>
+                        <option value="Approved">Approve</option>
+                        <option value="Rejected">Reject</option>
                     </select>
                 </div>
+                
+                <!-- Admin Override: Select Approver -->
+                <div x-show="isAdmin" class="form-control">
+                    <label class="label">
+                        <span class="label-text">Approve as (Admin Override)</span>
+                        <span class="label-text-alt text-warning">Optional</span>
+                    </label>
+                    <select x-model="approvalData.approver_id" class="select select-bordered w-full">
+                        <option value="">Myself ({{ optional(Auth::user())->name ?? 'Myself' }})</option>
+                        <template x-for="user in suggestedApprovers" :key="user.id">
+                            <option :value="user.id" x-text="user.name + ' (' + (user.role ? user.role.join(', ') : '') + ')'"></option>
+                        </template>
+                    </select>
+                    <label class="label">
+                        <span class="label-text-alt">Leave blank to approve as yourself. Select a user to approve on their behalf.</span>
+                    </label>
+                </div>
+
                 <div>
                     <label class="label">
                         <span class="label-text">Comments (Optional)</span>
@@ -30,7 +48,7 @@
             <div class="modal-action">
                 <button type="button" class="btn" onclick="hideModal('approval_modal')">Cancel</button>
                 <button type="submit" class="btn"
-                    :class="{'btn-success': approvalData.action === 'Approve', 'btn-error': approvalData.action === 'Reject'}"
+                    :class="{'btn-success': approvalData.action === 'Approved', 'btn-error': approvalData.action === 'Rejected'}"
                     x-text="approvalData.action"></button>
             </div>
         </form>

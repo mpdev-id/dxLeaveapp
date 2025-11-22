@@ -218,14 +218,87 @@
 
                 // Approval Modal state
                 approvalData: {
-                    action: 'Approve',
-                    comments: ''
+                    action: 'Approved',
+                    comments: '',
+                    approver_id: ''
+                },
+                userRoles: [],
+                get isAdmin() {
+                    return this.userRoles.includes('Super Admin');
+                },
+                get suggestedApprovers() {
+                    if (!this.users || this.users.length === 0) {
+                        console.warn('Master data "users" is empty or not loaded.');
+                        return [];
+                    }
+
+                    if (!this.selectedRequest || !this.selectedRequest.workflow || !this.selectedRequest.workflow.steps) {
+                        console.warn('Workflow steps not found in selected request.');
+                        return [];
+                    }
+
+                    const approvers = new Map();
+
+                    this.selectedRequest.workflow.steps.forEach(step => {
+                        // 1. Specific User Assigned (Calculated by Backend)
+                        if (step.approver_user) {
+                            approvers.set(step.approver_user.id, step.approver_user);
+                        }
+                        // 2. Specific User ID in Step Definition
+                        else if (step.required_approver_type === 'User' && step.approver_user_id) {
+                            const user = this.users.find(u => u.id == step.approver_user_id);
+                            if (user) approvers.set(user.id, user);
+                        }
+                        // 3. Manager Type - Requester's Manager
+                        else if (step.required_approver_type === 'Manager') {
+                            if (this.selectedRequest.user && this.selectedRequest.user.manager) {
+                                 const managerId = this.selectedRequest.user.manager.id;
+                                 const manager = this.users.find(u => u.id == managerId) || this.selectedRequest.user.manager;
+                                 if (manager) approvers.set(manager.id, manager);
+                            }
+                        }
+                        // 4. Department Head
+                        else if (step.required_approver_type === 'DepartmentHead') {
+                            if (this.selectedRequest.user && this.selectedRequest.user.manager) {
+                                 const managerId = this.selectedRequest.user.manager.id;
+                                 const manager = this.users.find(u => u.id == managerId) || this.selectedRequest.user.manager;
+                                 if (manager) approvers.set(manager.id, manager);
+                            }
+                        }
+                        // 5. Role Based
+                        else if (step.required_approver_type === 'Role' && step.approver_role) {
+                            const roleName = step.approver_role.name;
+                            const roleUsers = this.users.filter(u => {
+                                if (!u.role) return false;
+                                const userRoles = Array.isArray(u.role) ? u.role : [u.role];
+                                return userRoles.some(r => r === roleName);
+                            });
+                            roleUsers.forEach(user => approvers.set(user.id, user));
+                        }
+                    });
+
+                    return Array.from(approvers.values()).sort((a, b) => a.name.localeCompare(b.name));
                 },
 
                 init() {
                     this.resetForm();
+                    this.fetchCurrentUser();
                     this.fetchLeaveRequests();
                     this.fetchMasterData();
+                },
+
+                async fetchCurrentUser() {
+                    try {
+                        const headers = this.getAuthHeaders();
+                        const response = await fetch(`${baseApiUrl}/api/user`, { headers });
+                        if (!response.ok) throw new Error('Failed to fetch user');
+                        const data = await response.json();
+                        // UserResource returns role as an array of strings
+                        this.userRoles = data.data.role || [];
+                        console.log('Fetched User Roles:', this.userRoles);
+                    } catch (error) {
+                        console.error('Error fetching user:', error);
+                    }
                 },
                 
                 // --- UTILITIES ---
@@ -269,7 +342,7 @@
                             this.formErrors = error.response.data.errors;
                             this.showToast('Please correct the form errors.', 'error');
                         } else {
-                            this.showToast(error.response.data.message || 'An unexpected error occurred.', 'error');
+                            this.showToast(error.response.data.meta.message || 'An unexpected error occurred.', 'error');
                         }
                     } else {
                         this.showToast('A network error occurred. Please try again.', 'error');
@@ -373,7 +446,7 @@
                 },
                 openApprovalModal(req) {
                     this.selectedRequest = req;
-                    this.approvalData = { action: 'Approve', comments: '' };
+                    this.approvalData = { action: 'Approved', comments: '', approver_id: '' };
                     showModal('approval_modal');
                 },
                 closeModal(id) {

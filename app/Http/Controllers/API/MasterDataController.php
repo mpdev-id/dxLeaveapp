@@ -25,7 +25,7 @@ class MasterDataController extends Controller
     public function getAllMasterData()
     {
         try {
-            $users = User::all();
+            $users = User::with('roles')->get();
             $leaveTypes = LeaveType::all();
             $workflows = Workflow::all();
 

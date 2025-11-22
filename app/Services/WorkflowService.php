@@ -21,8 +21,30 @@ class WorkflowService
 
     public function isApproverForStep(User $approver, WorkflowStep $step): bool
     {
-        // Cek apakah peran approver cocok dengan peran yang dibutuhkan di langkah ini
-        return $approver->hasRole($step->approverRole->name);
+        // 1. Super Admin selalu bisa approve (Override)
+        if ($approver->hasRole('Super Admin')) {
+            return true;
+        }
+
+        // 2. Cek berdasarkan tipe approver
+        if ($step->required_approver_type === 'User') {
+            return $approver->id === $step->approver_user_id;
+        }
+
+        if ($step->required_approver_type === 'Role') {
+            if (!$step->approverRole) {
+                return false;
+            }
+            return $approver->hasRole($step->approverRole->name);
+        }
+
+        // Untuk tipe 'Manager', validasi idealnya memerlukan konteks request untuk tahu siapa requesternya.
+        // Namun, jika kita asumsikan $approver yang dikirim sudah divalidasi sebagai manager di controller/service lain,
+        // atau kita skip validasi ketat di sini untuk Manager jika logika pencarian manager sudah benar.
+        // Untuk saat ini, kita kembalikan false untuk Manager jika tidak ada logika lain, 
+        // TAPI jika user punya role Super Admin sudah tercover di atas.
+        
+        return false;
     }
 
     public function getNextStep(Workflow $workflow, WorkflowStep $currentStep): ?WorkflowStep
