@@ -22,9 +22,14 @@
     <link rel="apple-touch-icon" sizes="192x192" href="/images/icons/icon-192x192.png">
     
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    
+    {{-- SPA Enhancements --}}
+    <link rel="stylesheet" href="/css/spa-enhancements.css">
+    
     @stack('styles')
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/js/spa-enhancements.js" defer></script>
 </head>
 <body class="bg-base-200">
     <div x-data="{ drawerOpen: localStorage.getItem('drawerOpen') === 'true' }" x-init="$watch('drawerOpen', value => localStorage.setItem('drawerOpen', value))">
@@ -312,4 +317,3 @@
 </script>
 </body>
 </html>
-```
