@@ -49,13 +49,10 @@
                         </a>
                     </li>
                     <li>
-                        <details>
+                        <details id="menu-master-data">
                             <summary>
-                                <svg class="w-5 h-5" id='Squared_Menu_24' width='24' height='24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'>
-                                    <rect width='24' height='24' stroke='none' fill='#000000' opacity='0' />
-                                    <g transform="matrix(0.59 0 0 0.59 12 12)">
-                                        <path style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(253 253 253); fill-rule: nonzero; opacity: 1;" transform=" translate(-24, -24)" d="M 15 15 L 7 15 L 7 7 L 15 7 L 15 15 z M 28 15 L 20 15 L 20 7 L 28 7 L 28 15 z M 41 15 L 33 15 L 33 7 L 41 7 L 41 15 z M 15 28 L 7 28 L 7 20 L 15 20 L 15 28 z M 28 28 L 20 28 L 20 20 L 28 20 L 28 28 z M 41 28 L 33 28 L 33 20 L 41 20 L 41 28 z M 15 41 L 7 41 L 7 33 L 15 33 L 15 41 z M 28 41 L 20 41 L 20 33 L 28 33 L 28 41 z M 41 41 L 33 41 L 33 33 L 41 33 L 41 41 z" stroke-linecap="round" />
-                                    </g>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-5 w-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375" />
                                 </svg>
                                 Master Data
                             </summary>
@@ -69,14 +66,11 @@
                         </details>
                     </li>
                     <li>
-                        <details>
+                        <details id="menu-leave-pra-request">
                             <summary>
-                                <svg class="w-5 h-5" id='Squared_Menu_24' width='24' height='24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'>
-                                    <rect width='24' height='24' stroke='none' fill='#000000' opacity='0' />
-                                    <g transform="matrix(0.59 0 0 0.59 12 12)">
-                                        <path style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(253 253 253); fill-rule: nonzero; opacity: 1;" transform=" translate(-24, -24)" d="M 15 15 L 7 15 L 7 7 L 15 7 L 15 15 z M 28 15 L 20 15 L 20 7 L 28 7 L 28 15 z M 41 15 L 33 15 L 33 7 L 41 7 L 41 15 z M 15 28 L 7 28 L 7 20 L 15 20 L 15 28 z M 28 28 L 20 28 L 20 20 L 28 20 L 28 28 z M 41 28 L 33 28 L 33 20 L 41 20 L 41 28 z M 15 41 L 7 41 L 7 33 L 15 33 L 15 41 z M 28 41 L 20 41 L 20 33 L 28 33 L 28 41 z M 41 41 L 33 41 L 33 33 L 41 33 L 41 41 z" stroke-linecap="round" />
-                                    </g>
-                                </svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-5 w-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                                  </svg>                                  
                                 Leave Pra-Request
                             </summary>
                             <ul>
@@ -117,6 +111,55 @@
     @endif
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // Restore open state from localStorage
+            const openMenus = JSON.parse(localStorage.getItem('openMenus') || '[]');
+            openMenus.forEach(menuId => {
+                const menu = document.getElementById(menuId);
+                if (menu) {
+                    menu.open = true;
+                }
+            });
+
+            // Add event listeners to save state on change
+            const menuDetails = document.querySelectorAll('.drawer-side .menu details');
+            menuDetails.forEach(detail => {
+                detail.addEventListener('toggle', event => {
+                    let openMenus = JSON.parse(localStorage.getItem('openMenus') || '[]');
+                    if (event.target.open) {
+                        // Add to list if not already there
+                        if (!openMenus.includes(event.target.id)) {
+                            openMenus.push(event.target.id);
+                        }
+                    } else {
+                        // Remove from list
+                        openMenus = openMenus.filter(id => id !== event.target.id);
+                    }
+                    localStorage.setItem('openMenus', JSON.stringify(openMenus));
+                });
+            });
+
+            // Set active menu item
+            const currentUrl = window.location.href;
+            const menuLinks = document.querySelectorAll('.drawer-side .menu a');
+            let bestMatch = null;
+            let longestMatch = 0;
+
+            menuLinks.forEach(link => {
+                if (link.href && currentUrl.startsWith(link.href) && link.href.length > longestMatch) {
+                    longestMatch = link.href.length;
+                    bestMatch = link;
+                }
+            });
+
+            if (bestMatch) {
+                bestMatch.classList.add('active');
+                const detailsParent = bestMatch.closest('details');
+                if (detailsParent && !detailsParent.open) {
+                    detailsParent.open = true;
+                    // The 'toggle' event listener above will handle saving to localStorage
+                }
+            }
+
             document.body.addEventListener('click', function (e) {
                 if (e.target.matches('.delete-button')) {
                     e.preventDefault();

@@ -40,7 +40,7 @@
         <!-- Table -->
         <div x-show="!loading">
             <!-- Desktop Table View -->
-            <div class="hidden md:block bg-base-100 rounded-lg shadow overflow-x-auto">
+            <div class="hidden md:block bg-base-100 rounded-lg shadow">
                 <table class="table w-full">
                     <thead>
                         <tr>
