@@ -195,20 +195,35 @@ class DashboardController extends Controller
 
             $year = $request->year;
             $month = $request->month;
-
             $daysInMonth = Carbon::createFromDate($year, $month)->daysInMonth;
-            
+
+            $statuses = ['Approved', 'In Progress', 'Rejected'];
+
             $leaveCounts = LeaveRequest::whereYear('start_date', $year)
                 ->whereMonth('start_date', $month)
-                ->where('current_status', '!=', 'Draft')
-                ->select(DB::raw('DAY(start_date) as day'), DB::raw('count(*) as total'))
-                ->groupBy('day')
-                ->pluck('total', 'day');
+                ->whereIn('current_status', $statuses)
+                ->select(
+                    DB::raw('DAY(start_date) as day'),
+                    'current_status',
+                    DB::raw('count(*) as total')
+                )
+                ->groupBy('day', 'current_status')
+                ->get();
 
             $labels = range(1, $daysInMonth);
-            $data = array_map(function($day) use ($leaveCounts) {
-                return $leaveCounts->get($day, 0);
-            }, $labels);
+            $data = [];
+            foreach ($statuses as $status) {
+                $statusKey = lcfirst(str_replace(' ', '', $status)); // e.g., 'inProgress'
+                $data[$statusKey] = array_fill(0, $daysInMonth, 0);
+            }
+
+            foreach ($leaveCounts as $count) {
+                $statusKey = lcfirst(str_replace(' ', '', $count->current_status));
+                // array is 0-indexed, days are 1-indexed
+                if (isset($data[$statusKey])) {
+                    $data[$statusKey][$count->day - 1] = $count->total;
+                }
+            }
 
             return ResponseFormatter::success([
                 'labels' => $labels,

@@ -70,20 +70,24 @@
         <div class="card bg-base-100 shadow-xl mt-6">
             <div class="card-body">
                 <div class="flex flex-wrap justify-between items-center mb-4">
-                    <h2 class="card-title">Monthly Leave Report</h2>
-                    <div class="flex items-center gap-2">
-                        <select x-model="chartYear" @change="fetchChartData()" class="select select-bordered select-sm">
-                            <template x-for="year in chartYears" :key="year">
-                                <option :value="year" x-text="year"></option>
-                            </template>
-                        </select>
-                        <select x-model="chartMonth" @change="fetchChartData()" class="select select-bordered select-sm">
-                            <template x-for="(month, index) in chartMonths" :key="index">
-                                <option :value="index + 1" x-text="month"></option>
-                            </template>
-                        </select>
-                    </div>
-                </div>
+                                    <h2 class="card-title">Monthly Leave Report</h2>
+                                    <div class="flex items-center gap-4">
+                                        <div class="btn-group">
+                                            <button @click="chartType = 'bar'; renderChart()" :class="chartType === 'bar' ? 'btn-active' : ''" class="btn btn-sm">Bar</button>
+                                            <button @click="chartType = 'line'; renderChart()" :class="chartType === 'line' ? 'btn-active' : ''" class="btn btn-sm">Line</button>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <select x-model="chartYear" @change="fetchChartData()" class="select select-bordered select-sm">
+                                                <template x-for="year in chartYears" :key="year">
+                                                    <option :value="year" x-text="year"></option>
+                                                </template>
+                                            </select>
+                                            <select x-model="chartMonth" @change="fetchChartData()" class="select select-bordered select-sm">
+                                                <template x-for="(month, index) in chartMonths" :key="index">
+                                                                                <option :value="index + 1" x-text="month" x-bind:selected="chartMonth === index + 1"></option>
+                                                                            </template>
+                                                                        </select>                                        </div>
+                                    </div>                </div>
                 <div x-show="loadingChart" class="text-center p-8">
                     <span class="loading loading-lg loading-spinner text-primary"></span>
                 </div>
@@ -494,6 +498,8 @@ function dashboardData(baseApiUrl) {
         // Chart properties
         chart: null,
         loadingChart: true,
+        chartType: 'bar', // 'bar' or 'line'
+        chartData: null, // To store the fetched data
         chartYear: new Date().getFullYear(),
         chartMonth: new Date().getMonth() + 1,
         chartYears: [],
@@ -508,13 +514,11 @@ function dashboardData(baseApiUrl) {
                 console.error('No auth token found.');
                 return;
             }
-            // Initialize chart setup first
             this.initChart();
-
             await Promise.all([
                 this.fetchStats(token),
                 this.fetchLeaveBalances(token),
-                this.fetchChartData(token) // Also fetch initial chart data
+                this.fetchChartData(token)
             ]);
         },
 
@@ -554,7 +558,6 @@ function dashboardData(baseApiUrl) {
         initChart() {
             const currentYear = new Date().getFullYear();
             this.chartYears = Array.from({length: 5}, (v, i) => currentYear - i);
-            // The fetchChartData will be called from fetchData
         },
 
         async fetchChartData() {
@@ -565,69 +568,88 @@ function dashboardData(baseApiUrl) {
                 const response = await fetch(`${baseApiUrl}/admin/dashboard/leave-chart-data?${params}`, {
                     headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
                 });
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.meta.message || 'Failed to fetch chart data');
-                }
+                if (!response.ok) throw new Error('Failed to fetch chart data');
                 const result = await response.json();
-                
-                console.log('--- CHART DEBUG ---');
-                console.log('Full API Response:', JSON.stringify(result, null, 2));
-                console.log('--- END CHART DEBUG ---');
-
-                if (result.data && Array.isArray(result.data.labels)) {
-                    this.renderChart(result.data.labels, result.data.data);
-                } else {
-                    console.error('API response for chart data has unexpected structure:', result);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Chart Data Error',
-                        text: 'Failed to load chart data due to unexpected API response structure. Please check console for details.',
-                    });
+                if (result.data) {
+                    this.chartData = result.data; // Cache the data
+                    this.renderChart();
                 }
             } catch (error) {
                 console.error('Error fetching chart data:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Fetch Error',
-                    text: error.message || 'An unexpected error occurred while fetching chart data.',
-                });
+                Swal.fire({ icon: 'error', title: 'Chart Error', text: 'Could not load chart data.' });
             } finally {
                 this.loadingChart = false;
             }
         },
 
-        renderChart(labels, data) {
+        renderChart() {
+            if (!this.chartData) return;
+
+            const { labels, data } = this.chartData;
+            
+            const datasets = [
+                {
+                    label: 'Approved',
+                    data: data.approved,
+                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1,
+                    fill: this.chartType === 'line' ? false : undefined,
+                    tension: 0.1
+                },
+                {
+                    label: 'In Progress',
+                    data: data.inProgress,
+                    backgroundColor: 'rgba(255, 159, 64, 0.5)',
+                    borderColor: 'rgba(255, 159, 64, 1)',
+                    borderWidth: 1,
+                    fill: this.chartType === 'line' ? false : undefined,
+                    tension: 0.1
+                },
+                {
+                    label: 'Rejected',
+                    data: data.rejected,
+                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1,
+                    fill: this.chartType === 'line' ? false : undefined,
+                    tension: 0.1
+                }
+            ];
+
             const ctx = document.getElementById('monthlyLeaveChart').getContext('2d');
             if (this.chart) {
                 this.chart.destroy();
             }
+
             this.chart = new Chart(ctx, {
-                type: 'bar',
+                type: this.chartType,
                 data: {
                     labels: labels.map(day => `Day ${day}`),
-                    datasets: [{
-                        label: 'Leave Requests',
-                        data: data,
-                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        borderWidth: 1
-                    }]
+                    datasets: datasets
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 1
-                            }
-                        }
-                    },
                     plugins: {
                         legend: {
-                            display: false
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: this.chartType === 'bar'
+                        },
+                        y: {
+                            stacked: this.chartType === 'bar',
+                            beginAtZero: true,
+                             ticks: {
+                                stepSize: 1
+                            }
                         }
                     }
                 }
