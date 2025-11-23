@@ -1,59 +1,91 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# DX-Leave Management App
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A modern, API-driven leave management system built with Laravel 11. It provides a comprehensive suite of tools for employees and administrators to handle leave requests, entitlements, and approval workflows efficiently.
 
-## About Laravel
+## Key Features
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Admin Dashboard**: At-a-glance statistics for users, departments, and leave requests.
+- **Interactive Charts**: A monthly leave report chart that can be toggled between a stacked bar chart and a line chart, with filters for month and year.
+- **Leave & Holiday Calendar**: A FullCalendar implementation showing all approved leaves and public holidays.
+- **Role-Based Access Control**: Granular permissions for Super Admin, Manager, and Employee roles using `spatie/laravel-permission`.
+- **Dynamic Approval Workflows**: Create custom, multi-step approval chains for different leave types.
+- **Leave Management**: Full CRUD functionality for leave types, employee entitlements, and leave requests.
+- **User Management**: Manage employees, departments, and their roles.
+- **API Driven**: Built with a robust API backend powered by Laravel Sanctum for authentication.
+- **Modern Frontend**: A responsive frontend built with Blade, Alpine.js, Tailwind CSS, and DaisyUI.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Tech Stack
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Backend**: Laravel 11 (PHP 8.2+)
+- **Frontend**: Blade, Alpine.js, Tailwind CSS, DaisyUI, Chart.js, FullCalendar
+- **Database**: MySQL
+- **Authentication**: Laravel Sanctum
+- **Development**: Vite
 
-## Learning Laravel
+## Prerequisites
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+- PHP >= 8.2
+- Composer
+- Node.js & npm
+- A MySQL database
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Installation Guide
 
-## Laravel Sponsors
+1.  **Clone the repository:**
+    ```sh
+    git clone https://github.com/mnprasetya/dxleaveApp.git
+    cd dxleaveApp
+    ```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+2.  **Install dependencies:**
+    ```sh
+    composer install
+    npm install
+    ```
 
-### Premium Partners
+3.  **Setup environment file:**
+    ```sh
+    cp .env.example .env
+    ```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+4.  **Generate application key:**
+    ```sh
+    php artisan key:generate
+    ```
 
-## Contributing
+5.  **Configure your `.env` file:**
+    Update the following lines with your local database credentials:
+    ```env
+    DB_CONNECTION=mysql
+    DB_HOST=127.0.0.1
+    DB_PORT=3306
+    DB_DATABASE=your_database_name
+    DB_USERNAME=your_username
+    DB_PASSWORD=your_password
+    ```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+6.  **Run database migrations and seeders:**
+    This command will create all necessary tables and populate them with default roles, permissions, and user accounts.
+    ```sh
+    php artisan migrate --seed
+    ```
 
-## Code of Conduct
+7.  **Build frontend assets:**
+    ```sh
+    npm run dev
+    ```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+8.  **Run the development server:**
+    ```sh
+    php artisan serve
+    ```
+    The application will be available at `http://127.0.0.1:8000`.
 
-## Security Vulnerabilities
+## Usage
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+After running the migrations and seeders, you can log in with the default Super Admin account:
 
-## License
+-   **Email:** `mnprasetya@posco.net`
+-   **Password:** `@mnprasetya12`
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+You can access the admin dashboard by navigating to `/login`.
