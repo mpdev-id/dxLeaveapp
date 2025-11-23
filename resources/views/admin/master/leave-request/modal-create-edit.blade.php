@@ -44,7 +44,7 @@
                     <select x-model="formData.leave_type_id" class="select select-bordered w-full" :disabled="!formData.user_id">
                         <option disabled value="">Select Leave Type</option>
                         <template x-for="leaveType in leaveTypes.filter(lt => employeeEntitlements.some(e => e.user_id == formData.user_id && e.leave_type_id == lt.id))" :key="leaveType.id">
-                            <option :value="leaveType.id" x-text="leaveType.name"></option>
+                            <option :value="leaveType.id" x-text="leaveType.name + ' - ' + (employeeEntitlements.find(e => e.user_id == formData.user_id && e.leave_type_id == leaveType.id).initial_balance - employeeEntitlements.find(e => e.user_id == formData.user_id && e.leave_type_id == leaveType.id).days_taken) + ' hari'"></option>
                         </template>
                     </select>
                     <p x-show="formErrors.leave_type_id" class="text-error text-sm mt-1" x-text="formErrors.leave_type_id"></p>

@@ -195,12 +195,14 @@ class DashboardController extends Controller
 
             $year = $request->year;
             $month = $request->month;
-            $daysInMonth = Carbon::createFromDate($year, $month)->daysInMonth;
+
+            $startDate = Carbon::create($year, $month, 1)->startOfMonth();
+            $endDate = $startDate->copy()->endOfMonth();
+            $daysInMonth = $startDate->daysInMonth;
 
             $statuses = ['Approved', 'In Progress', 'Rejected'];
 
-            $leaveCounts = LeaveRequest::whereYear('start_date', $year)
-                ->whereMonth('start_date', $month)
+            $leaveCounts = LeaveRequest::whereBetween('start_date', [$startDate, $endDate])
                 ->whereIn('current_status', $statuses)
                 ->select(
                     DB::raw('DAY(start_date) as day'),
