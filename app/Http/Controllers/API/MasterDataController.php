@@ -8,6 +8,8 @@ use App\Http\Resources\DepartmentResource;
 use App\Http\Resources\LeaveTypeResource;
 use App\Http\Resources\PublicHolidayResource;
 use App\Models\Department;
+use App\Http\Resources\EmployeeEntitlementResource;
+use App\Models\EmployeeEntitlement;
 use App\Models\LeaveType;
 use App\Models\PublicHoliday;
 use Illuminate\Http\Request;
@@ -28,11 +30,13 @@ class MasterDataController extends Controller
             $users = User::with('roles')->get();
             $leaveTypes = LeaveType::all();
             $workflows = Workflow::all();
+            $employeeEntitlements = EmployeeEntitlement::all();
 
             return ResponseFormatter::success([
                 'users' => UserResource::collection($users),
                 'leave_types' => LeaveTypeResource::collection($leaveTypes),
                 'workflows' => $workflows,
+                'employee_entitlements' => EmployeeEntitlementResource::collection($employeeEntitlements),
             ], 'Master data retrieved successfully');
         } catch (\Exception $e) {
             return ResponseFormatter::error(null, 'Failed to retrieve master data: ' . $e->getMessage(), 500);

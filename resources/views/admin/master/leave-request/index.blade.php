@@ -205,6 +205,7 @@
                 users: [],
                 leaveTypes: [],
                 workflows: [],
+                employeeEntitlements: [],
                 pagination: null,
                 search: '',
                 sortBy: 'created_at',
@@ -391,6 +392,7 @@
                         this.users = data.data.users;
                         this.leaveTypes = data.data.leave_types;
                         this.workflows = data.data.workflows;
+                        this.employeeEntitlements = data.data.employee_entitlements;
                     } catch (error) {
                         this.handleError(error);
                     }

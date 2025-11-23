@@ -56,10 +56,10 @@
                             Employee Code
                             <span x-show="sortBy === 'employee_code'" x-text="sortDir === 'asc' ? '▲' : '▼'"></span>
                         </th>
-                        <th class="cursor-pointer" @click="changeSort('department')">
+                        <!-- <th class="cursor-pointer" @click="changeSort('department')">
                             Department
                             <span x-show="sortBy === 'department'" x-text="sortDir === 'asc' ? '▲' : '▼'"></span>
-                        </th>
+                        </th> -->
                         <th>Total Leave Taken</th>
                         <th>Actions</th>
                     </tr>
@@ -72,7 +72,7 @@
                                 <div class="text-sm opacity-50" x-text="employee.email"></div>
                             </td>
                             <td x-text="employee.employee_code"></td>
-                            <td x-text="employee.department ? employee.department.name : 'N/A'"></td>
+                            <!-- <td x-text="employee.department ? employee.department.name : 'N/A'"></td> -->
                             <td>
                                 <div class="badge badge-info" x-text="(employee.total_leave_taken || 0) + ' days'"></div>
                             </td>

@@ -26,6 +26,7 @@
                         <span class="label-text">User</span>
                     </label>
                     <select x-model="formData.user_id" class="select select-bordered w-full"
+                        @change="formData.leave_type_id = ''"
                         :disabled="editMode">
                         <option disabled value="">Select User</option>
                         <template x-for="user in users" :key="user.id">
@@ -40,9 +41,9 @@
                     <label class="label">
                         <span class="label-text">Leave Type</span>
                     </label>
-                    <select x-model="formData.leave_type_id" class="select select-bordered w-full">
+                    <select x-model="formData.leave_type_id" class="select select-bordered w-full" :disabled="!formData.user_id">
                         <option disabled value="">Select Leave Type</option>
-                        <template x-for="leaveType in leaveTypes" :key="leaveType.id">
+                        <template x-for="leaveType in leaveTypes.filter(lt => employeeEntitlements.some(e => e.user_id == formData.user_id && e.leave_type_id == lt.id))" :key="leaveType.id">
                             <option :value="leaveType.id" x-text="leaveType.name"></option>
                         </template>
                     </select>
