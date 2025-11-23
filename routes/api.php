@@ -14,14 +14,16 @@ use Illuminate\Support\Facades\Route;
 Route::get('master-data', [\App\Http\Controllers\API\MasterDataController::class, 'getAllMasterData']);
 
 
-// --- Rute Autentikasi Publik ---
-Route::post('register', [UserController::class, 'register']);
-Route::post('login', [UserController::class, 'login']);
-Route::post('forgot-password', [UserController::class, 'forgotPassword']);
-Route::post('reset-password', [UserController::class, 'resetPassword']);
+// --- Rute Autentikasi Publik (dengan Rate Limiting) ---
+Route::middleware('throttle:10,1')->group(function () {
+    Route::post('register', [UserController::class, 'register']);
+    Route::post('login', [UserController::class, 'login']);
+    Route::post('forgot-password', [UserController::class, 'forgotPassword']);
+    Route::post('reset-password', [UserController::class, 'resetPassword']);
+});
 
 // --- Rute yang Membutuhkan Autentikasi (auth:sanctum) ---
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     // Rute User Standar
     Route::get('user', [UserController::class, 'fetch']);
     Route::get('user/leave-balances', [UserController::class, 'getLeaveBalances']);
@@ -40,7 +42,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
 Route::get('departments', [DepartmentController::class,'index'])->name('globalDepartments');
 // --- Rute Administrasi Data Master (Hanya untuk Admin) ---
-Route::middleware(['auth:sanctum', 'role:Super Admin'])->prefix('admin/master')->group(function () {
+Route::middleware(['auth:sanctum', 'role:Super Admin', 'throttle:120,1'])->prefix('admin/master')->group(function () {
     Route::apiResource('users', AdminUserController::class);
     Route::get('users/{user}/leave-requests', [AdminLeaveRequestController::class, 'getEmployeeLeaveRequests']);
     Route::apiResource('departments', DepartmentController::class);
@@ -55,7 +57,7 @@ Route::middleware(['auth:sanctum', 'role:Super Admin'])->prefix('admin/master')-
     Route::get('roles', [\App\Http\Controllers\API\MasterDataController::class, 'roles'])->name('admin.roles.index');
 });
 // --- Rute Administrasi Dasbor (Hanya untuk Admin) ---
-Route::middleware(['auth:sanctum', 'role:Super Admin'])->prefix('admin/dashboard')->group(function () {
+Route::middleware(['auth:sanctum', 'role:Super Admin', 'throttle:120,1'])->prefix('admin/dashboard')->group(function () {
     Route::get('stats', [\App\Http\Controllers\API\Admin\DashboardController::class, 'getStats']);
     Route::get('recent-activity', [\App\Http\Controllers\API\Admin\DashboardController::class, 'getRecentActivity']);
     Route::get('upcoming-leaves', [\App\Http\Controllers\API\Admin\DashboardController::class, 'getUpcomingLeaves']);
