@@ -56,3 +56,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     Route::resource('workflows', \App\Http\Controllers\Admin\Master\WorkflowController::class);
 });
+
+Route::get('/dashboard-member', [\App\Http\Controllers\Member\DashboardController::class, 'index'])->name('dashboard-member');
+Route::get('/member/leaves', [\App\Http\Controllers\Member\LeaveRequestController::class, 'index'])->name('member.leaves.index');
+Route::get('/member/leaves/create', [\App\Http\Controllers\Member\LeaveRequestController::class, 'create'])->name('member.leaves.create');
+Route::get('/member/profile', [\App\Http\Controllers\Member\ProfileController::class, 'index'])->name('member.profile.index');

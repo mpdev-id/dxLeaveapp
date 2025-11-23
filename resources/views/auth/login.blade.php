@@ -126,7 +126,9 @@
                             localStorage.setItem('authToken', data.data.access_token);
                             window.location.href = '/admin/dashboard'; // Redirect to dashboard for super admin
                         } else {
-                            alert('Access Denied. Only Super Admins can log in here.'); // Show access denied for other roles
+                            // Allow other users to login and redirect to member dashboard
+                            localStorage.setItem('authToken', data.data.access_token);
+                            window.location.href = '/dashboard-member';
                         }
                     } else {
                         this.errorMessage = data.meta?.message || data.message || 'Login successful, but no token was provided.';
