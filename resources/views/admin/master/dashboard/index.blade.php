@@ -65,8 +65,15 @@
                 </div>
             </div>
         </div>
+        {{-- Calendar --}}
+        <div class="card bg-base-100 shadow-xl mt-6">
+            <div class="card-body">
+                <h2 class="card-title">Leave & Holiday Calendar</h2>
+                <div id='calendar' class="w-full h-[70vh]"></div>
+            </div>
+        </div>
 
-        {{-- Monthly Chart --}}
+          {{-- Monthly Chart --}}
         <div class="card bg-base-100 shadow-xl mt-6">
             <div class="card-body">
                 <div class="flex flex-wrap justify-between items-center mb-4">
@@ -94,14 +101,6 @@
                 <div x-show="!loadingChart">
                     <canvas id="monthlyLeaveChart"></canvas>
                 </div>
-            </div>
-        </div>
-
-        {{-- Calendar --}}
-        <div class="card bg-base-100 shadow-xl mt-6">
-            <div class="card-body">
-                <h2 class="card-title">Leave & Holiday Calendar</h2>
-                <div id='calendar' class="w-full h-[70vh]"></div>
             </div>
         </div>
     </div>

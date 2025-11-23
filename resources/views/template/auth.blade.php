@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="light">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="corporate">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -21,6 +21,7 @@
             <div class="text-center lg:text-left px-8">
                 <h1 class="text-5xl font-bold">{{ config('app.name', 'SIAL') }}</h1>
                 <p class="py-6">Sistem Informasi Admin LeaveApp! Please log in to access your account and manage your leave requests.</p>
+                <a href="{{ url('/documentation.html') }}" class="btn btn-warning shadow-xl btn-sm btn-outline m-t">API Doc's</a>
             </div>
             <div class="card shrink-0 w-full w-sm auth-card">
                 <div class="card-body">

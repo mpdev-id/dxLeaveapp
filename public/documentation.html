@@ -1,13 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" theme="corporate">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DXLeave API Documentation</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📄</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=" http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text
+        y=".9em" font-size="90">📄</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code&display=swap"
+        rel="stylesheet">
     <style>
         :root {
             --sidebar-width: 290px;
@@ -59,7 +62,10 @@
             --switcher-bg: #e9e9e9;
         }
 
-        html { scroll-behavior: smooth; }
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-color);
@@ -69,80 +75,422 @@
             transition: background-color 0.3s, color 0.3s;
             background-attachment: fixed;
         }
+
         body.light-mode {
-             background-image: url('data:image/svg+xml,%3Csvg width="100%25" height="100%25" xmlns="http://www.w3.org/2000/svg"%3E%3Cdefs%3E%3ClinearGradient id="g" x1="0%25" y1="0%25" x2="0%25" y2="100%25"%3E%3Cstop offset="0%25" stop-color="%23d9e7ff" /%3E%3Cstop offset="100%25" stop-color="%23f0f2f5" /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width="100%25" height="100%25" fill="url(%23g)" /%3E%3C/svg%3E');
-             background-size: cover;
+            background-image: url('data:image/svg+xml,%3Csvg width="100%25" height="100%25" xmlns="http://www.w3.org/2000/svg"%3E%3Cdefs%3E%3ClinearGradient id="g" x1="0%25" y1="0%25" x2="0%25" y2="100%25"%3E%3Cstop offset="0%25" stop-color="%23d9e7ff" /%3E%3Cstop offset="100%25" stop-color="%23f0f2f5" /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width="100%25" height="100%25" fill="url(%23g)" /%3E%3C/svg%3E');
+            background-size: cover;
         }
 
-        .top-right-controls { position: fixed; top: 20px; right: 20px; z-index: 1001; display: flex; gap: 10px; }
-        .control-btn { background: var(--switcher-bg); border: 1px solid var(--border-color); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background-color 0.3s; }
-        .control-btn svg { width: 20px; height: 20px; fill: var(--heading-color); transition: fill 0.3s; }
-        .control-btn-group { display: flex; background: var(--switcher-bg); border: 1px solid var(--border-color); border-radius: 20px; overflow: hidden; }
-        .lang-btn { background: transparent; border: none; color: var(--text-color); padding: 10px 15px; cursor: pointer; font-weight: 500; transition: background-color 0.3s, color 0.3s; }
-        .lang-btn.active { background-color: var(--accent-color); color: #fff; }
-        .light-mode #moon-icon { display: block; }
-        .light-mode #sun-icon { display: none; }
-        #moon-icon { display: none; }
-        #sun-icon { display: block; }
-        #show-code-btn { display: none; }
+        .top-right-controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1001;
+            display: flex;
+            gap: 10px;
+        }
 
-        #sidebar { width: var(--sidebar-width); background-color: var(--sidebar-bg); height: 100vh; position: fixed; left: 0; top: 0; padding: 20px; overflow-y: auto; border-right: 1px solid var(--border-color); transition: background-color 0.3s, border-color 0.3s; z-index: 1000; }
-        .light-mode #sidebar { backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+        .control-btn {
+            background: var(--switcher-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
 
-        #code-sidebar { width: var(--code-sidebar-width); background-color: var(--sidebar-bg); height: 100vh; position: fixed; right: 0; top: 0; padding: 20px; overflow-y: auto; border-left: 1px solid var(--border-color); transition: transform 0.4s ease, background-color 0.3s, border-color 0.3s; z-index: 999; }
-        .light-mode #code-sidebar { backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
-        #code-sidebar.hidden { transform: translateX(100%); }
-        #code-sidebar h3 { color: var(--heading-color); margin-top: 40px; padding: 0 15px; display: flex; justify-content: space-between; align-items: center; }
-        #hide-code-btn { background: none; border: none; color: var(--text-color); cursor: pointer; font-size: 24px; opacity: 0.7; }
-        #hide-code-btn:hover { opacity: 1; }
+        .control-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--heading-color);
+            transition: fill 0.3s;
+        }
 
-        #main-content { margin-left: var(--sidebar-width); margin-right: var(--code-sidebar-width); padding: 60px; width: calc(100% - var(--sidebar-width) - var(--code-sidebar-width)); transition: margin-right 0.4s ease; }
-        body.code-sidebar-hidden #main-content { margin-right: 50px; }
-        body.code-sidebar-hidden #show-code-btn { display: flex; }
+        .control-btn-group {
+            display: flex;
+            background: var(--switcher-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            overflow: hidden;
+        }
 
-        #base-url-input { width: calc(100% - 30px); background-color: var(--input-bg); color: var(--input-text); border: 1px solid var(--border-color); border-radius: 5px; padding: 8px 15px; margin-top: 10px; margin-bottom: 20px; font-family: 'Fira Code', monospace; }
+        .lang-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-color);
+            padding: 10px 15px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s, color 0.3s;
+        }
 
-        .endpoint-link { cursor: pointer; }
-        .endpoint-link:hover { background-color: rgba(255,255,255,0.05); }
-        .light-mode .endpoint-link:hover { background-color: rgba(0,0,0,0.05); }
-        #sidebar h1 { font-size: 24px; color: var(--heading-color); margin-bottom: 10px; }
-        #sidebar ul { list-style: none; padding: 0; }
-        #sidebar ul li a { display: block; color: var(--text-color); text-decoration: none; padding: 10px 15px; border-radius: 5px; margin-bottom: 5px; transition: background-color 0.2s ease, color 0.2s ease; font-size: 15px; }
-        #sidebar ul li a:hover, #sidebar ul li a.active { background-color: var(--accent-color); color: #fff; }
-        .section { margin-bottom: 60px; padding-top: 20px; }
-        .section h2 { font-size: 28px; color: var(--heading-color); border-bottom: 2px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px; }
-        .section > p { font-size: 16px; line-height: 1.7; margin-bottom: 30px; }
-        .endpoint { background-color: var(--content-bg); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 30px; overflow: hidden; transition: background-color 0.3s, border-color 0.3s; }
-        .light-mode .endpoint { backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
-        .endpoint-header { padding: 20px; display: flex; align-items: center; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; gap: 15px; cursor: pointer; }
-        .method { font-family: 'Fira Code', monospace; font-weight: 700; padding: 6px 12px; border-radius: 5px; color: #fff; font-size: 14px; min-width: 70px; text-align: center; }
-        .GET { background-color: var(--method-get); }
-        .POST { background-color: var(--method-post); }
-        .PUT { background-color: var(--method-put); }
-        .PATCH { background-color: var(--method-patch); }
-        .DELETE { background-color: var(--method-delete); }
-        .endpoint-path { font-family: 'Fira Code', monospace; font-size: 16px; color: var(--heading-color); }
-        .badge { background-color: var(--badge-bg); color: var(--badge-text); padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; }
-        .badge.admin { background-color: var(--badge-admin-bg); color: var(--badge-admin-text); }
-        .endpoint-details { padding: 20px; }
-        .endpoint-details h4 { font-size: 18px; color: var(--heading-color); margin-top: 25px; margin-bottom: 15px; }
-        .endpoint-details p { margin-bottom: 20px; }
-        .code-block { position: relative; }
-        .copy-btn { position: absolute; top: 10px; right: 10px; background: var(--copy-btn-bg); border: 1px solid var(--border-color); color: var(--copy-btn-text); padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; opacity: 0.7; transition: opacity 0.2s, background-color 0.3s, color 0.3s; }
-        .copy-btn:hover { opacity: 1; }
-        .code-tabs { display: flex; margin-bottom: 0; border-bottom: 1px solid var(--border-color); }
-        .code-tab { background: none; border: none; color: var(--text-color); padding: 10px 15px; cursor: pointer; font-size: 14px; border-bottom: 2px solid transparent; margin-bottom: -1px; }
-        .code-tab.active { color: var(--accent-color); border-bottom-color: var(--accent-color); }
-        pre { background-color: var(--pre-bg); color: var(--code-text); padding: 20px; border-radius: 0 0 5px 5px; margin: 0; font-family: 'Fira Code', monospace; font-size: 14px; white-space: pre-wrap; word-wrap: break-word; }
-        .code-content { display: none; }
-        .code-content.active { display: block; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border-color); }
-        th { background-color: var(--content-bg); font-weight: 600; }
-        td code { background-color: var(--pre-bg); padding: 3px 6px; border-radius: 4px; font-family: 'Fira Code', monospace; }
-        .comment { color: var(--comment-color); }
+        .lang-btn.active {
+            background-color: var(--accent-color);
+            color: #fff;
+        }
+
+        .light-mode #moon-icon {
+            display: block;
+        }
+
+        .light-mode #sun-icon {
+            display: none;
+        }
+
+        #moon-icon {
+            display: none;
+        }
+
+        #sun-icon {
+            display: block;
+        }
+
+        #show-code-btn {
+            display: none;
+        }
+
+        #sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--sidebar-bg);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 1px solid var(--border-color);
+            transition: background-color 0.3s, border-color 0.3s;
+            z-index: 1000;
+        }
+
+        .light-mode #sidebar {
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        #code-sidebar {
+            width: var(--code-sidebar-width);
+            background-color: var(--sidebar-bg);
+            height: 100vh;
+            position: fixed;
+            right: 0;
+            top: 0;
+            padding: 20px;
+            overflow-y: auto;
+            border-left: 1px solid var(--border-color);
+            transition: transform 0.4s ease, background-color 0.3s, border-color 0.3s;
+            z-index: 999;
+        }
+
+        .light-mode #code-sidebar {
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        #code-sidebar.hidden {
+            transform: translateX(100%);
+        }
+
+        #code-sidebar h3 {
+            color: var(--heading-color);
+            margin-top: 40px;
+            padding: 0 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #hide-code-btn {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            cursor: pointer;
+            font-size: 24px;
+            opacity: 0.7;
+        }
+
+        #hide-code-btn:hover {
+            opacity: 1;
+        }
+
+        #main-content {
+            margin-left: var(--sidebar-width);
+            margin-right: var(--code-sidebar-width);
+            padding: 60px;
+            width: calc(100% - var(--sidebar-width) - var(--code-sidebar-width));
+            transition: margin-right 0.4s ease;
+        }
+
+        body.code-sidebar-hidden #main-content {
+            margin-right: 50px;
+        }
+
+        body.code-sidebar-hidden #show-code-btn {
+            display: flex;
+        }
+
+        #base-url-input {
+            width: calc(100% - 30px);
+            background-color: var(--input-bg);
+            color: var(--input-text);
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            padding: 8px 15px;
+            margin-top: 10px;
+            margin-bottom: 20px;
+            font-family: 'Fira Code', monospace;
+        }
+
+        .endpoint-link {
+            cursor: pointer;
+        }
+
+        .endpoint-link:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .light-mode .endpoint-link:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        #sidebar h1 {
+            font-size: 24px;
+            color: var(--heading-color);
+            margin-bottom: 10px;
+        }
+
+        #sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        #sidebar ul li a {
+            display: block;
+            color: var(--text-color);
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            transition: background-color 0.2s ease, color 0.2s ease;
+            font-size: 15px;
+        }
+
+        #sidebar ul li a:hover,
+        #sidebar ul li a.active {
+            background-color: var(--accent-color);
+            color: #fff;
+        }
+
+        .section {
+            margin-bottom: 60px;
+            padding-top: 20px;
+        }
+
+        .section h2 {
+            font-size: 28px;
+            color: var(--heading-color);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .section>p {
+            font-size: 16px;
+            line-height: 1.7;
+            margin-bottom: 30px;
+        }
+
+        .endpoint {
+            background-color: var(--content-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 30px;
+            overflow: hidden;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .light-mode .endpoint {
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .endpoint-header {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 15px;
+            cursor: pointer;
+        }
+
+        .method {
+            font-family: 'Fira Code', monospace;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 5px;
+            color: #fff;
+            font-size: 14px;
+            min-width: 70px;
+            text-align: center;
+        }
+
+        .GET {
+            background-color: var(--method-get);
+        }
+
+        .POST {
+            background-color: var(--method-post);
+        }
+
+        .PUT {
+            background-color: var(--method-put);
+        }
+
+        .PATCH {
+            background-color: var(--method-patch);
+        }
+
+        .DELETE {
+            background-color: var(--method-delete);
+        }
+
+        .endpoint-path {
+            font-family: 'Fira Code', monospace;
+            font-size: 16px;
+            color: var(--heading-color);
+        }
+
+        .badge {
+            background-color: var(--badge-bg);
+            color: var(--badge-text);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge.admin {
+            background-color: var(--badge-admin-bg);
+            color: var(--badge-admin-text);
+        }
+
+        .endpoint-details {
+            padding: 20px;
+        }
+
+        .endpoint-details h4 {
+            font-size: 18px;
+            color: var(--heading-color);
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+
+        .endpoint-details p {
+            margin-bottom: 20px;
+        }
+
+        .code-block {
+            position: relative;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--copy-btn-bg);
+            border: 1px solid var(--border-color);
+            color: var(--copy-btn-text);
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            opacity: 0.7;
+            transition: opacity 0.2s, background-color 0.3s, color 0.3s;
+        }
+
+        .copy-btn:hover {
+            opacity: 1;
+        }
+
+        .code-tabs {
+            display: flex;
+            margin-bottom: 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .code-tab {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 14px;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+        }
+
+        .code-tab.active {
+            color: var(--accent-color);
+            border-bottom-color: var(--accent-color);
+        }
+
+        pre {
+            background-color: var(--pre-bg);
+            color: var(--code-text);
+            padding: 20px;
+            border-radius: 0 0 5px 5px;
+            margin: 0;
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .code-content {
+            display: none;
+        }
+
+        .code-content.active {
+            display: block;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: var(--content-bg);
+            font-weight: 600;
+        }
+
+        td code {
+            background-color: var(--pre-bg);
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-family: 'Fira Code', monospace;
+        }
+
+        .comment {
+            color: var(--comment-color);
+        }
     </style>
 </head>
+
 <body class="dark-mode">
 
     <div class="top-right-controls">
@@ -151,11 +499,19 @@
             <button class="lang-btn" data-lang="id">ID</button>
         </div>
         <button id="show-code-btn" class="control-btn" title="Show Code Examples">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z" />
+            </svg>
         </button>
         <button id="theme-switcher" class="control-btn" title="Toggle Theme">
-            <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.64 5.64c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41l1.41 1.41c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L5.64 5.64zm12.73 12.73c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41l1.41 1.41c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41l-1.41-1.41zM4.22 18.36l1.41-1.41c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0l-1.41 1.41c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0zm14.14-14.14l-1.41 1.41c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.41-1.41c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0z"/></svg>
-            <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12.3 4.9c.4-.2.6-.7.4-1.1-.2-.4-.7-.6-1.1-.4C7.2 5.4 4 8.9 4 13c0 4.4 3.6 8 8 8 3.5 0 6.5-2.2 7.6-5.3.2-.4 0-.9-.4-1.1-.4-.2-.9 0-1.1.4-1 2.5-3.5 4.4-6.1 4.4-3.3 0-6-2.7-6-6 0-2.9 2.1-5.4 5-5.9z"/></svg>
+            <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path
+                    d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.64 5.64c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41l1.41 1.41c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L5.64 5.64zm12.73 12.73c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41l1.41 1.41c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41l-1.41-1.41zM4.22 18.36l1.41-1.41c-.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0l-1.41 1.41c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0zm14.14-14.14l-1.41 1.41c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.41-1.41c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0z" />
+            </svg>
+            <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path
+                    d="M12.3 4.9c.4-.2.6-.7.4-1.1-.2-.4-.7-.6-1.1-.4C7.2 5.4 4 8.9 4 13c0 4.4 3.6 8 8 8 3.5 0 6.5-2.2 7.6-5.3.2-.4 0-.9-.4-1.1-.4-.2-.9 0-1.1.4-1 2.5-3.5 4.4-6.1 4.4-3.3 0-6-2.7-6-6 0-2.9 2.1-5.4 5-5.9z" />
+            </svg>
         </button>
     </div>
 
@@ -166,32 +522,52 @@
             <li><a href="#introduction" class="active" data-i18n="navIntroduction">Introduction</a></li>
             <li><a href="#auth" data-i18n="navAuth">Authentication</a></li>
             <li><a href="#user" data-i18n="navUser">User Profile</a></li>
-            <li><a href="#leave-requests" data-i18n="navLeaveRequests">Leave Requests</a></li>
-            <li><a href="#admin-dashboard" data-i18n="navAdminDashboard">Admin: Dashboard</a></li>
-            <li><a href="#admin-users" data-i18n="navAdminUsers">Admin: Users</a></li>
-            <li><a href="#admin-departments" data-i18n="navAdminDepartments">Admin: Departments</a></li>
-            <li><a href="#admin-leave-types" data-i18n="navAdminLeaveTypes">Admin: Leave Types</a></li>
-            <li><a href="#admin-public-holidays" data-i18n="navAdminPublicHolidays">Admin: Public Holidays</a></li>
-            <li><a href="#admin-entitlements" data-i18n="navAdminEntitlements">Admin: Entitlements</a></li>
-            <li><a href="#admin-leave-requests" data-i18n="navAdminLeaveRequests">Admin: Leave Requests</a></li>
+            <li><a href="#leave-requests" data-i18n="navLeaveRequests">Leave Requests (User)</a></li>
+            <li><a href="#approver" data-i18n="navApprover">Approver Actions</a></li>
+            <li>
+                <details style="margin-top: 10px;">
+                    <summary
+                        style="cursor: pointer; padding: 10px 15px; border-radius: 5px; background: var(--badge-admin-bg); color: var(--badge-admin-text); font-weight: 600; margin-bottom: 5px;">
+                        <span data-i18n="navAdminSection">🔒 Admin Endpoints</span>
+                    </summary>
+                    <ul style="margin-left: 15px; margin-top: 5px;">
+                        <li><a href="#admin-dashboard" data-i18n="navAdminDashboard">Dashboard</a></li>
+                        <li><a href="#admin-users" data-i18n="navAdminUsers">Users</a></li>
+                        <li><a href="#admin-departments" data-i18n="navAdminDepartments">Departments</a></li>
+                        <li><a href="#admin-leave-types" data-i18n="navAdminLeaveTypes">Leave Types</a></li>
+                        <li><a href="#admin-public-holidays" data-i18n="navAdminPublicHolidays">Public Holidays</a></li>
+                        <li><a href="#admin-entitlements" data-i18n="navAdminEntitlements">Entitlements</a></li>
+                        <li><a href="#admin-leave-requests" data-i18n="navAdminLeaveRequests">Leave Requests</a></li>
+                    </ul>
+                </details>
+            </li>
         </ul>
     </div>
 
     <div id="main-content">
         <section id="introduction" class="section">
             <h2 data-i18n="introTitle">Introduction</h2>
-            <p data-i18n="introText">Welcome to the DXLeave API documentation. This API provides endpoints for managing leave requests, users, and other core data for the DXLeave application. All responses follow a consistent structure defined by our <code>ResponseFormatter</code>.</p>
+            <p data-i18n="introText">Welcome to the DXLeave API documentation. This API provides endpoints for managing
+                leave requests, users, and other core data for the DXLeave application. All responses follow a
+                consistent structure defined by our <code>ResponseFormatter</code>.</p>
             <h4 data-i18n="baseUrlTitle">Base URL</h4>
-            <p data-i18n="baseUrlText">You can set your API's base URL in the input box in the left sidebar. It will be used to generate the code examples.</p>
-            
+            <p data-i18n="baseUrlText">You can set your API's base URL in the input box in the left sidebar. It will be
+                used to generate the code examples.</p>
+
             <h4 data-i18n="sendingDataTitle">How to Send Data</h4>
-            <p data-i18n="sendingDataText">In each endpoint's parameter table, the 'Location' column tells you where to put your data. Here’s what each value means:</p>
+            <p data-i18n="sendingDataText">In each endpoint's parameter table, the 'Location' column tells you where to
+                put your data. Here’s what each value means:</p>
             <ul>
-                <li><strong style="color: var(--heading-color);">path</strong><span data-i18n="pathHelpText">: The data is part of the URL path itself (e.g., the user ID in <code>/api/admin/master/users/123</code>). The code examples automatically place this in the URL.</span></li>
-                <li><strong style="color: var(--heading-color);">body</strong><span data-i18n="bodyHelpText">: The data should be sent in the request body. For POST, PUT, and PATCH requests, this is typically a JSON object. If a file is involved, the request is sent as <code>multipart/form-data</code>. The code examples show the correct format.</span></li>
+                <li><strong style="color: var(--heading-color);">path</strong><span data-i18n="pathHelpText">: The data
+                        is part of the URL path itself (e.g., the user ID in <code>/api/admin/master/users/123</code>).
+                        The code examples automatically place this in the URL.</span></li>
+                <li><strong style="color: var(--heading-color);">body</strong><span data-i18n="bodyHelpText">: The data
+                        should be sent in the request body. For POST, PUT, and PATCH requests, this is typically a JSON
+                        object. If a file is involved, the request is sent as <code>multipart/form-data</code>. The code
+                        examples show the correct format.</span></li>
             </ul>
         </section>
-        
+
         <section id="auth" class="section">
             <h2 data-i18n="authTitle">Authentication</h2>
             <p data-i18n="authText">Public endpoints for user registration, login, and password management.</p>
@@ -209,11 +585,18 @@
         </section>
 
         <section id="leave-requests" class="section">
-            <h2 data-i18n="leaveRequestsTitle">Leave Requests</h2>
-            <p data-i18n="leaveRequestsText">Endpoints for employees to manage their own leave requests.</p>
+            <h2 data-i18n="leaveRequestsTitle">Leave Requests (User)</h2>
+            <p data-i18n="leaveRequestsText">Endpoints for employees to manage their own leave requests - view, create,
+                and update.</p>
             <div class="endpoint" data-id="api/leave-requests-get"></div>
             <div class="endpoint" data-id="api/leave-requests-post"></div>
             <div class="endpoint" data-id="api/leave-requests/{leave_request}-patch"></div>
+        </section>
+
+        <section id="approver" class="section">
+            <h2 data-i18n="approverTitle">Approver Actions</h2>
+            <p data-i18n="approverText">Endpoints for managers and approvers to review and approve/reject leave
+                requests.</p>
             <div class="endpoint" data-id="api/leave-requests/{leaveRequest}/approve-patch"></div>
         </section>
 
@@ -299,362 +682,385 @@
             <button class="code-tab" data-lang="js">JavaScript</button>
         </div>
         <div id="code-examples">
-            <div class="code-content active" data-lang-content="curl"><div class="code-block"><pre data-i18n="clickEndpointHint">Click an endpoint to see an example.</pre><button class="copy-btn" data-i18n="copyBtn">Copy</button></div></div>
-            <div class="code-content" data-lang-content="php"><div class="code-block"><pre data-i18n="clickEndpointHint">Click an endpoint to see an example.</pre><button class="copy-btn" data-i18n="copyBtn">Copy</button></div></div>
-            <div class="code-content" data-lang-content="js"><div class="code-block"><pre data-i18n="clickEndpointHint">Click an endpoint to see an example.</pre><button class="copy-btn" data-i18n="copyBtn">Copy</button></div></div>
+            <div class="code-content active" data-lang-content="curl">
+                <div class="code-block">
+                    <pre data-i18n="clickEndpointHint">Click an endpoint to see an example.</pre><button
+                        class="copy-btn" data-i18n="copyBtn">Copy</button>
+                </div>
+            </div>
+            <div class="code-content" data-lang-content="php">
+                <div class="code-block">
+                    <pre data-i18n="clickEndpointHint">Click an endpoint to see an example.</pre><button
+                        class="copy-btn" data-i18n="copyBtn">Copy</button>
+                </div>
+            </div>
+            <div class="code-content" data-lang-content="js">
+                <div class="code-block">
+                    <pre data-i18n="clickEndpointHint">Click an endpoint to see an example.</pre><button
+                        class="copy-btn" data-i18n="copyBtn">Copy</button>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const body = document.body;
-        const themeSwitcher = document.getElementById('theme-switcher');
-        const codeSidebar = document.getElementById('code-sidebar');
-        const hideCodeBtn = document.getElementById('hide-code-btn');
-        const showCodeBtn = document.getElementById('show-code-btn');
-        const baseUrlInput = document.getElementById('base-url-input');
-        const languageTabs = document.getElementById('language-tabs');
-        const langSwitcher = document.getElementById('lang-switcher');
+        document.addEventListener('DOMContentLoaded', function () {
+            const body = document.body;
+            const themeSwitcher = document.getElementById('theme-switcher');
+            const codeSidebar = document.getElementById('code-sidebar');
+            const hideCodeBtn = document.getElementById('hide-code-btn');
+            const showCodeBtn = document.getElementById('show-code-btn');
+            const baseUrlInput = document.getElementById('base-url-input');
+            const languageTabs = document.getElementById('language-tabs');
+            const langSwitcher = document.getElementById('lang-switcher');
 
-        const i18nData = {
-            en: {
-                docTitle: "DXLeave API Documentation",
-                sidebarTitle: "DXLeave API",
-                navIntroduction: "Introduction",
-                navAuth: "Authentication",
-                navUser: "User Profile",
-                navLeaveRequests: "Leave Requests",
-                navAdminDashboard: "Admin: Dashboard",
-                navAdminUsers: "Admin: Users",
-                navAdminDepartments: "Admin: Departments",
-                navAdminLeaveTypes: "Admin: Leave Types",
-                navAdminPublicHolidays: "Admin: Public Holidays",
-                navAdminEntitlements: "Admin: Entitlements",
-                navAdminLeaveRequests: "Admin: Leave Requests",
-                introTitle: "Introduction",
-                introText: "Welcome to the DXLeave API documentation. This API provides endpoints for managing leave requests, users, and other core data for the DXLeave application. All responses follow a consistent structure defined by our <code>ResponseFormatter</code>.",
-                baseUrlTitle: "Base URL",
-                baseUrlText: "You can set your API's base URL in the input box in the left sidebar. It will be used to generate the code examples.",
-                sendingDataTitle: "How to Send Data",
-                sendingDataText: "In each endpoint's parameter table, the 'Location' column tells you where to put your data. Here’s what each value means:",
-                pathHelpText: ": The data is part of the URL path itself (e.g., the user ID in <code>/api/admin/master/users/123</code>). The code examples automatically place this in the URL.",
-                bodyHelpText: ": The data should be sent in the request body. For POST, PUT, and PATCH requests, this is typically a JSON object. If a file is involved, the request is sent as <code>multipart/form-data</code>. The code examples show the correct format.",
-                authTitle: "Authentication",
-                authText: "Public endpoints for user registration, login, and password management.",
-                userTitle: "User Profile",
-                userText: "Endpoint for the authenticated user.",
-                leaveRequestsTitle: "Leave Requests",
-                leaveRequestsText: "Endpoints for employees to manage their own leave requests.",
-                adminDashboardTitle: "Admin: Dashboard",
-                adminDashboardText: "Endpoints for fetching aggregated data for the admin dashboard.",
-                adminUsersTitle: "Admin: Users",
-                adminUsersText: "Endpoints for managing users.",
-                adminDepartmentsTitle: "Admin: Departments",
-                adminDepartmentsText: "Endpoints for managing departments.",
-                adminLeaveTypesTitle: "Admin: Leave Types",
-                adminLeaveTypesText: "Endpoints for managing leave types.",
-                adminPublicHolidaysTitle: "Admin: Public Holidays",
-                adminPublicHolidaysText: "Endpoints for managing public holidays.",
-                adminEntitlementsTitle: "Admin: Employee Entitlements",
-                adminEntitlementsText: "Endpoints for managing employee entitlements.",
-                adminLeaveRequestsTitle: "Admin: Leave Requests",
-                adminLeaveRequestsText: "Endpoints for managing all leave requests.",
-                codeExamplesTitle: "Code Examples",
-                clickEndpointHint: "Click an endpoint to see an example.",
-                copyBtn: "Copy",
-                copiedBtn: "Copied!",
-                authRequiredBadge: "Auth Required",
-                managerRoleBadge: "Manager/Approver Role",
-                superAdminBadge: "Super Admin",
-                parametersTitle: "Parameters",
-                fieldHeader: "Field",
-                typeHeader: "Type",
-                locationHeader: "Location",
-                requiredHeader: "Required",
-                successResponseTitle: "Success Response (200 OK)",
-                errorResponseTitle: "Error Response (e.g., 422)",
-                yes: "Yes",
-                no: "No",
-            },
-            id: {
-                docTitle: "Dokumentasi API DXLeave",
-                sidebarTitle: "API DXLeave",
-                navIntroduction: "Pendahuluan",
-                navAuth: "Autentikasi",
-                navUser: "Profil Pengguna",
-                navLeaveRequests: "Pengajuan Cuti",
-                navAdminDashboard: "Admin: Dasbor",
-                navAdminUsers: "Admin: Pengguna",
-                navAdminDepartments: "Admin: Departemen",
-                navAdminLeaveTypes: "Admin: Jenis Cuti",
-                navAdminPublicHolidays: "Admin: Hari Libur",
-                navAdminEntitlements: "Admin: Jatah Cuti",
-                navAdminLeaveRequests: "Admin: Pengajuan Cuti",
-                introTitle: "Pendahuluan",
-                introText: "Selamat datang di dokumentasi API DXLeave. API ini menyediakan endpoint untuk mengelola permintaan cuti, pengguna, dan data inti lainnya untuk aplikasi DXLeave. Semua respons mengikuti struktur konsisten yang ditentukan oleh <code>ResponseFormatter</code> kami.",
-                baseUrlTitle: "Base URL",
-                baseUrlText: "Anda dapat mengatur URL dasar API Anda di kotak input di bilah sisi kiri. Ini akan digunakan untuk menghasilkan contoh kode.",
-                sendingDataTitle: "Cara Mengirim Data",
-                sendingDataText: "Di setiap tabel parameter endpoint, kolom 'Lokasi' memberitahu Anda di mana harus meletakkan data. Berikut arti setiap nilainya:",
-                pathHelpText: ": Data adalah bagian dari URL path itu sendiri (mis., ID pengguna di <code>/api/admin/master/users/123</code>). Contoh kode secara otomatis menempatkannya di URL.",
-                bodyHelpText: ": Data harus dikirim dalam body permintaan. Untuk permintaan POST, PUT, dan PATCH, ini biasanya berupa objek JSON. Jika ada file yang terlibat, permintaan dikirim sebagai <code>multipart/form-data</code>. Contoh kode menunjukkan format yang benar.",
-                authTitle: "Autentikasi",
-                authText: "Endpoint publik untuk registrasi pengguna, login, dan manajemen kata sandi.",
-                userTitle: "Profil Pengguna",
-                userText: "Endpoint untuk pengguna yang terautentikasi.",
-                leaveRequestsTitle: "Pengajuan Cuti",
-                leaveRequestsText: "Endpoint bagi karyawan untuk mengelola permintaan cuti mereka sendiri.",
-                adminDashboardTitle: "Admin: Dasbor",
-                adminDashboardText: "Endpoint untuk mengambil data agregat untuk dasbor admin.",
-                adminUsersTitle: "Admin: Pengguna",
-                adminUsersText: "Endpoint untuk mengelola pengguna.",
-                adminDepartmentsTitle: "Admin: Departemen",
-                adminDepartmentsText: "Endpoint untuk mengelola departemen.",
-                adminLeaveTypesTitle: "Admin: Jenis Cuti",
-                adminLeaveTypesText: "Endpoint untuk mengelola jenis cuti.",
-                adminPublicHolidaysTitle: "Admin: Hari Libur",
-                adminPublicHolidaysText: "Endpoint untuk mengelola hari libur nasional.",
-                adminEntitlementsTitle: "Admin: Jatah Cuti",
-                adminEntitlementsText: "Endpoint untuk mengelola jatah cuti karyawan.",
-                adminLeaveRequestsTitle: "Admin: Pengajuan Cuti",
-                adminLeaveRequestsText: "Endpoint untuk mengelola semua permintaan cuti.",
-                codeExamplesTitle: "Contoh Kode",
-                clickEndpointHint: "Klik sebuah endpoint untuk melihat contoh.",
-                copyBtn: "Salin",
-                copiedBtn: "Tersalin!",
-                authRequiredBadge: "Perlu Autentikasi",
-                managerRoleBadge: "Peran Manajer/Penyetuju",
-                superAdminBadge: "Super Admin",
-                parametersTitle: "Parameter",
-                fieldHeader: "Kolom",
-                typeHeader: "Tipe",
-                locationHeader: "Lokasi",
-                requiredHeader: "Wajib",
-                successResponseTitle: "Respons Sukses (200 OK)",
-                errorResponseTitle: "Respons Gagal (cth., 422)",
-                yes: "Ya",
-                no: "Tidak",
-            }
-        };
+            const i18nData = {
+                en: {
+                    docTitle: "DXLeave API Documentation",
+                    sidebarTitle: "DXLeave API",
+                    navIntroduction: "Introduction",
+                    navAuth: "Authentication",
+                    navUser: "User Profile",
+                    navLeaveRequests: "Leave Requests (User)",
+                    navApprover: "Approver Actions",
+                    navAdminSection: "🔒 Admin Endpoints",
+                    navAdminDashboard: "Dashboard",
+                    navAdminUsers: "Users",
+                    navAdminDepartments: "Departments",
+                    navAdminLeaveTypes: "Leave Types",
+                    navAdminPublicHolidays: "Public Holidays",
+                    navAdminEntitlements: "Entitlements",
+                    navAdminLeaveRequests: "Leave Requests",
+                    introTitle: "Introduction",
+                    introText: "Welcome to the DXLeave API documentation. This API provides endpoints for managing leave requests, users, and other core data for the DXLeave application. All responses follow a consistent structure defined by our <code>ResponseFormatter</code>.",
+                    baseUrlTitle: "Base URL",
+                    baseUrlText: "You can set your API's base URL in the input box in the left sidebar. It will be used to generate the code examples.",
+                    sendingDataTitle: "How to Send Data",
+                    sendingDataText: "In each endpoint's parameter table, the 'Location' column tells you where to put your data. Here’s what each value means:",
+                    pathHelpText: ": The data is part of the URL path itself (e.g., the user ID in <code>/api/admin/master/users/123</code>). The code examples automatically place this in the URL.",
+                    bodyHelpText: ": The data should be sent in the request body. For POST, PUT, and PATCH requests, this is typically a JSON object. If a file is involved, the request is sent as <code>multipart/form-data</code>. The code examples show the correct format.",
+                    authTitle: "Authentication",
+                    authText: "Public endpoints for user registration, login, and password management.",
+                    userTitle: "User Profile",
+                    userText: "Endpoint for the authenticated user.",
+                    leaveRequestsTitle: "Leave Requests (User)",
+                    leaveRequestsText: "Endpoints for employees to manage their own leave requests - view, create, and update.",
+                    approverTitle: "Approver Actions",
+                    approverText: "Endpoints for managers and approvers to review and approve/reject leave requests.",
+                    adminDashboardTitle: "Admin: Dashboard",
+                    adminDashboardText: "Endpoints for fetching aggregated data for the admin dashboard.",
+                    adminUsersTitle: "Admin: Users",
+                    adminUsersText: "Endpoints for managing users.",
+                    adminDepartmentsTitle: "Admin: Departments",
+                    adminDepartmentsText: "Endpoints for managing departments.",
+                    adminLeaveTypesTitle: "Admin: Leave Types",
+                    adminLeaveTypesText: "Endpoints for managing leave types.",
+                    adminPublicHolidaysTitle: "Admin: Public Holidays",
+                    adminPublicHolidaysText: "Endpoints for managing public holidays.",
+                    adminEntitlementsTitle: "Admin: Employee Entitlements",
+                    adminEntitlementsText: "Endpoints for managing employee entitlements.",
+                    adminLeaveRequestsTitle: "Admin: Leave Requests",
+                    adminLeaveRequestsText: "Endpoints for managing all leave requests.",
+                    codeExamplesTitle: "Code Examples",
+                    clickEndpointHint: "Click an endpoint to see an example.",
+                    copyBtn: "Copy",
+                    copiedBtn: "Copied!",
+                    authRequiredBadge: "Auth Required",
+                    managerRoleBadge: "Manager/Approver Role",
+                    superAdminBadge: "Super Admin",
+                    parametersTitle: "Parameters",
+                    fieldHeader: "Field",
+                    typeHeader: "Type",
+                    locationHeader: "Location",
+                    requiredHeader: "Required",
+                    successResponseTitle: "Success Response (200 OK)",
+                    errorResponseTitle: "Error Response (e.g., 422)",
+                    yes: "Yes",
+                    no: "No",
+                },
+                id: {
+                    docTitle: "Dokumentasi API DXLeave",
+                    sidebarTitle: "API DXLeave",
+                    navIntroduction: "Pendahuluan",
+                    navAuth: "Autentikasi",
+                    navUser: "Profil Pengguna",
+                    navLeaveRequests: "Pengajuan Cuti (User)",
+                    navApprover: "Aksi Approver",
+                    navAdminSection: "🔒 Endpoint Admin",
+                    navAdminDashboard: "Dasbor",
+                    navAdminUsers: "Pengguna",
+                    navAdminDepartments: "Departemen",
+                    navAdminLeaveTypes: "Jenis Cuti",
+                    navAdminPublicHolidays: "Hari Libur",
+                    navAdminEntitlements: "Jatah Cuti",
+                    navAdminLeaveRequests: "Pengajuan Cuti",
+                    introTitle: "Pendahuluan",
+                    introText: "Selamat datang di dokumentasi API DXLeave. API ini menyediakan endpoint untuk mengelola permintaan cuti, pengguna, dan data inti lainnya untuk aplikasi DXLeave. Semua respons mengikuti struktur konsisten yang ditentukan oleh <code>ResponseFormatter</code> kami.",
+                    baseUrlTitle: "Base URL",
+                    baseUrlText: "Anda dapat mengatur URL dasar API Anda di kotak input di bilah sisi kiri. Ini akan digunakan untuk menghasilkan contoh kode.",
+                    sendingDataTitle: "Cara Mengirim Data",
+                    sendingDataText: "Di setiap tabel parameter endpoint, kolom 'Lokasi' memberitahu Anda di mana harus meletakkan data. Berikut arti setiap nilainya:",
+                    pathHelpText: ": Data adalah bagian dari URL path itu sendiri (mis., ID pengguna di <code>/api/admin/master/users/123</code>). Contoh kode secara otomatis menempatkannya di URL.",
+                    bodyHelpText: ": Data harus dikirim dalam body permintaan. Untuk permintaan POST, PUT, dan PATCH, ini biasanya berupa objek JSON. Jika ada file yang terlibat, permintaan dikirim sebagai <code>multipart/form-data</code>. Contoh kode menunjukkan format yang benar.",
+                    authTitle: "Autentikasi",
+                    authText: "Endpoint publik untuk registrasi pengguna, login, dan manajemen kata sandi.",
+                    userTitle: "Profil Pengguna",
+                    userText: "Endpoint untuk pengguna yang terautentikasi.",
+                    leaveRequestsTitle: "Pengajuan Cuti (User)",
+                    leaveRequestsText: "Endpoint bagi karyawan untuk mengelola permintaan cuti mereka sendiri - lihat, buat, dan update.",
+                    approverTitle: "Aksi Approver",
+                    approverText: "Endpoint untuk manajer dan approver untuk meninjau dan menyetujui/menolak permintaan cuti.",
+                    adminDashboardTitle: "Admin: Dasbor",
+                    adminDashboardText: "Endpoint untuk mengambil data agregat untuk dasbor admin.",
+                    adminUsersTitle: "Admin: Pengguna",
+                    adminUsersText: "Endpoint untuk mengelola pengguna.",
+                    adminDepartmentsTitle: "Admin: Departemen",
+                    adminDepartmentsText: "Endpoint untuk mengelola departemen.",
+                    adminLeaveTypesTitle: "Admin: Jenis Cuti",
+                    adminLeaveTypesText: "Endpoint untuk mengelola jenis cuti.",
+                    adminPublicHolidaysTitle: "Admin: Hari Libur",
+                    adminPublicHolidaysText: "Endpoint untuk mengelola hari libur nasional.",
+                    adminEntitlementsTitle: "Admin: Jatah Cuti",
+                    adminEntitlementsText: "Endpoint untuk mengelola jatah cuti karyawan.",
+                    adminLeaveRequestsTitle: "Admin: Pengajuan Cuti",
+                    adminLeaveRequestsText: "Endpoint untuk mengelola semua permintaan cuti.",
+                    codeExamplesTitle: "Contoh Kode",
+                    clickEndpointHint: "Klik sebuah endpoint untuk melihat contoh.",
+                    copyBtn: "Salin",
+                    copiedBtn: "Tersalin!",
+                    authRequiredBadge: "Perlu Autentikasi",
+                    managerRoleBadge: "Peran Manajer/Penyetuju",
+                    superAdminBadge: "Super Admin",
+                    parametersTitle: "Parameter",
+                    fieldHeader: "Kolom",
+                    typeHeader: "Tipe",
+                    locationHeader: "Lokasi",
+                    requiredHeader: "Wajib",
+                    successResponseTitle: "Respons Sukses (200 OK)",
+                    errorResponseTitle: "Respons Gagal (cth., 422)",
+                    yes: "Ya",
+                    no: "Tidak",
+                }
+            };
 
-        const endpointsData = {
-            'api/register': {
-                method: 'POST',
-                description: { en: 'Creates a new user account.', id: 'Membuat akun pengguna baru.' },
-                params: [
-                    { name: 'name', required: true, example: 'Jane Doe', in: 'body' },
-                    { name: 'employee_code', required: true, example: 'EMP003', in: 'body' },
-                    { name: 'email', required: true, example: 'jane.doe@example.com', in: 'body' },
-                    { name: 'phone_number', required: true, example: '081234567890', in: 'body' },
-                    { name: 'password', required: true, example: 'password123', in: 'body' },
-                    { name: 'password_confirmation', required: true, example: 'password123', in: 'body' }
-                ],
-                successResponse: `{"meta":{"code":200,"status":"success","message":"User Registered & Entitlement Created Successfully"},"data":{"access_token":"...","token_type":"Bearer","user":{...}}}`,
-                errorResponse: `{"meta":{"code":422,"status":"error","message":"Validation failed"},"data":{"errors":{"email":["The email has already been taken."]}}}`
-            },
-            'api/login': {
-                method: 'POST',
-                description: { en: 'Authenticates a user and returns a Sanctum token.', id: 'Mengautentikasi pengguna dan mengembalikan token Sanctum.' },
-                params: [
-                    { name: 'identifier', required: true, example: 'jane.doe@example.com', in: 'body' },
-                    { name: 'password', required: true, example: 'password123', in: 'body' }
-                ],
-                successResponse: `{"meta":{"code":200,"status":"success","message":"Authenticated"},"data":{"access_token":"...","token_type":"Bearer","user":{...}}}`,
-                errorResponse: `{"meta":{"code":500,"status":"error","message":"Authentication Failed"},"data":{"message":"Unauthorized"}}`
-            },
-            'api/logout': {
-                method: 'POST',
-                auth: true,
-                description: { en: 'Invalidates the user\'s current Sanctum token.', id: 'Membatalkan token Sanctum pengguna saat ini.' },
-                params: [],
-                successResponse: `{"meta":{"code":200,"status":"success","message":"Token Revoked"},"data":true}`
-            },
-             'api/forgot-password': {
-                method: 'POST',
-                description: { en: 'Sends a password reset link to the user\'s email.', id: 'Mengirim tautan pengaturan ulang kata sandi ke email pengguna.' },
-                params: [{ name: 'identifier', required: true, example: 'jane.doe@example.com', in: 'body' }],
-                successResponse: `{"meta":{"code":200,"status":"success","message":"Password Reset"},"data":{"message":"Password reset link sent to your email","token":"..."}}`
-            },
-            'api/reset-password': {
-                method: 'POST',
-                description: { en: 'Resets the user password with a valid token.', id: 'Mengatur ulang kata sandi pengguna dengan token yang valid.' },
-                params: [
-                    { name: 'email', required: true, example: 'jane.doe@example.com', in: 'body' },
-                    { name: 'token', required: true, example: 'xxxxxxxx', in: 'body' },
-                    { name: 'password', required: true, example: 'newSecurePassword', in: 'body' },
-                    { name: 'password_confirmation', required: true, example: 'newSecurePassword', in: 'body' }
-                ],
-                successResponse: `{"meta":{"code":200,"status":"success","message":"Password Reset"},"data":{"message":"Password has been reset"}}`
-            },
-            'api/user': {
-                method: 'GET',
-                auth: true,
-                description: { en: 'Fetches the profile of the authenticated user.', id: 'Mengambil profil pengguna yang terautentikasi.' },
-                params: [],
-                successResponse: `{"meta":{"code":200,"status":"success","message":"Data profile user berhasil diambil"},"data":{...}}`
-            },
-            'api/leave-requests-get': {
-                method: 'GET',
-                path: 'api/leave-requests',
-                auth: true,
-                description: { en: 'Retrieves a list of the user\'s own leave requests and requests needing their approval.', id: 'Mengambil daftar permintaan cuti milik pengguna dan yang memerlukan persetujuannya.' },
-                params: [],
-                successResponse: `{"meta":{"code":200,"status":"success","message":"Leave requests retrieved successfully"},"data":[...]}`
-            },
-            'api/leave-requests-post': {
-                method: 'POST',
-                path: 'api/leave-requests',
-                auth: true,
-                description: { en: 'Submits a new leave request. For half-day leaves, `start_date` and `end_date` must be the same.', id: 'Mengajukan permintaan cuti baru. Untuk cuti setengah hari, `start_date` dan `end_date` harus sama.' },
-                params: [
-                    { name: 'leave_type_id', required: true, example: 1, in: 'body' },
-                    { name: 'start_date', required: true, example: '2025-12-24', in: 'body' },
-                    { name: 'end_date', required: true, example: '2025-12-24', in: 'body' },
-                    { name: 'reason', required: true, example: 'Personal day.', in: 'body' },
-                    { name: 'leave_period', required: true, example: 'half_day_morning', type: "enum('full_day', 'half_day_morning', 'half_day_afternoon')", in: 'body' },
-                    { name: 'supporting_document', required: false, example: 'file.pdf', type: 'file', in: 'body' }
-                ],
-                successResponse: `{"meta":{"code":200,"status":"success","message":"Leave request submitted successfully"},"data":{...}}`,
-                errorResponse: `{"meta":{"code":422,"status":"error","message":"Insufficient leave balance."},"data":null}`
-            },
-            'api/leave-requests/{leave_request}-patch': {
-                method: 'PATCH',
-                path: 'api/leave-requests/{leave_request}',
-                auth: true,
-                description: { en: 'Updates a draft leave request, e.g., to submit it for approval.', id: 'Memperbarui draf permintaan cuti, mis., untuk mengirimkannya untuk persetujuan.' },
-                params: [
-                    { name: 'leave_request', required: true, example: 1, in: 'path' },
-                    { name: 'current_status', required: false, example: 'Pending', in: 'body' },
-                    { name: 'leave_period', required: false, example: 'full_day', type: "enum('full_day', 'half_day_morning', 'half_day_afternoon')", in: 'body' },
-                    { name: 'supporting_document', required: false, example: 'file.pdf', type: 'file', in: 'body' }
-                ],
-                successResponse: `{"meta":{"code":200,"status":"success","message":"Leave request updated successfully"},"data":{...}}`
-            },
-            'api/leave-requests/{leaveRequest}/approve-patch': {
-                method: 'PATCH',
-                path: 'api/leave-requests/{leaveRequest}/approve',
-                auth: 'manager',
-                description: { en: 'Allows a manager to approve or reject a leave request.', id: 'Memungkinkan manajer untuk menyetujui atau menolak permintaan cuti.' },
-                params: [
-                    { name: 'leaveRequest', required: true, example: 1, in: 'path' },
-                    { name: 'action', required: true, example: 'Approved', type: "enum('Approved', 'Rejected')", in: 'body' },
-                    { name: 'comments', required: false, example: 'Enjoy!', in: 'body' }
-                ],
-                successResponse: `{"meta":{"code":200,"status":"success","message":"Approval action recorded successfully."},"data":{...}}`
-            },
-            
-            // Admin Dashboard
-            'api/admin/dashboard/stats': { method: 'GET', auth: 'admin', description: { en: 'Retrieves key statistics for the dashboard.', id: 'Mengambil statistik utama untuk dasbor.' }, params: [], successResponse: `{"meta":..., "data":{...}}` },
-            'api/admin/dashboard/recent-activity': { method: 'GET', auth: 'admin', description: { en: 'Gets a feed of recent activities.', id: 'Mendapatkan umpan aktivitas terbaru.' }, params: [], successResponse: `{"meta":..., "data":[...]}` },
-            'api/admin/dashboard/upcoming-leaves': { method: 'GET', auth: 'admin', description: { en: 'Gets a list of upcoming approved leaves.', id: 'Mendapatkan daftar cuti yang akan datang yang telah disetujui.' }, params: [], successResponse: `{"meta":..., "data":[...]}` },
+            const endpointsData = {
+                'api/register': {
+                    method: 'POST',
+                    description: { en: 'Creates a new user account.', id: 'Membuat akun pengguna baru.' },
+                    params: [
+                        { name: 'name', required: true, example: 'Jane Doe', in: 'body' },
+                        { name: 'employee_code', required: true, example: 'EMP003', in: 'body' },
+                        { name: 'email', required: true, example: 'jane.doe@example.com', in: 'body' },
+                        { name: 'phone_number', required: true, example: '081234567890', in: 'body' },
+                        { name: 'password', required: true, example: 'password123', in: 'body' },
+                        { name: 'password_confirmation', required: true, example: 'password123', in: 'body' }
+                    ],
+                    successResponse: `{"meta":{"code":200,"status":"success","message":"User Registered & Entitlement Created Successfully"},"data":{"access_token":"...","token_type":"Bearer","user":{...}}}`,
+                    errorResponse: `{"meta":{"code":422,"status":"error","message":"Validation failed"},"data":{"errors":{"email":["The email has already been taken."]}}}`
+                },
+                'api/login': {
+                    method: 'POST',
+                    description: { en: 'Authenticates a user and returns a Sanctum token.', id: 'Mengautentikasi pengguna dan mengembalikan token Sanctum.' },
+                    params: [
+                        { name: 'identifier', required: true, example: 'jane.doe@example.com', in: 'body' },
+                        { name: 'password', required: true, example: 'password123', in: 'body' }
+                    ],
+                    successResponse: `{"meta":{"code":200,"status":"success","message":"Authenticated"},"data":{"access_token":"...","token_type":"Bearer","user":{...}}}`,
+                    errorResponse: `{"meta":{"code":500,"status":"error","message":"Authentication Failed"},"data":{"message":"Unauthorized"}}`
+                },
+                'api/logout': {
+                    method: 'POST',
+                    auth: true,
+                    description: { en: 'Invalidates the user\'s current Sanctum token.', id: 'Membatalkan token Sanctum pengguna saat ini.' },
+                    params: [],
+                    successResponse: `{"meta":{"code":200,"status":"success","message":"Token Revoked"},"data":true}`
+                },
+                'api/forgot-password': {
+                    method: 'POST',
+                    description: { en: 'Sends a password reset link to the user\'s email.', id: 'Mengirim tautan pengaturan ulang kata sandi ke email pengguna.' },
+                    params: [{ name: 'identifier', required: true, example: 'jane.doe@example.com', in: 'body' }],
+                    successResponse: `{"meta":{"code":200,"status":"success","message":"Password Reset"},"data":{"message":"Password reset link sent to your email","token":"..."}}`
+                },
+                'api/reset-password': {
+                    method: 'POST',
+                    description: { en: 'Resets the user password with a valid token.', id: 'Mengatur ulang kata sandi pengguna dengan token yang valid.' },
+                    params: [
+                        { name: 'email', required: true, example: 'jane.doe@example.com', in: 'body' },
+                        { name: 'token', required: true, example: 'xxxxxxxx', in: 'body' },
+                        { name: 'password', required: true, example: 'newSecurePassword', in: 'body' },
+                        { name: 'password_confirmation', required: true, example: 'newSecurePassword', in: 'body' }
+                    ],
+                    successResponse: `{"meta":{"code":200,"status":"success","message":"Password Reset"},"data":{"message":"Password has been reset"}}`
+                },
+                'api/user': {
+                    method: 'GET',
+                    auth: true,
+                    description: { en: 'Fetches the profile of the authenticated user.', id: 'Mengambil profil pengguna yang terautentikasi.' },
+                    params: [],
+                    successResponse: `{"meta":{"code":200,"status":"success","message":"Data profile user berhasil diambil"},"data":{...}}`
+                },
+                'api/leave-requests-get': {
+                    method: 'GET',
+                    path: 'api/leave-requests',
+                    auth: true,
+                    description: { en: 'Retrieves a list of the user\'s own leave requests and requests needing their approval.', id: 'Mengambil daftar permintaan cuti milik pengguna dan yang memerlukan persetujuannya.' },
+                    params: [],
+                    successResponse: `{"meta":{"code":200,"status":"success","message":"Leave requests retrieved successfully"},"data":[...]}`
+                },
+                'api/leave-requests-post': {
+                    method: 'POST',
+                    path: 'api/leave-requests',
+                    auth: true,
+                    description: { en: 'Submits a new leave request. For half-day leaves, `start_date` and `end_date` must be the same.', id: 'Mengajukan permintaan cuti baru. Untuk cuti setengah hari, `start_date` dan `end_date` harus sama.' },
+                    params: [
+                        { name: 'leave_type_id', required: true, example: 1, in: 'body' },
+                        { name: 'start_date', required: true, example: '2025-12-24', in: 'body' },
+                        { name: 'end_date', required: true, example: '2025-12-24', in: 'body' },
+                        { name: 'reason', required: true, example: 'Personal day.', in: 'body' },
+                        { name: 'leave_period', required: true, example: 'half_day_morning', type: "enum('full_day', 'half_day_morning', 'half_day_afternoon')", in: 'body' },
+                        { name: 'supporting_document', required: false, example: 'file.pdf', type: 'file', in: 'body' }
+                    ],
+                    successResponse: `{"meta":{"code":200,"status":"success","message":"Leave request submitted successfully"},"data":{...}}`,
+                    errorResponse: `{"meta":{"code":422,"status":"error","message":"Insufficient leave balance."},"data":null}`
+                },
+                'api/leave-requests/{leave_request}-patch': {
+                    method: 'PATCH',
+                    path: 'api/leave-requests/{leave_request}',
+                    auth: true,
+                    description: { en: 'Updates a draft leave request, e.g., to submit it for approval.', id: 'Memperbarui draf permintaan cuti, mis., untuk mengirimkannya untuk persetujuan.' },
+                    params: [
+                        { name: 'leave_request', required: true, example: 1, in: 'path' },
+                        { name: 'current_status', required: false, example: 'Pending', in: 'body' },
+                        { name: 'leave_period', required: false, example: 'full_day', type: "enum('full_day', 'half_day_morning', 'half_day_afternoon')", in: 'body' },
+                        { name: 'supporting_document', required: false, example: 'file.pdf', type: 'file', in: 'body' }
+                    ],
+                    successResponse: `{"meta":{"code":200,"status":"success","message":"Leave request updated successfully"},"data":{...}}`
+                },
+                'api/leave-requests/{leaveRequest}/approve-patch': {
+                    method: 'PATCH',
+                    path: 'api/leave-requests/{leaveRequest}/approve',
+                    auth: 'manager',
+                    description: { en: 'Allows a manager to approve or reject a leave request.', id: 'Memungkinkan manajer untuk menyetujui atau menolak permintaan cuti.' },
+                    params: [
+                        { name: 'leaveRequest', required: true, example: 1, in: 'path' },
+                        { name: 'action', required: true, example: 'Approved', type: "enum('Approved', 'Rejected')", in: 'body' },
+                        { name: 'comments', required: false, example: 'Enjoy!', in: 'body' }
+                    ],
+                    successResponse: `{"meta":{"code":200,"status":"success","message":"Approval action recorded successfully."},"data":{...}}`
+                },
 
-            // Admin Users
-            'api/admin/master/users-get': { method: 'GET', path: 'api/admin/master/users', auth: 'admin', description: { en: 'Retrieves a list of all users.', id: 'Mengambil daftar semua pengguna.' }, params: [], successResponse: `{"meta":..., "data":[...]}` },
-            'api/admin/master/users-post': { method: 'POST', path: 'api/admin/master/users', auth: 'admin', description: { en: 'Creates a new user.', id: 'Membuat pengguna baru.' }, params: [ { name: 'name', required: true, example: 'Admin Doe', in: 'body' }, { name: 'email', required: true, example: 'admin@example.com', in: 'body' }, { name: 'password', required: true, example: 'password', in: 'body' }, { name: 'roles', required: false, example: ['Super Admin'], type: 'array', in: 'body' } ], successResponse: `{"meta":..., "data":{...}}`, errorResponse: `{"meta":..., "data":{"errors":{"email": ["..."]}}}` },
-            'api/admin/master/users/{user}-get': { method: 'GET', path: 'api/admin/master/users/{user}', auth: 'admin', description: { en: 'Retrieves a single user by ID.', id: 'Mengambil satu pengguna berdasarkan ID.' }, params: [{ name: 'user', required: true, example: 1, in: 'path' }], successResponse: `{"meta":..., "data":{...}}` },
-            'api/admin/master/users/{user}-put': { method: 'PUT', path: 'api/admin/master/users/{user}', auth: 'admin', description: { en: 'Updates a user\'s details.', id: 'Memperbarui detail pengguna.' }, params: [ { name: 'user', required: true, example: 1, in: 'path' }, { name: 'name', required: false, example: 'Admin Doe Updated', in: 'body' }, { name: 'roles', required: false, example: ['Employee'], type: 'array', in: 'body' } ], successResponse: `{"meta":..., "data":{...}}` },
-            'api/admin/master/users/{user}-delete': { method: 'DELETE', path: 'api/admin/master/users/{user}', auth: 'admin', description: { en: 'Deletes a user.', id: 'Menghapus pengguna.' }, params: [{ name: 'user', required: true, example: 1, in: 'path' }], successResponse: `{"meta":..., "data":null}` },
-            'api/admin/master/users/{user}/status-get': { method: 'GET', path: 'api/admin/master/users/{user}/status', auth: 'admin', description: { en: 'Retrieves the status of a user.', id: 'Mengambil status pengguna.' }, params: [{ name: 'user', required: true, example: 1, in: 'path' }], successResponse: `{"meta":..., "data":"Active"}` },
-            'api/admin/master/roles-get': { method: 'GET', path: 'api/admin/master/roles', auth: 'admin', description: { en: 'Retrieves a list of all available roles.', id: 'Mengambil daftar semua peran yang tersedia.' }, params: [], successResponse: `{"meta":..., "data":[...]}` },
+                // Admin Dashboard
+                'api/admin/dashboard/stats': { method: 'GET', auth: 'admin', description: { en: 'Retrieves key statistics for the dashboard.', id: 'Mengambil statistik utama untuk dasbor.' }, params: [], successResponse: `{"meta":..., "data":{...}}` },
+                'api/admin/dashboard/recent-activity': { method: 'GET', auth: 'admin', description: { en: 'Gets a feed of recent activities.', id: 'Mendapatkan umpan aktivitas terbaru.' }, params: [], successResponse: `{"meta":..., "data":[...]}` },
+                'api/admin/dashboard/upcoming-leaves': { method: 'GET', auth: 'admin', description: { en: 'Gets a list of upcoming approved leaves.', id: 'Mendapatkan daftar cuti yang akan datang yang telah disetujui.' }, params: [], successResponse: `{"meta":..., "data":[...]}` },
 
-            // Admin Departments
-            'api/admin/master/departments-get': { method: 'GET', path: 'api/admin/master/departments', auth: 'admin', description: { en: 'Retrieves a list of all departments.', id: 'Mengambil daftar semua departemen.' }, params: [], successResponse: `{"meta":..., "data":[...]}` },
-            'api/admin/master/departments-post': { method: 'POST', path: 'api/admin/master/departments', auth: 'admin', description: { en: 'Creates a new department.', id: 'Membuat departemen baru.' }, params: [{ name: 'name', required: true, example: 'New Department', in: 'body' }], successResponse: `{"meta":..., "data":{...}}` },
-            'api/admin/master/departments/{department}-get': { method: 'GET', path: 'api/admin/master/departments/{department}', auth: 'admin', description: { en: 'Retrieves a single department by ID.', id: 'Mengambil satu departemen berdasarkan ID.' }, params: [{ name: 'department', required: true, example: 1, in: 'path' }], successResponse: `{"meta":..., "data":{...}}` },
-            'api/admin/master/departments/{department}-put': { method: 'PUT', path: 'api/admin/master/departments/{department}', auth: 'admin', description: { en: 'Updates a department.', id: 'Memperbarui departemen.' }, params: [{ name: 'department', required: true, example: 1, in: 'path' }, { name: 'name', required: true, example: 'Updated Department', in: 'body' }], successResponse: `{"meta":..., "data":{...}}` },
-            'api/admin/master/departments/{department}-delete': { method: 'DELETE', path: 'api/admin/master/departments/{department}', auth: 'admin', description: { en: 'Deletes a department.', id: 'Menghapus departemen.' }, params: [{ name: 'department', required: true, example: 1, in: 'path' }], successResponse: `{"meta":..., "data":null}` },
+                // Admin Users
+                'api/admin/master/users-get': { method: 'GET', path: 'api/admin/master/users', auth: 'admin', description: { en: 'Retrieves a list of all users.', id: 'Mengambil daftar semua pengguna.' }, params: [], successResponse: `{"meta":..., "data":[...]}` },
+                'api/admin/master/users-post': { method: 'POST', path: 'api/admin/master/users', auth: 'admin', description: { en: 'Creates a new user.', id: 'Membuat pengguna baru.' }, params: [{ name: 'name', required: true, example: 'Admin Doe', in: 'body' }, { name: 'email', required: true, example: 'admin@example.com', in: 'body' }, { name: 'password', required: true, example: 'password', in: 'body' }, { name: 'roles', required: false, example: ['Super Admin'], type: 'array', in: 'body' }], successResponse: `{"meta":..., "data":{...}}`, errorResponse: `{"meta":..., "data":{"errors":{"email": ["..."]}}}` },
+                'api/admin/master/users/{user}-get': { method: 'GET', path: 'api/admin/master/users/{user}', auth: 'admin', description: { en: 'Retrieves a single user by ID.', id: 'Mengambil satu pengguna berdasarkan ID.' }, params: [{ name: 'user', required: true, example: 1, in: 'path' }], successResponse: `{"meta":..., "data":{...}}` },
+                'api/admin/master/users/{user}-put': { method: 'PUT', path: 'api/admin/master/users/{user}', auth: 'admin', description: { en: 'Updates a user\'s details.', id: 'Memperbarui detail pengguna.' }, params: [{ name: 'user', required: true, example: 1, in: 'path' }, { name: 'name', required: false, example: 'Admin Doe Updated', in: 'body' }, { name: 'roles', required: false, example: ['Employee'], type: 'array', in: 'body' }], successResponse: `{"meta":..., "data":{...}}` },
+                'api/admin/master/users/{user}-delete': { method: 'DELETE', path: 'api/admin/master/users/{user}', auth: 'admin', description: { en: 'Deletes a user.', id: 'Menghapus pengguna.' }, params: [{ name: 'user', required: true, example: 1, in: 'path' }], successResponse: `{"meta":..., "data":null}` },
+                'api/admin/master/users/{user}/status-get': { method: 'GET', path: 'api/admin/master/users/{user}/status', auth: 'admin', description: { en: 'Retrieves the status of a user.', id: 'Mengambil status pengguna.' }, params: [{ name: 'user', required: true, example: 1, in: 'path' }], successResponse: `{"meta":..., "data":"Active"}` },
+                'api/admin/master/roles-get': { method: 'GET', path: 'api/admin/master/roles', auth: 'admin', description: { en: 'Retrieves a list of all available roles.', id: 'Mengambil daftar semua peran yang tersedia.' }, params: [], successResponse: `{"meta":..., "data":[...]}` },
 
-            // Admin Leave Types
-            'api/admin/master/leave-types-get': { method: 'GET', path: 'api/admin/master/leave-types', auth: 'admin', description: { en: 'Retrieves a list of all leave types.', id: 'Mengambil daftar semua jenis cuti.' }, params: [], successResponse: `{"meta":..., "data":[...]}` },
-            'api/admin/master/leave-types-post': { method: 'POST', path: 'api/admin/master/leave-types', auth: 'admin', description: { en: 'Creates a new leave type.', id: 'Membuat jenis cuti baru.' }, params: [{ name: 'name', required: true, example: 'Sick Leave', in: 'body' }, { name: 'default_entitlement_days', required: true, example: 10, in: 'body' }], successResponse: `{"meta":..., "data":{...}}` },
-            'api/admin/master/leave-types/{leave_type}-get': { method: 'GET', path: 'api/admin/master/leave-types/{leave_type}', auth: 'admin', description: { en: 'Retrieves a single leave type by ID.', id: 'Mengambil satu jenis cuti berdasarkan ID.' }, params: [{ name: 'leave_type', required: true, example: 1, in: 'path' }], successResponse: `{"meta":..., "data":{...}}` },
-            'api/admin/master/leave-types/{leave_type}-put': { method: 'PUT', path: 'api/admin/master/leave-types/{leave_type}', auth: 'admin', description: { en: 'Updates a leave type.', id: 'Memperbarui jenis cuti.' }, params: [{ name: 'leave_type', required: true, example: 1, in: 'path' }, { name: 'name', required: false, example: 'Annual Leave', in: 'body' }], successResponse: `{"meta":..., "data":{...}}` },
-            'api/admin/master/leave-types/{leave_type}-delete': { method: 'DELETE', path: 'api/admin/master/leave-types/{leave_type}', auth: 'admin', description: { en: 'Deletes a leave type.', id: 'Menghapus jenis cuti.' }, params: [{ name: 'leave_type', required: true, example: 1, in: 'path' }], successResponse: `{"meta":..., "data":null}` },
+                // Admin Departments
+                'api/admin/master/departments-get': { method: 'GET', path: 'api/admin/master/departments', auth: 'admin', description: { en: 'Retrieves a list of all departments.', id: 'Mengambil daftar semua departemen.' }, params: [], successResponse: `{"meta":..., "data":[...]}` },
+                'api/admin/master/departments-post': { method: 'POST', path: 'api/admin/master/departments', auth: 'admin', description: { en: 'Creates a new department.', id: 'Membuat departemen baru.' }, params: [{ name: 'name', required: true, example: 'New Department', in: 'body' }], successResponse: `{"meta":..., "data":{...}}` },
+                'api/admin/master/departments/{department}-get': { method: 'GET', path: 'api/admin/master/departments/{department}', auth: 'admin', description: { en: 'Retrieves a single department by ID.', id: 'Mengambil satu departemen berdasarkan ID.' }, params: [{ name: 'department', required: true, example: 1, in: 'path' }], successResponse: `{"meta":..., "data":{...}}` },
+                'api/admin/master/departments/{department}-put': { method: 'PUT', path: 'api/admin/master/departments/{department}', auth: 'admin', description: { en: 'Updates a department.', id: 'Memperbarui departemen.' }, params: [{ name: 'department', required: true, example: 1, in: 'path' }, { name: 'name', required: true, example: 'Updated Department', in: 'body' }], successResponse: `{"meta":..., "data":{...}}` },
+                'api/admin/master/departments/{department}-delete': { method: 'DELETE', path: 'api/admin/master/departments/{department}', auth: 'admin', description: { en: 'Deletes a department.', id: 'Menghapus departemen.' }, params: [{ name: 'department', required: true, example: 1, in: 'path' }], successResponse: `{"meta":..., "data":null}` },
 
-            // Admin Public Holidays
-            'api/admin/master/public-holidays-get': { method: 'GET', path: 'api/admin/master/public-holidays', auth: 'admin', description: { en: 'Retrieves a list of all public holidays.', id: 'Mengambil daftar semua hari libur nasional.' }, params: [], successResponse: `{"meta":..., "data":[...]}` },
-            'api/admin/master/public-holidays-post': { method: 'POST', path: 'api/admin/master/public-holidays', auth: 'admin', description: { en: 'Creates a new public holiday.', id: 'Membuat hari libur nasional baru.' }, params: [{ name: 'name', required: true, example: 'Independence Day', in: 'body' }, { name: 'date', required: true, example: '2025-08-17', in: 'body' }], successResponse: `{"meta":..., "data":{...}}` },
-            'api/admin/master/public-holidays/{public_holiday}-get': { method: 'GET', path: 'api/admin/master/public-holidays/{public_holiday}', auth: 'admin', description: { en: 'Retrieves a single public holiday by ID.', id: 'Mengambil satu hari libur nasional berdasarkan ID.' }, params: [{ name: 'public_holiday', required: true, example: 1, in: 'path' }], successResponse: `{"meta":..., "data":{...}}` },
-            'api/admin/master/public-holidays/{public_holiday}-put': { method: 'PUT', path: 'api/admin/master/public-holidays/{public_holiday}', auth: 'admin', description: { en: 'Updates a public holiday.', id: 'Memperbarui hari libur nasional.' }, params: [{ name: 'public_holiday', required: true, example: 1, in: 'path' }, { name: 'name', required: false, example: 'New Year', in: 'body' }], successResponse: `{"meta":..., "data":{...}}` },
-            'api/admin/master/public-holidays/{public_holiday}-delete': { method: 'DELETE', path: 'api/admin/master/public-holidays/{public_holiday}', auth: 'admin', description: { en: 'Deletes a public holiday.', id: 'Menghapus hari libur nasional.' }, params: [{ name: 'public_holiday', required: true, example: 1, in: 'path' }], successResponse: `{"meta":..., "data":null}` },
+                // Admin Leave Types
+                'api/admin/master/leave-types-get': { method: 'GET', path: 'api/admin/master/leave-types', auth: 'admin', description: { en: 'Retrieves a list of all leave types.', id: 'Mengambil daftar semua jenis cuti.' }, params: [], successResponse: `{"meta":..., "data":[...]}` },
+                'api/admin/master/leave-types-post': { method: 'POST', path: 'api/admin/master/leave-types', auth: 'admin', description: { en: 'Creates a new leave type.', id: 'Membuat jenis cuti baru.' }, params: [{ name: 'name', required: true, example: 'Sick Leave', in: 'body' }, { name: 'default_entitlement_days', required: true, example: 10, in: 'body' }], successResponse: `{"meta":..., "data":{...}}` },
+                'api/admin/master/leave-types/{leave_type}-get': { method: 'GET', path: 'api/admin/master/leave-types/{leave_type}', auth: 'admin', description: { en: 'Retrieves a single leave type by ID.', id: 'Mengambil satu jenis cuti berdasarkan ID.' }, params: [{ name: 'leave_type', required: true, example: 1, in: 'path' }], successResponse: `{"meta":..., "data":{...}}` },
+                'api/admin/master/leave-types/{leave_type}-put': { method: 'PUT', path: 'api/admin/master/leave-types/{leave_type}', auth: 'admin', description: { en: 'Updates a leave type.', id: 'Memperbarui jenis cuti.' }, params: [{ name: 'leave_type', required: true, example: 1, in: 'path' }, { name: 'name', required: false, example: 'Annual Leave', in: 'body' }], successResponse: `{"meta":..., "data":{...}}` },
+                'api/admin/master/leave-types/{leave_type}-delete': { method: 'DELETE', path: 'api/admin/master/leave-types/{leave_type}', auth: 'admin', description: { en: 'Deletes a leave type.', id: 'Menghapus jenis cuti.' }, params: [{ name: 'leave_type', required: true, example: 1, in: 'path' }], successResponse: `{"meta":..., "data":null}` },
 
-            // Admin Employee Entitlements
-            'api/admin/master/employee-entitlements-get': { method: 'GET', path: 'api/admin/master/employee-entitlements', auth: 'admin', description: { en: 'Retrieves a list of all employee entitlements.', id: 'Mengambil daftar semua jatah cuti karyawan.' }, params: [], successResponse: `{"meta":..., "data":[...]}` },
-            'api/admin/master/employee-entitlements-post': { method: 'POST', path: 'api/admin/master/employee-entitlements', auth: 'admin', description: { en: 'Creates a new employee entitlement.', id: 'Membuat jatah cuti karyawan baru.' }, params: [{ name: 'user_id', required: true, example: 1, in: 'body' }, { name: 'leave_type_id', required: true, example: 1, in: 'body' }, { name: 'initial_balance', required: true, example: 12, in: 'body' }], successResponse: `{"meta":..., "data":{...}}` },
-            'api/admin/master/employee-entitlements/{employee_entitlement}-get': { method: 'GET', path: 'api/admin/master/employee-entitlements/{employee_entitlement}', auth: 'admin', description: { en: 'Retrieves a single employee entitlement by ID.', id: 'Mengambil satu jatah cuti karyawan berdasarkan ID.' }, params: [{ name: 'employee_entitlement', required: true, example: 1, in: 'path' }], successResponse: `{"meta":..., "data":{...}}` },
-            'api/admin/master/employee-entitlements/{employee_entitlement}-put': { method: 'PUT', path: 'api/admin/master/employee-entitlements/{employee_entitlement}', auth: 'admin', description: { en: 'Updates an employee entitlement.', id: 'Memperbarui jatah cuti karyawan.' }, params: [{ name: 'employee_entitlement', required: true, example: 1, in: 'path' }, { name: 'initial_balance', required: false, example: 15, in: 'body' }], successResponse: `{"meta":..., "data":{...}}` },
-            'api/admin/master/employee-entitlements/{employee_entitlement}-delete': { method: 'DELETE', path: 'api/admin/master/employee-entitlements/{employee_entitlement}', auth: 'admin', description: { en: 'Deletes an employee entitlement.', id: 'Menghapus jatah cuti karyawan.' }, params: [{ name: 'employee_entitlement', required: true, example: 1, in: 'path' }], successResponse: `{"meta":..., "data":null}` },
+                // Admin Public Holidays
+                'api/admin/master/public-holidays-get': { method: 'GET', path: 'api/admin/master/public-holidays', auth: 'admin', description: { en: 'Retrieves a list of all public holidays.', id: 'Mengambil daftar semua hari libur nasional.' }, params: [], successResponse: `{"meta":..., "data":[...]}` },
+                'api/admin/master/public-holidays-post': { method: 'POST', path: 'api/admin/master/public-holidays', auth: 'admin', description: { en: 'Creates a new public holiday.', id: 'Membuat hari libur nasional baru.' }, params: [{ name: 'name', required: true, example: 'Independence Day', in: 'body' }, { name: 'date', required: true, example: '2025-08-17', in: 'body' }], successResponse: `{"meta":..., "data":{...}}` },
+                'api/admin/master/public-holidays/{public_holiday}-get': { method: 'GET', path: 'api/admin/master/public-holidays/{public_holiday}', auth: 'admin', description: { en: 'Retrieves a single public holiday by ID.', id: 'Mengambil satu hari libur nasional berdasarkan ID.' }, params: [{ name: 'public_holiday', required: true, example: 1, in: 'path' }], successResponse: `{"meta":..., "data":{...}}` },
+                'api/admin/master/public-holidays/{public_holiday}-put': { method: 'PUT', path: 'api/admin/master/public-holidays/{public_holiday}', auth: 'admin', description: { en: 'Updates a public holiday.', id: 'Memperbarui hari libur nasional.' }, params: [{ name: 'public_holiday', required: true, example: 1, in: 'path' }, { name: 'name', required: false, example: 'New Year', in: 'body' }], successResponse: `{"meta":..., "data":{...}}` },
+                'api/admin/master/public-holidays/{public_holiday}-delete': { method: 'DELETE', path: 'api/admin/master/public-holidays/{public_holiday}', auth: 'admin', description: { en: 'Deletes a public holiday.', id: 'Menghapus hari libur nasional.' }, params: [{ name: 'public_holiday', required: true, example: 1, in: 'path' }], successResponse: `{"meta":..., "data":null}` },
 
-            // Admin Leave Requests
-            'api/admin/master/leave-requests-get': { method: 'GET', path: 'api/admin/master/leave-requests', auth: 'admin', description: { en: 'Retrieves a list of all leave requests.', id: 'Mengambil daftar semua permintaan cuti.' }, params: [], successResponse: `{"meta":..., "data":[...]}` },
-            'api/admin/master/leave-requests-post': { method: 'POST', path: 'api/admin/master/leave-requests', auth: 'admin', description: { en: 'Creates a new leave request as an admin.', id: 'Membuat permintaan cuti baru sebagai admin.' }, params: [{ name: 'user_id', required: true, example: 2, in: 'body' }, { name: 'leave_type_id', required: true, example: 1, in: 'body' }, { name: 'start_date', required: true, example: '2025-12-25', in: 'body' }], successResponse: `{"meta":..., "data":{...}}` },
-            'api/admin/master/leave-requests/{leave_request}-get': { method: 'GET', path: 'api/admin/master/leave-requests/{leave_request}', auth: 'admin', description: { en: 'Retrieves a single leave request by ID.', id: 'Mengambil satu permintaan cuti berdasarkan ID.' }, params: [{ name: 'leave_request', required: true, example: 1, in: 'path' }], successResponse: `{"meta":..., "data":{...}}` },
-            'api/admin/master/leave-requests/{leave_request}-put': { method: 'PUT', path: 'api/admin/master/leave-requests/{leave_request}', auth: 'admin', description: { en: 'Updates a leave request as an admin.', id: 'Memperbarui permintaan cuti sebagai admin.' }, params: [{ name: 'leave_request', required: true, example: 1, in: 'path' }, { name: 'current_status', required: false, example: 'Approved', in: 'body' }], successResponse: `{"meta":..., "data":{...}}` },
-            'api/admin/master/leave-requests/{leave_request}-delete': { method: 'DELETE', path: 'api/admin/master/leave-requests/{leave_request}', auth: 'admin', description: { en: 'Deletes a leave request.', id: 'Menghapus permintaan cuti.' }, params: [{ name: 'leave_request', required: true, example: 1, in: 'path' }], successResponse: `{"meta":..., "data":null}` },
-        };
+                // Admin Employee Entitlements
+                'api/admin/master/employee-entitlements-get': { method: 'GET', path: 'api/admin/master/employee-entitlements', auth: 'admin', description: { en: 'Retrieves a list of all employee entitlements.', id: 'Mengambil daftar semua jatah cuti karyawan.' }, params: [], successResponse: `{"meta":..., "data":[...]}` },
+                'api/admin/master/employee-entitlements-post': { method: 'POST', path: 'api/admin/master/employee-entitlements', auth: 'admin', description: { en: 'Creates a new employee entitlement.', id: 'Membuat jatah cuti karyawan baru.' }, params: [{ name: 'user_id', required: true, example: 1, in: 'body' }, { name: 'leave_type_id', required: true, example: 1, in: 'body' }, { name: 'initial_balance', required: true, example: 12, in: 'body' }], successResponse: `{"meta":..., "data":{...}}` },
+                'api/admin/master/employee-entitlements/{employee_entitlement}-get': { method: 'GET', path: 'api/admin/master/employee-entitlements/{employee_entitlement}', auth: 'admin', description: { en: 'Retrieves a single employee entitlement by ID.', id: 'Mengambil satu jatah cuti karyawan berdasarkan ID.' }, params: [{ name: 'employee_entitlement', required: true, example: 1, in: 'path' }], successResponse: `{"meta":..., "data":{...}}` },
+                'api/admin/master/employee-entitlements/{employee_entitlement}-put': { method: 'PUT', path: 'api/admin/master/employee-entitlements/{employee_entitlement}', auth: 'admin', description: { en: 'Updates an employee entitlement.', id: 'Memperbarui jatah cuti karyawan.' }, params: [{ name: 'employee_entitlement', required: true, example: 1, in: 'path' }, { name: 'initial_balance', required: false, example: 15, in: 'body' }], successResponse: `{"meta":..., "data":{...}}` },
+                'api/admin/master/employee-entitlements/{employee_entitlement}-delete': { method: 'DELETE', path: 'api/admin/master/employee-entitlements/{employee_entitlement}', auth: 'admin', description: { en: 'Deletes an employee entitlement.', id: 'Menghapus jatah cuti karyawan.' }, params: [{ name: 'employee_entitlement', required: true, example: 1, in: 'path' }], successResponse: `{"meta":..., "data":null}` },
 
-        let currentLang = 'en';
+                // Admin Leave Requests
+                'api/admin/master/leave-requests-get': { method: 'GET', path: 'api/admin/master/leave-requests', auth: 'admin', description: { en: 'Retrieves a list of all leave requests.', id: 'Mengambil daftar semua permintaan cuti.' }, params: [], successResponse: `{"meta":..., "data":[...]}` },
+                'api/admin/master/leave-requests-post': { method: 'POST', path: 'api/admin/master/leave-requests', auth: 'admin', description: { en: 'Creates a new leave request as an admin.', id: 'Membuat permintaan cuti baru sebagai admin.' }, params: [{ name: 'user_id', required: true, example: 2, in: 'body' }, { name: 'leave_type_id', required: true, example: 1, in: 'body' }, { name: 'start_date', required: true, example: '2025-12-25', in: 'body' }], successResponse: `{"meta":..., "data":{...}}` },
+                'api/admin/master/leave-requests/{leave_request}-get': { method: 'GET', path: 'api/admin/master/leave-requests/{leave_request}', auth: 'admin', description: { en: 'Retrieves a single leave request by ID.', id: 'Mengambil satu permintaan cuti berdasarkan ID.' }, params: [{ name: 'leave_request', required: true, example: 1, in: 'path' }], successResponse: `{"meta":..., "data":{...}}` },
+                'api/admin/master/leave-requests/{leave_request}-put': { method: 'PUT', path: 'api/admin/master/leave-requests/{leave_request}', auth: 'admin', description: { en: 'Updates a leave request as an admin.', id: 'Memperbarui permintaan cuti sebagai admin.' }, params: [{ name: 'leave_request', required: true, example: 1, in: 'path' }, { name: 'current_status', required: false, example: 'Approved', in: 'body' }], successResponse: `{"meta":..., "data":{...}}` },
+                'api/admin/master/leave-requests/{leave_request}-delete': { method: 'DELETE', path: 'api/admin/master/leave-requests/{leave_request}', auth: 'admin', description: { en: 'Deletes a leave request.', id: 'Menghapus permintaan cuti.' }, params: [{ name: 'leave_request', required: true, example: 1, in: 'path' }], successResponse: `{"meta":..., "data":null}` },
+            };
 
-        const setLanguage = (lang) => {
-            currentLang = lang;
-            localStorage.setItem('api_lang', lang);
-            
-            langSwitcher.querySelector('.active')?.classList.remove('active');
-            langSwitcher.querySelector(`[data-lang="${lang}"]`).classList.add('active');
+            let currentLang = 'en';
 
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.dataset.i18n;
-                if (i18nData[lang][key]) {
-                    el.innerHTML = i18nData[lang][key];
+            const setLanguage = (lang) => {
+                currentLang = lang;
+                localStorage.setItem('api_lang', lang);
+
+                langSwitcher.querySelector('.active')?.classList.remove('active');
+                langSwitcher.querySelector(`[data-lang="${lang}"]`).classList.add('active');
+
+                document.querySelectorAll('[data-i18n]').forEach(el => {
+                    const key = el.dataset.i18n;
+                    if (i18nData[lang][key]) {
+                        el.innerHTML = i18nData[lang][key];
+                    }
+                });
+
+                document.title = i18nData[lang].docTitle;
+                baseUrlInput.title = i18nData[lang].baseUrlTitle;
+
+                const activeEndpoint = document.querySelector('.endpoint.active-endpoint');
+                if (activeEndpoint) {
+                    renderEndpointDetails(activeEndpoint);
+                    renderCodeExamples(activeEndpoint);
+                }
+            };
+
+            const applyTheme = (theme) => { body.className = theme + '-mode'; if (localStorage.getItem('code_sidebar_hidden') === 'true') { body.classList.add('code-sidebar-hidden'); } };
+            const applySidebarState = (isHidden) => { body.classList.toggle('code-sidebar-hidden', isHidden); codeSidebar.classList.toggle('hidden', isHidden); };
+            const applyBaseUrl = (url) => { baseUrlInput.value = url; };
+
+            applyTheme(localStorage.getItem('api_theme') || 'dark');
+            applySidebarState(localStorage.getItem('code_sidebar_hidden') === 'true');
+            applyBaseUrl(localStorage.getItem('api_base_url') || 'http://127.0.0.1:8000');
+
+            themeSwitcher.addEventListener('click', () => { const newTheme = body.classList.contains('light-mode') ? 'dark' : 'light'; localStorage.setItem('api_theme', newTheme); applyTheme(newTheme); });
+            hideCodeBtn.addEventListener('click', () => { localStorage.setItem('code_sidebar_hidden', 'true'); applySidebarState(true); });
+            showCodeBtn.addEventListener('click', () => { localStorage.setItem('code_sidebar_hidden', 'false'); applySidebarState(false); });
+            baseUrlInput.addEventListener('input', () => { localStorage.setItem('api_base_url', baseUrlInput.value); });
+
+            languageTabs.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON') {
+                    const lang = e.target.dataset.lang;
+                    languageTabs.querySelector('.active').classList.remove('active');
+                    e.target.classList.add('active');
+                    document.querySelectorAll('#code-examples .code-content').forEach(content => {
+                        content.classList.toggle('active', content.dataset.langContent === lang);
+                    });
                 }
             });
-            
-            document.title = i18nData[lang].docTitle;
-            baseUrlInput.title = i18nData[lang].baseUrlTitle;
-            
-            const activeEndpoint = document.querySelector('.endpoint.active-endpoint');
-            if (activeEndpoint) {
-                renderEndpointDetails(activeEndpoint);
-                renderCodeExamples(activeEndpoint);
-            }
-        };
 
-        const applyTheme = (theme) => { body.className = theme + '-mode'; if (localStorage.getItem('code_sidebar_hidden') === 'true') { body.classList.add('code-sidebar-hidden'); } };
-        const applySidebarState = (isHidden) => { body.classList.toggle('code-sidebar-hidden', isHidden); codeSidebar.classList.toggle('hidden', isHidden); };
-        const applyBaseUrl = (url) => { baseUrlInput.value = url; };
+            function renderEndpointHeader(endpointEl, endpointData) {
+                const path = endpointData.path || endpointEl.dataset.id;
+                let badges = '';
+                if (endpointData.auth === true) {
+                    badges = `<span class="badge" data-i18n="authRequiredBadge">${i18nData[currentLang].authRequiredBadge}</span>`;
+                } else if (endpointData.auth === 'manager') {
+                    badges = `<span class="badge" data-i18n="managerRoleBadge">${i18nData[currentLang].managerRoleBadge}</span>`;
+                } else if (endpointData.auth === 'admin') {
+                    badges = `<span class="badge admin" data-i18n="superAdminBadge">${i18nData[currentLang].superAdminBadge}</span>`;
+                }
 
-        applyTheme(localStorage.getItem('api_theme') || 'dark');
-        applySidebarState(localStorage.getItem('code_sidebar_hidden') === 'true');
-        applyBaseUrl(localStorage.getItem('api_base_url') || 'http://127.0.0.1:8000');
-
-        themeSwitcher.addEventListener('click', () => { const newTheme = body.classList.contains('light-mode') ? 'dark' : 'light'; localStorage.setItem('api_theme', newTheme); applyTheme(newTheme); });
-        hideCodeBtn.addEventListener('click', () => { localStorage.setItem('code_sidebar_hidden', 'true'); applySidebarState(true); });
-        showCodeBtn.addEventListener('click', () => { localStorage.setItem('code_sidebar_hidden', 'false'); applySidebarState(false); });
-        baseUrlInput.addEventListener('input', () => { localStorage.setItem('api_base_url', baseUrlInput.value); });
-
-        languageTabs.addEventListener('click', (e) => {
-            if (e.target.tagName === 'BUTTON') {
-                const lang = e.target.dataset.lang;
-                languageTabs.querySelector('.active').classList.remove('active');
-                e.target.classList.add('active');
-                document.querySelectorAll('#code-examples .code-content').forEach(content => {
-                    content.classList.toggle('active', content.dataset.langContent === lang);
-                });
-            }
-        });
-
-        function renderEndpointHeader(endpointEl, endpointData) {
-            const path = endpointData.path || endpointEl.dataset.id;
-            let badges = '';
-            if (endpointData.auth === true) {
-                badges = `<span class="badge" data-i18n="authRequiredBadge">${i18nData[currentLang].authRequiredBadge}</span>`;
-            } else if (endpointData.auth === 'manager') {
-                badges = `<span class="badge" data-i18n="managerRoleBadge">${i18nData[currentLang].managerRoleBadge}</span>`;
-            } else if (endpointData.auth === 'admin') {
-                badges = `<span class="badge admin" data-i18n="superAdminBadge">${i18nData[currentLang].superAdminBadge}</span>`;
-            }
-
-            endpointEl.innerHTML = `
+                endpointEl.innerHTML = `
                 <div class="endpoint-header">
                     <span class="method ${endpointData.method}">${endpointData.method}</span>
                     <span class="endpoint-path">/${path}</span>
@@ -662,254 +1068,255 @@
                 </div>
                 <div class="endpoint-details"></div>
             `;
-        }
+            }
 
-        function renderEndpointDetails(endpointEl) {
-            const id = endpointEl.dataset.id;
-            const endpointData = endpointsData[id];
-            if (!endpointData) { console.warn(`No data for id: ${id}`); return; }
+            function renderEndpointDetails(endpointEl) {
+                const id = endpointEl.dataset.id;
+                const endpointData = endpointsData[id];
+                if (!endpointData) { console.warn(`No data for id: ${id}`); return; }
 
-            const detailsContainer = endpointEl.querySelector('.endpoint-details');
-            if(detailsContainer) {
-                let html = '';
-                if (endpointData.description) {
-                    html += `<p>${endpointData.description[currentLang] || endpointData.description['en']}</p>`;
-                }
+                const detailsContainer = endpointEl.querySelector('.endpoint-details');
+                if (detailsContainer) {
+                    let html = '';
+                    if (endpointData.description) {
+                        html += `<p>${endpointData.description[currentLang] || endpointData.description['en']}</p>`;
+                    }
 
-                if (endpointData.params && endpointData.params.length > 0) {
-                    html += `<h4 data-i18n="parametersTitle">${i18nData[currentLang].parametersTitle}</h4><table>`;
-                    html += `<tr>
+                    if (endpointData.params && endpointData.params.length > 0) {
+                        html += `<h4 data-i18n="parametersTitle">${i18nData[currentLang].parametersTitle}</h4><table>`;
+                        html += `<tr>
                                 <th data-i18n="fieldHeader">${i18nData[currentLang].fieldHeader}</th>
                                 <th data-i18n="typeHeader">${i18nData[currentLang].typeHeader}</th>
                                 <th data-i18n="locationHeader">${i18nData[currentLang].locationHeader}</th>
                                 <th data-i18n="requiredHeader">${i18nData[currentLang].requiredHeader}</th>
                              </tr>`;
-                    endpointData.params.forEach(p => {
-                        html += `<tr>
+                        endpointData.params.forEach(p => {
+                            html += `<tr>
                                     <td><code>${p.name}</code></td>
                                     <td>${p.type || 'string'}</td>
                                     <td>${p.in}</td>
                                     <td>${p.required ? i18nData[currentLang].yes : i18nData[currentLang].no}</td>
                                  </tr>`;
+                        });
+                        html += `</table>`;
+                    }
+
+                    if (endpointData.successResponse) {
+                        html += `<h4 data-i18n="successResponseTitle">${i18nData[currentLang].successResponseTitle}</h4><div class="code-block"><pre><code>${endpointData.successResponse.trim()}</code></pre></div>`;
+                    }
+                    if (endpointData.errorResponse) {
+                        html += `<h4 data-i18n="errorResponseTitle">${i18nData[currentLang].errorResponseTitle}</h4><div class="code-block"><pre><code>${endpointData.errorResponse.trim()}</code></pre></div>`;
+                    }
+                    detailsContainer.innerHTML = html;
+                }
+            }
+
+            function renderCodeExamples(endpointEl) {
+                const id = endpointEl.dataset.id;
+                const endpointData = endpointsData[id];
+                if (!endpointData) return;
+
+                const baseUrl = baseUrlInput.value;
+                const finalPath = endpointData.path || id;
+                const fullUrl = `${baseUrl}/${finalPath}`;
+
+                const examples = {
+                    curl: generateCurl(endpointData.method, fullUrl, endpointData.params || []),
+                    php: generatePhp(endpointData.method, `/${finalPath}`, endpointData.params || []),
+                    js: generateJs(endpointData.method, fullUrl, endpointData.params || [])
+                };
+
+                document.querySelector('[data-lang-content="curl"] pre').innerHTML = examples.curl;
+                document.querySelector('[data-lang-content="php"] pre').innerHTML = examples.php;
+                document.querySelector('[data-lang-content="js"] pre').innerHTML = examples.js;
+            }
+
+            document.querySelectorAll('.endpoint').forEach(endpointEl => {
+                const id = endpointEl.dataset.id;
+                const endpointData = endpointsData[id];
+                if (endpointData) {
+                    renderEndpointHeader(endpointEl, endpointData);
+                    endpointEl.querySelector('.endpoint-header').addEventListener('click', () => {
+                        document.querySelector('.endpoint.active-endpoint')?.classList.remove('active-endpoint');
+                        endpointEl.classList.add('active-endpoint');
+                        renderEndpointDetails(endpointEl);
+                        renderCodeExamples(endpointEl);
                     });
-                    html += `</table>`;
                 }
-
-                if (endpointData.successResponse) {
-                    html += `<h4 data-i18n="successResponseTitle">${i18nData[currentLang].successResponseTitle}</h4><div class="code-block"><pre><code>${endpointData.successResponse.trim()}</code></pre></div>`;
-                }
-                if (endpointData.errorResponse) {
-                    html += `<h4 data-i18n="errorResponseTitle">${i18nData[currentLang].errorResponseTitle}</h4><div class="code-block"><pre><code>${endpointData.errorResponse.trim()}</code></pre></div>`;
-                }
-                detailsContainer.innerHTML = html;
-            }
-        }
-
-        function renderCodeExamples(endpointEl) {
-            const id = endpointEl.dataset.id;
-            const endpointData = endpointsData[id];
-            if (!endpointData) return;
-
-            const baseUrl = baseUrlInput.value;
-            const finalPath = endpointData.path || id;
-            const fullUrl = `${baseUrl}/${finalPath}`;
-
-            const examples = {
-                curl: generateCurl(endpointData.method, fullUrl, endpointData.params || []),
-                php: generatePhp(endpointData.method, `/${finalPath}`, endpointData.params || []),
-                js: generateJs(endpointData.method, fullUrl, endpointData.params || [])
-            };
-
-            document.querySelector('[data-lang-content="curl"] pre').innerHTML = examples.curl;
-            document.querySelector('[data-lang-content="php"] pre').innerHTML = examples.php;
-            document.querySelector('[data-lang-content="js"] pre').innerHTML = examples.js;
-        }
-
-        document.querySelectorAll('.endpoint').forEach(endpointEl => {
-            const id = endpointEl.dataset.id;
-            const endpointData = endpointsData[id];
-            if (endpointData) {
-                renderEndpointHeader(endpointEl, endpointData);
-                endpointEl.querySelector('.endpoint-header').addEventListener('click', () => {
-                    document.querySelector('.endpoint.active-endpoint')?.classList.remove('active-endpoint');
-                    endpointEl.classList.add('active-endpoint');
-                    renderEndpointDetails(endpointEl);
-                    renderCodeExamples(endpointEl);
-                });
-            }
-        });
-
-        function formatCode(code) { return code.replace(/(\ \/\/ required|\ \/\/ optional)/g, '<span class="comment">$1</span>'); }
-        
-        function generateCurl(method, path, params) {
-            let finalPath = path;
-            params.filter(p => p.in === 'path').forEach(p => {
-                finalPath = finalPath.replace(`{${p.name}}`, p.example);
             });
 
-            let curl = `curl --location --request ${method} '${finalPath}'`;
-            let headers = { 'Accept': 'application/json', 'Authorization': 'Bearer <YOUR_AUTH_TOKEN>' };
-            
-            const fileParams = params.filter(p => p.type === 'file');
-            const bodyParams = params.filter(p => p.in === 'body');
+            function formatCode(code) { return code.replace(/(\ \/\/ required|\ \/\/ optional)/g, '<span class="comment">$1</span>'); }
 
-            if (fileParams.length > 0) {
-                for(const p of fileParams) {
-                    curl += ` \
+            function generateCurl(method, path, params) {
+                let finalPath = path;
+                params.filter(p => p.in === 'path').forEach(p => {
+                    finalPath = finalPath.replace(`{${p.name}}`, p.example);
+                });
+
+                let curl = `curl --location --request ${method} '${finalPath}'`;
+                let headers = { 'Accept': 'application/json', 'Authorization': 'Bearer <YOUR_AUTH_TOKEN>' };
+
+                const fileParams = params.filter(p => p.type === 'file');
+                const bodyParams = params.filter(p => p.in === 'body');
+
+                if (fileParams.length > 0) {
+                    for (const p of fileParams) {
+                        curl += ` \
 --form '${p.name}=@"/path/to/your/${p.example}"'`;
-                }
-                for(const p of bodyParams) {
-                     curl += ` \
+                    }
+                    for (const p of bodyParams) {
+                        curl += ` \
 --form '${p.name}=${p.example}'`;
-                }
-            } else if (bodyParams.length > 0) {
-                headers['Content-Type'] = 'application/json';
-                const bodyLines = bodyParams.map(p => `    "${p.name}": "${p.example}"`);
-                curl += ` \
+                    }
+                } else if (bodyParams.length > 0) {
+                    headers['Content-Type'] = 'application/json';
+                    const bodyLines = bodyParams.map(p => `    "${p.name}": "${p.example}"`);
+                    curl += ` \
 --data-raw '{ 
 ${bodyLines.join(',\n')}
 }'`;
-            }
+                }
 
-            for(const [key, value] of Object.entries(headers)){
-                curl += ` \
+                for (const [key, value] of Object.entries(headers)) {
+                    curl += ` \
 --header '${key}: ${value}'`;
-            }
-            
-            return formatCode(curl);
-        }
-
-        function generatePhp(method, path, params) {
-            let finalPath = path;
-            params.filter(p => p.in === 'path').forEach(p => {
-                finalPath = finalPath.replace(`{${p.name}}`, p.example);
-            });
-
-            let php = `use Illuminate\\Support\\Facades\\Http;\n\n`;
-            php += `$baseUrl = "${baseUrlInput.value}";\n`;
-            
-            const fileParam = params.find(p => p.type === 'file');
-            const bodyParams = params.filter(p => p.in === 'body');
-            let effectiveMethod = method.toLowerCase();
-            let response = `$response = Http::withToken(<YOUR_AUTH_TOKEN>)->acceptJson()`;
-
-            if (fileParam) {
-                response += `->attach(\n    '${fileParam.name}', file_get_contents('/path/to/your/${fileParam.example}'), '${fileParam.example}'
-)`;
-                const multipartData = bodyParams.reduce((acc, p) => {
-                    acc[p.name] = p.example;
-                    return acc;
-                }, {});
-
-                if (method === 'PATCH' || method === 'PUT') {
-                    multipartData['_method'] = method;
-                    effectiveMethod = 'post';
                 }
-                response += `->${effectiveMethod}($baseUrl . '${finalPath}', ${JSON.stringify(multipartData, null, 4)});`;
 
-            } else { 
-                 const bodyLines = bodyParams.map(p => `        '${p.name}' => '${p.example}'`);
-                 const bodyString = bodyParams.length > 0 ? `[\n${bodyLines.join(',\n')}\n    ]` : '[]';
-                 response += `->${effectiveMethod}($baseUrl . '${finalPath}', ${bodyString});`;
+                return formatCode(curl);
             }
-            
-            return formatCode(php + response + `\n\n// ...`);
-        }
 
-        function generateJs(method, path, params) {
-            let finalPath = path;
-            params.filter(p => p.in === 'path').forEach(p => {
-                finalPath = finalPath.replace(`{${p.name}}`, p.example);
-            });
-
-            const isPatchOrPut = method === 'PATCH' || method === 'PUT';
-            const hasFile = params.some(p => p.type === 'file');
-            const effectiveMethod = isPatchOrPut && hasFile ? 'POST' : method;
-
-            let js = `const url = '${finalPath}';\n`;
-            let bodyVar = 'body';
-            let optionsHeaders = {
-                'Accept': 'application/json',
-                'Authorization': 'Bearer <YOUR_AUTH_TOKEN>'
-            };
-
-            const bodyParams = params.filter(p => p.in === 'body');
-
-            if (hasFile) {
-                js += `const formData = new FormData();\n`;
-                bodyParams.forEach(p => {
-                    if (p.type === 'file') {
-                        js += `// formData.append('${p.name}', yourFileInput.files[0]);\n`;
-                    } else {
-                        js += `formData.append('${p.name}', '${p.example}');\n`;
-                    }
+            function generatePhp(method, path, params) {
+                let finalPath = path;
+                params.filter(p => p.in === 'path').forEach(p => {
+                    finalPath = finalPath.replace(`{${p.name}}`, p.example);
                 });
-                if(isPatchOrPut) {
-                    js += `formData.append('_method', '${method}');\n`;
+
+                let php = `use Illuminate\\Support\\Facades\\Http;\n\n`;
+                php += `$baseUrl = "${baseUrlInput.value}";\n`;
+
+                const fileParam = params.find(p => p.type === 'file');
+                const bodyParams = params.filter(p => p.in === 'body');
+                let effectiveMethod = method.toLowerCase();
+                let response = `$response = Http::withToken(<YOUR_AUTH_TOKEN>)->acceptJson()`;
+
+                if (fileParam) {
+                    response += `->attach(\n    '${fileParam.name}', file_get_contents('/path/to/your/${fileParam.example}'), '${fileParam.example}'
+)`;
+                    const multipartData = bodyParams.reduce((acc, p) => {
+                        acc[p.name] = p.example;
+                        return acc;
+                    }, {});
+
+                    if (method === 'PATCH' || method === 'PUT') {
+                        multipartData['_method'] = method;
+                        effectiveMethod = 'post';
+                    }
+                    response += `->${effectiveMethod}($baseUrl . '${finalPath}', ${JSON.stringify(multipartData, null, 4)});`;
+
+                } else {
+                    const bodyLines = bodyParams.map(p => `        '${p.name}' => '${p.example}'`);
+                    const bodyString = bodyParams.length > 0 ? `[\n${bodyLines.join(',\n')}\n    ]` : '[]';
+                    response += `->${effectiveMethod}($baseUrl . '${finalPath}', ${bodyString});`;
                 }
-                bodyVar = 'formData';
-            } else if (bodyParams.length > 0) {
-                optionsHeaders['Content-Type'] = 'application/json';
-                const bodyLines = bodyParams.map(p => `    "${p.name}": "${p.example}"`);
-                js += `const body = {\n${bodyLines.join(',\n')}\n};
-`;
+
+                return formatCode(php + response + `\n\n// ...`);
             }
 
-            js += `\nconst options = {\n`;
-            js += `    method: '${effectiveMethod}',\n`;
-            js += `    headers: ${JSON.stringify(optionsHeaders, null, 4)}`;
-            
-            if (bodyParams.length > 0) {
-                js += `,
+            function generateJs(method, path, params) {
+                let finalPath = path;
+                params.filter(p => p.in === 'path').forEach(p => {
+                    finalPath = finalPath.replace(`{${p.name}}`, p.example);
+                });
+
+                const isPatchOrPut = method === 'PATCH' || method === 'PUT';
+                const hasFile = params.some(p => p.type === 'file');
+                const effectiveMethod = isPatchOrPut && hasFile ? 'POST' : method;
+
+                let js = `const url = '${finalPath}';\n`;
+                let bodyVar = 'body';
+                let optionsHeaders = {
+                    'Accept': 'application/json',
+                    'Authorization': 'Bearer <YOUR_AUTH_TOKEN>'
+                };
+
+                const bodyParams = params.filter(p => p.in === 'body');
+
+                if (hasFile) {
+                    js += `const formData = new FormData();\n`;
+                    bodyParams.forEach(p => {
+                        if (p.type === 'file') {
+                            js += `// formData.append('${p.name}', yourFileInput.files[0]);\n`;
+                        } else {
+                            js += `formData.append('${p.name}', '${p.example}');\n`;
+                        }
+                    });
+                    if (isPatchOrPut) {
+                        js += `formData.append('_method', '${method}');\n`;
+                    }
+                    bodyVar = 'formData';
+                } else if (bodyParams.length > 0) {
+                    optionsHeaders['Content-Type'] = 'application/json';
+                    const bodyLines = bodyParams.map(p => `    "${p.name}": "${p.example}"`);
+                    js += `const body = {\n${bodyLines.join(',\n')}\n};
+`;
+                }
+
+                js += `\nconst options = {\n`;
+                js += `    method: '${effectiveMethod}',\n`;
+                js += `    headers: ${JSON.stringify(optionsHeaders, null, 4)}`;
+
+                if (bodyParams.length > 0) {
+                    js += `,
     body: ${hasFile ? bodyVar : `JSON.stringify(${bodyVar})`}
 `;
-            }
-            js += `\n};
+                }
+                js += `\n};
 
 fetch(url, options).then(...)`;
-            
-            return formatCode(js);
-        }
-        
-        document.querySelectorAll('.copy-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                const pre = this.closest('.code-block').querySelector('pre');
-                const currentLang = localStorage.getItem('api_lang') || 'en';
-                navigator.clipboard.writeText(pre.innerText.trim()).then(() => {
-                    const originalText = this.innerHTML;
-                    this.innerHTML = i18nData[currentLang].copiedBtn;
-                    setTimeout(() => { this.innerHTML = originalText; }, 2000);
+
+                return formatCode(js);
+            }
+
+            document.querySelectorAll('.copy-btn').forEach(btn => {
+                btn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    const pre = this.closest('.code-block').querySelector('pre');
+                    const currentLang = localStorage.getItem('api_lang') || 'en';
+                    navigator.clipboard.writeText(pre.innerText.trim()).then(() => {
+                        const originalText = this.innerHTML;
+                        this.innerHTML = i18nData[currentLang].copiedBtn;
+                        setTimeout(() => { this.innerHTML = originalText; }, 2000);
+                    });
                 });
             });
-        });
 
-        const sections = document.querySelectorAll('.section');
-        const sidebarLinks = document.querySelectorAll('#sidebar a');
-        const updateActiveLink = () => {
-            let current = '';
-            sections.forEach(section => {
-                const sectionTop = section.offsetTop;
-                if (pageYOffset >= sectionTop - 60) { current = section.getAttribute('id'); }
-            });
-            sidebarLinks.forEach(link => {
-                link.classList.remove('active');
-                if (link.getAttribute('href').includes(current)) { link.classList.add('active'); }
-            });
-        };
-        window.addEventListener('scroll', updateActiveLink);
-        
-        langSwitcher.addEventListener('click', (e) => {
-            if (e.target.tagName === 'BUTTON') {
-                const lang = e.target.dataset.lang;
-                setLanguage(lang);
-            }
-        });
+            const sections = document.querySelectorAll('.section');
+            const sidebarLinks = document.querySelectorAll('#sidebar a');
+            const updateActiveLink = () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 60) { current = section.getAttribute('id'); }
+                });
+                sidebarLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').includes(current)) { link.classList.add('active'); }
+                });
+            };
+            window.addEventListener('scroll', updateActiveLink);
 
-        const savedLang = localStorage.getItem('api_lang') || 'en';
-        setLanguage(savedLang);
-        updateActiveLink();
-    });
+            langSwitcher.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON') {
+                    const lang = e.target.dataset.lang;
+                    setLanguage(lang);
+                }
+            });
+
+            const savedLang = localStorage.getItem('api_lang') || 'en';
+            setLanguage(savedLang);
+            updateActiveLink();
+        });
     </script>
 </body>
+
 </html>
