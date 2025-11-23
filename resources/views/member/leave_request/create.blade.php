@@ -29,6 +29,22 @@
             </label>
         </div>
 
+        {{-- Workflow --}}
+        <div class="form-control w-full">
+            <label class="label">
+                <span class="label-text font-semibold">Leave Group</span>
+            </label>
+            <select x-model="formData.workflow_id" class="select select-bordered w-full" :class="{'select-error': errors.workflow_id}" required>
+                <option value="" disabled selected>Select leave group</option>
+                <template x-for="wf in workflows" :key="wf.id">
+                    <option :value="wf.id" x-text="wf.name"></option>
+                </template>
+            </select>
+            <label class="label" x-show="errors.workflow_id">
+                <span class="label-text-alt text-error" x-text="errors.workflow_id"></span>
+            </label>
+        </div>
+
         {{-- Dates --}}
         <div class="grid grid-cols-2 gap-4">
             <div class="form-control w-full">
@@ -111,8 +127,10 @@
     function createLeave(baseApiUrl) {
         return {
             leaveTypes: [],
+            workflows: [],
             formData: {
                 leave_type_id: '',
+                workflow_id: '',
                 start_date: '',
                 end_date: '',
                 leave_period: 'full_day',
@@ -137,7 +155,7 @@
 
             async fetchMasterData() {
                 try {
-                    // Fetch Master Data (Leave Types) AND User Balances
+                    // Fetch Master Data (Leave Types, Workflows) AND User Balances
                     const [masterResponse, balanceResponse] = await Promise.all([
                         fetch(`${baseApiUrl}/master-data`, {
                             headers: { 'Authorization': `Bearer ${this.token}`, 'Accept': 'application/json' }
@@ -152,28 +170,21 @@
 
                     if (masterResponse.ok && balanceResponse.ok) {
                         const allLeaveTypes = masterData.data.leave_types;
+                        this.workflows = masterData.data.workflows || []; // Assuming workflows are returned in master-data
                         const userBalances = balanceData.data;
 
                         // Filter leave types: Only show if user has an entitlement (balance record) for it
-                        // OR if the leave type doesn't require entitlement (logic depends on your system, assuming all need entitlement here)
-                        // Actually, let's map the balances to leave types.
-                        
-                        // We only want to show leave types that the user has a balance for.
-                        // userBalances is an array of objects like { leave_type_id: 1, leave_type_name: 'Annual', remaining_balance: 10, ... }
-                        
                         const availableLeaveTypeIds = userBalances.map(b => b.leave_type_id);
-                        
                         this.leaveTypes = allLeaveTypes.filter(type => availableLeaveTypeIds.includes(type.id));
                         
-                        // Optional: Append balance info to the name for display?
-                        // this.leaveTypes = this.leaveTypes.map(type => {
-                        //     const bal = userBalances.find(b => b.leave_type_id === type.id);
-                        //     return { ...type, name: `${type.name} (Bal: ${bal.remaining_balance})` };
-                        // });
+                        // If only one workflow exists, select it automatically
+                        if (this.workflows.length === 1) {
+                            this.formData.workflow_id = this.workflows[0].id;
+                        }
                     }
                 } catch (e) {
                     console.error('Error fetching data:', e);
-                    Swal.fire('Error', 'Failed to load leave types', 'error');
+                    Swal.fire('Error', 'Failed to load master data', 'error');
                 }
             },
 
@@ -251,6 +262,7 @@
 
                 const formData = new FormData();
                 formData.append('leave_type_id', this.formData.leave_type_id);
+                formData.append('workflow_id', this.formData.workflow_id); // Add workflow_id
                 formData.append('start_date', this.formData.start_date);
                 formData.append('end_date', this.formData.end_date);
                 formData.append('leave_period', this.formData.leave_period);
