@@ -15,6 +15,22 @@
 
     {{-- Filters (Optional, can be added later) --}}
     
+    {{-- Leave Balances --}}
+    <div class="grid grid-cols-2 gap-3 mb-6">
+        <template x-for="balance in balances" :key="balance.leave_type_id">
+            <div class="stat bg-base-100 shadow-sm rounded-box p-3 border border-base-200">
+                <div class="stat-title text-[10px] font-bold uppercase tracking-wider truncate" x-text="balance.leave_type_name"></div>
+                <div class="stat-value text-primary text-xl" x-text="balance.remaining_balance"></div>
+                <div class="stat-desc text-[10px]">Days Remaining</div>
+            </div>
+        </template>
+        <template x-if="loadingBalances">
+            <div class="col-span-2 flex justify-center py-4">
+                <span class="loading loading-dots loading-sm"></span>
+            </div>
+        </template>
+    </div>
+
     {{-- Leave List --}}
     <div class="space-y-4">
         <template x-if="loading">
@@ -98,14 +114,32 @@
     function myLeaves(baseApiUrl) {
         return {
             requests: [],
+            balances: [],
             loading: true,
+            loadingBalances: true,
             token: localStorage.getItem('authToken'),
             user: null,
 
             async init() {
                 if (!this.token) return;
                 await this.fetchUser();
-                await this.fetchRequests();
+                await Promise.all([
+                    this.fetchRequests(),
+                    this.fetchBalances()
+                ]);
+            },
+
+            async fetchBalances() {
+                try {
+                    const response = await fetch(`${baseApiUrl}/user/leave-balances`, {
+                        headers: { 'Authorization': `Bearer ${this.token}`, 'Accept': 'application/json' }
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        this.balances = data.data;
+                    }
+                } catch (e) { console.error('Error fetching balances:', e); }
+                finally { this.loadingBalances = false; }
             },
 
             async fetchUser() {

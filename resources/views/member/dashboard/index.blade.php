@@ -15,18 +15,37 @@
     </div>
 
     {{-- Leave Balances --}}
-    <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         <template x-for="balance in balances" :key="balance.leave_type_id">
-            <div class="stat bg-base-100 shadow rounded-box p-4">
-                <div class="stat-title text-xs truncate" x-text="balance.leave_type_name"></div>
-                <div class="stat-value text-primary text-2xl" x-text="balance.remaining_balance"></div>
-                <div class="stat-desc text-xs">Days Remaining</div>
+            <div class="stats shadow bg-base-100 border border-base-200">
+                <div class="stat">
+                    <div class="stat-title font-bold text-base-content" x-text="balance.leave_type_name"></div>
+                    <div class="stat-value text-primary text-3xl" x-text="balance.initial_balance"></div>
+                    <div class="stat-desc text-xs mt-1">Days Remaining</div>
+                    
+                    <div class="divider my-1"></div>
+                    
+                    <div class="flex justify-between text-xs mt-2">
+                        <div class="flex flex-col items-center">
+                            <span class="font-semibold text-warning">Pending</span>
+                            <span x-text="getPendingCount(balance.leave_type_id)"></span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <span class="font-semibold text-error">Rejected</span>
+                            <span x-text="getRejectedCount(balance.leave_type_id)"></span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <span class="font-semibold text-success">Approved</span>
+                            <span x-text="getApprovedCount(balance.leave_type_id)"></span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </template>
         {{-- Loading State for Balances --}}
         <template x-if="loadingBalances">
-            <div class="col-span-2 md:col-span-4 flex justify-center py-4">
-                <span class="loading loading-dots loading-md"></span>
+            <div class="col-span-full flex justify-center py-8">
+                <span class="loading loading-dots loading-lg text-primary"></span>
             </div>
         </template>
     </div>
@@ -239,6 +258,18 @@
                     case 'Draft': return 'badge-ghost';
                     default: return 'badge-info';
                 }
+            },
+
+            getPendingCount(leaveTypeId) {
+                return this.myRequests.filter(r => r.leave_type.id === leaveTypeId && r.current_status === 'Pending').length;
+            },
+
+            getRejectedCount(leaveTypeId) {
+                return this.myRequests.filter(r => r.leave_type.id === leaveTypeId && r.current_status === 'Rejected').length;
+            },
+
+            getApprovedCount(leaveTypeId) {
+                return this.myRequests.filter(r => r.leave_type.id === leaveTypeId && r.current_status === 'Approved').length;
             }
         }
     }

@@ -11,6 +11,16 @@
         <h1 class="text-2xl font-bold">New Request</h1>
     </div>
     
+    <div class="grid grid-cols-2 gap-3 mb-6">
+        <template x-for="balance in balances" :key="balance.leave_type_id">
+            <div class="stat bg-base-100 shadow-sm rounded-box p-3 border border-base-200">
+                <div class="stat-title text-[10px] font-bold uppercase tracking-wider truncate" x-text="balance.leave_type_name"></div>
+                <div class="stat-value text-primary text-xl" x-text="balance.remaining_balance"></div>
+                <div class="stat-desc text-[10px]">Days Remaining</div>
+            </div>
+        </template>
+    </div>
+
     <form @submit.prevent="submitForm" class="space-y-6">
         {{-- Leave Period --}}
         <div class="form-control w-full">
@@ -128,6 +138,7 @@
         return {
             leaveTypes: [],
             workflows: [],
+            balances: [],
             formData: {
                 leave_type_id: '',
                 workflow_id: '',
@@ -172,6 +183,7 @@
                         const allLeaveTypes = masterData.data.leave_types;
                         this.workflows = masterData.data.workflows || []; // Assuming workflows are returned in master-data
                         const userBalances = balanceData.data;
+                        this.balances = userBalances; // Store balances for display
 
                         // Filter leave types: Only show if user has an entitlement (balance record) for it
                         const availableLeaveTypeIds = userBalances.map(b => b.leave_type_id);
