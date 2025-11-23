@@ -41,11 +41,7 @@ class EmployeeEntitlementController extends Controller
     public function store(Request $request)
     {
         try {
-            $data = $request->merge([
-                'days_taken' => 0,
-                'carry_over_days' => 0,
-            ]);
-            $entitlement = $this->entitlementService->createEntitlement($data);
+            $entitlement = $this->entitlementService->createEntitlement($request->all());
             return ResponseFormatter::success(
                 new EmployeeEntitlementResource($entitlement),
                 'Employee entitlement created successfully'

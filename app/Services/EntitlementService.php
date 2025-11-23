@@ -69,20 +69,33 @@ class EntitlementService
         return EmployeeEntitlement::find($id);
     }
 
-    public function createEntitlement(array $data)
+    public function createEntitlement(array $data): EmployeeEntitlement
     {
+        \Illuminate\Support\Facades\Log::info('Attempting to create entitlement', ['data' => $data]);
+
         $validator = Validator::make($data, [
             'user_id' => 'required|exists:users,id',
             'leave_type_id' => 'required|exists:leave_types,id',
             'year' => 'required|integer|min:2000',
             'initial_balance' => 'required|numeric|min:0',
+            'days_taken' => 'sometimes|numeric|min:0',
+            'carry_over_days' => 'sometimes|numeric|min:0',
         ]);
 
         if ($validator->fails()) {
+            \Illuminate\Support\Facades\Log::warning('Entitlement creation validation failed', ['errors' => $validator->errors()->toArray()]);
             throw new ValidationException($validator);
         }
 
-        return EmployeeEntitlement::create($data);
+        $data = array_merge([
+            'days_taken' => 0,
+            'carry_over_days' => 0,
+        ], $data);
+
+        $entitlement = EmployeeEntitlement::create($data);
+        \Illuminate\Support\Facades\Log::info('Entitlement created successfully', ['entitlement_id' => $entitlement->id, 'data' => $entitlement->toArray()]);
+
+        return $entitlement;
     }
 
     public function updateEntitlement(EmployeeEntitlement $entitlement, array $data)

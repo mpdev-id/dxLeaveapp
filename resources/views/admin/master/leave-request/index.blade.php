@@ -421,10 +421,10 @@
                     showModal('create_edit_modal');
                 },
                 openEditModal(req) {
-                    if (req.current_status !== 'Draft') {
-                        this.showToast("You can only edit requests that are in 'Draft' status.", 'warning');
-                        return;
-                    }
+                    // if (req.current_status !== 'Draft') {
+                    //     this.showToast("You can only edit requests that are in 'Draft' status.", 'warning');
+                    //     return;
+                    // }
                     this.resetForm();
                     this.editMode = true;
                     this.formData = {

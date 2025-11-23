@@ -10,7 +10,7 @@
     </a>
 </li>
 <template
-    x-if="req.current_status === 'Pending'">
+    x-if="req.current_status === 'Pending' || req.current_status === 'In Progress'">
     <li>
         <a @click="openApprovalModal(req)">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"

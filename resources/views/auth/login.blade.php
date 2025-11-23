@@ -85,8 +85,13 @@
             errorMessage: '',
             errors: {},
             init() {
+                // The init function will no longer redirect.
+                // This ensures that every time this page is loaded, the user must log in,
+                // and their role will be checked by the submitForm function.
+                // This prevents non-admin users with a stored token from being redirected incorrectly.
                 if (localStorage.getItem('authToken')) {
-                    window.location.href = '/admin/users';
+                    // Optional: You could clear the token to force a fresh login
+                    // localStorage.removeItem('authToken');
                 }
             },
             async submitForm() {
@@ -115,8 +120,14 @@
                     }
 
                     if (data.data && data.data.access_token) {
-                        localStorage.setItem('authToken', data.data.access_token);
-                        window.location.href = '/admin/users';
+                        const user = data.data.user;
+                        // Check if the user is a super admin
+                        if (user && user.role && user.role.includes('Super Admin')) {
+                            localStorage.setItem('authToken', data.data.access_token);
+                            window.location.href = '/admin/dashboard'; // Redirect to dashboard for super admin
+                        } else {
+                            alert('Access Denied. Only Super Admins can log in here.'); // Show access denied for other roles
+                        }
                     } else {
                         this.errorMessage = data.meta?.message || data.message || 'Login successful, but no token was provided.';
                     }
