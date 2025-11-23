@@ -86,18 +86,44 @@
                      <p x-show="formErrors.end_date" class="text-error text-sm mt-1" x-text="formErrors.end_date"></p>
                 </div>
 
-              
                 
-                <!-- Status -->
-                <div x-show="!editMode">
+                <!-- Status (Editable) -->
+                <div x-show="!editMode || (editMode && formData.current_status !== 'Draft' && formData.current_status !== 'Approved')">
                     <label class="label">
-                        <span class="label-text">Initial Status</span>
+                        <span class="label-text" x-text="editMode ? 'Current Status' : 'Initial Status'"></span>
                     </label>
                     <select x-model="formData.current_status" class="select select-bordered w-full">
-                        <option value="Draft">Save as Draft</option>
-                        <option value="Pending">Submit for Approval</option>
+                        <!-- Create Mode Options -->
+                        <option value="Draft" x-show="!editMode">Save as Draft</option>
+                        <option value="Pending" x-show="!editMode">Submit for Approval</option>
+                        
+                        <!-- Edit Mode Options -->
+                        <option value="Draft" x-show="editMode">Draft</option>
+                        <option value="Pending" x-show="editMode">Pending</option>
+                        <option value="Approved" x-show="editMode">Approved</option>
+                        <option value="Rejected" x-show="editMode">Rejected</option>
+                        <option value="Canceled" x-show="editMode">Canceled</option>
                     </select>
-                     <p x-show="formErrors.current_status" class="text-error text-sm mt-1" x-text="formErrors.current_status"></p>
+                    <p x-show="formErrors.current_status" class="text-error text-sm mt-1" x-text="formErrors.current_status"></p>
+                    <p x-show="editMode && formData.current_status === 'Draft'" class="text-warning text-sm mt-1">
+                        ⚠️ Changing to Draft will reset the workflow progress
+                    </p>
+                </div>
+
+                <!-- Status (Read-only for Draft and Approved) -->
+                <div x-show="editMode && (formData.current_status === 'Draft' || formData.current_status === 'Approved')">
+                    <label class="label">
+                        <span class="label-text">Current Status</span>
+                    </label>
+                    <div class="flex items-center gap-2 p-3 bg-base-200 rounded-lg">
+                        <span class="badge badge-lg" 
+                              :class="{
+                                  'badge-neutral': formData.current_status === 'Draft',
+                                  'badge-success': formData.current_status === 'Approved'
+                              }"
+                              x-text="formData.current_status"></span>
+                        <span class="text-sm text-base-content/70" x-text="formData.current_status === 'Draft' ? '(Cannot edit draft status)' : '(Cannot edit approved status)'"></span>
+                    </div>
                 </div>
 
                 <!-- Reason -->

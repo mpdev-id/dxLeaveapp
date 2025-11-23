@@ -38,7 +38,8 @@
 <div class="divider my-1"></div>
 <li>
     <a @click="openEditModal(req)"
-        :class="{'opacity-50 cursor-not-allowed': req.current_status !== 'Draft'}">
+        :class="{'opacity-50 cursor-not-allowed': req.current_status === 'Approved'}"
+        :title="req.current_status === 'Approved' ? 'Cannot edit approved requests' : 'Edit leave request'">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
             viewBox="0 0 20 20" fill="currentColor">
             <path
@@ -47,7 +48,7 @@
                 d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"
                 clip-rule="evenodd" />
         </svg>
-        Edit
+        <span x-text="req.current_status === 'Approved' ? 'Edit (Locked)' : 'Edit'"></span>
     </a>
 </li>
 <li>

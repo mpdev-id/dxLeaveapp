@@ -211,7 +211,20 @@ class LeaveRequestController extends Controller
                 ],
                 'supporting_document' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
                 'workflow_id' => 'sometimes|required|exists:workflows,id',
+                'current_status' => [
+                    'sometimes', 'required',
+                    Rule::in(['Draft', 'Pending', 'Approved', 'Rejected', 'Canceled']),
+                ],
             ]);
+
+            // Debug logging
+            \Log::info('Leave Request Update', [
+                'leave_request_id' => $leaveRequest->id,
+                'old_status' => $leaveRequest->current_status,
+                'new_status' => $validatedData['current_status'] ?? 'not provided',
+                'validated_data' => $validatedData,
+            ]);
+
 
             $attachmentPath = $leaveRequest->getRawOriginal('supporting_attachment_path');
             if ($request->hasFile('supporting_document')) {
@@ -243,6 +256,29 @@ class LeaveRequestController extends Controller
                 }
             }
 
+            // Handle status change to Draft - reset workflow progress
+            if (isset($validatedData['current_status']) && $validatedData['current_status'] === 'Draft') {
+                $validatedData['current_workflow_step_id'] = null;
+                \Log::info('Leave request status changed to Draft, workflow reset', [
+                    'leave_request_id' => $leaveRequest->id,
+                    'previous_status' => $leaveRequest->current_status,
+                ]);
+            }
+
+            // Handle status change to Pending - set to first workflow step
+            if (isset($validatedData['current_status']) && $validatedData['current_status'] === 'Pending' && $leaveRequest->current_status !== 'Pending') {
+                $workflow = $leaveRequest->workflow;
+                if ($workflow) {
+                    $firstStep = $workflow->steps()->orderBy('step_number', 'asc')->first();
+                    if ($firstStep) {
+                        $validatedData['current_workflow_step_id'] = $firstStep->id;
+                        \Log::info('Leave request status changed to Pending, workflow started', [
+                            'leave_request_id' => $leaveRequest->id,
+                            'workflow_step_id' => $firstStep->id,
+                        ]);
+                    }
+                }
+            }
 
             $leaveRequest->update($validatedData);
 

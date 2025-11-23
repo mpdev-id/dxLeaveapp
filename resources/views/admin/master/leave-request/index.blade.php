@@ -423,10 +423,12 @@
                     showModal('create_edit_modal');
                 },
                 openEditModal(req) {
-                    // if (req.current_status !== 'Draft') {
-                    //     this.showToast("You can only edit requests that are in 'Draft' status.", 'warning');
-                    //     return;
-                    // }
+                    // Prevent editing approved requests
+                    if (req.current_status === 'Approved') {
+                        this.showToast("Cannot edit approved leave requests. Approved requests are final.", 'warning');
+                        return;
+                    }
+                    
                     this.resetForm();
                     this.editMode = true;
                     this.formData = {
@@ -438,6 +440,7 @@
                         end_date: this.formatDate(req.end_date),
                         leave_period: req.leave_period,
                         reason: req.reason,
+                        current_status: req.current_status,
                         supporting_document_path: req.supporting_attachment_path
                     };
                     showModal('create_edit_modal');
@@ -480,7 +483,6 @@ if (fileInput) fileInput.value = '';
                             fd.append('_method', 'PUT');
                             url += `/${dataToSend.id}`;
                             delete dataToSend.user_id;
-                            delete dataToSend.current_status;
                         }
 
                         for (const key in dataToSend) {

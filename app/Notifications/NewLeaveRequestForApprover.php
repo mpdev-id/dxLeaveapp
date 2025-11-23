@@ -52,7 +52,12 @@ class NewLeaveRequestForApprover extends Notification implements ShouldQueue
         $startDate = $this->leaveRequest->start_date->format('d M Y');
         $endDate = $this->leaveRequest->end_date->format('d M Y');
         $leaveType = $this->leaveRequest->leaveType->name;
-        $approverLevel = $this->leaveRequest->currentStep->approverRole->name;    
+        
+        // Safely get approver level with null checks
+        $approverLevel = 'Approver';
+        if ($this->leaveRequest->currentStep && $this->leaveRequest->currentStep->approverRole) {
+            $approverLevel = $this->leaveRequest->currentStep->approverRole->name;
+        }
 
         $message = "[Leave Request - *" . str_replace('_', ' ', ucwords(str_replace('_', ' ', $this->leaveRequest->leave_period))) . "*]\n\n";
         $message .= "Hi {$notifiable->name} as {$approverLevel},\n";
@@ -63,7 +68,10 @@ class NewLeaveRequestForApprover extends Notification implements ShouldQueue
         $message .= "Employee: *{$employee->name}*\n";
         $message .= "Type: *{$leaveType}*\n";
         $message .= "Date: *{$startDate}* to *{$endDate}*\n";
-        $message .= "Reason: *" . ucfirst($this->leaveRequest->reason) . "*\n\n";
+        if ($this->leaveRequest->reason) {
+            $message .= "Reason: *" . ucfirst($this->leaveRequest->reason) . "*\n";
+        }
+        $message .= "\n";
         $message .= "Please log in to the DXLeave system to *Approve* or *Reject* this request.";
         $message .= "\n\nThank you,\nDXLeave System";
 

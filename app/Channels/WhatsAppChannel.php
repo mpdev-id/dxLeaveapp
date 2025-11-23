@@ -50,16 +50,31 @@ class WhatsAppChannel
             $requestData['message'] = $payload;
         }
 
-        $response = Http::get($url, $requestData);
+        try {
+            // Send request with timeout configuration
+            $response = Http::timeout(30) // 30 seconds timeout
+                ->connectTimeout(10) // 10 seconds connect timeout
+                ->retry(2, 1000) // Retry 2 times with 1 second delay
+                ->get($url, $requestData);
 
-        if ($response->failed()) {
-            Log::error('WhatsApp notification failed.', [
+            if ($response->failed()) {
+                Log::error('WhatsApp notification failed.', [
+                    'user_id' => $notifiable->id,
+                    'status' => $response->status(),
+                    'response' => $response->body(),
+                ]);
+            } else {
+                Log::info('WhatsApp notification sent successfully.', [
+                    'user_id' => $notifiable->id,
+                    'to' => $to,
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('WhatsApp notification exception.', [
                 'user_id' => $notifiable->id,
-                'status' => $response->status(),
-                'response' => $response->body(),
+                'error' => $e->getMessage(),
+                'type' => get_class($e),
             ]);
-        } else {
-            Log::info('WhatsApp notification sent successfully.', ['user_id' => $notifiable->id]);
         }
     }
 }

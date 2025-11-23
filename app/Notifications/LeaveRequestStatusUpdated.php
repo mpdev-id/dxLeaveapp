@@ -57,7 +57,9 @@ class LeaveRequestStatusUpdated extends Notification implements ShouldQueue
         $message .= "There is an update on your leave request:\n\n";
         $message .= "Type: *{$leaveType}*\n";
         $message .= "Date: *{$startDate}* to *{$endDate}*\n";
-        $message .= "Your Reason: *{$this->leaveRequest->reason}*\n";
+        if ($this->leaveRequest->reason) {
+            $message .= "Your Reason: *{$this->leaveRequest->reason}*\n";
+        }
         $message .= "Status: *{$status}*\n\n";
 
         switch ($status) {
@@ -71,15 +73,19 @@ class LeaveRequestStatusUpdated extends Notification implements ShouldQueue
                 }
                 break;
             case 'In Progress':
-                $approverLevel = $this->leaveRequest->currentStep->approverRole->name;
-                $message .= "Your request has been approved by the previous approver and is now pending approval from the *{$approverLevel}*.";
+                if ($this->leaveRequest->currentStep && $this->leaveRequest->currentStep->approverRole) {
+                    $approverLevel = $this->leaveRequest->currentStep->approverRole->name;
+                    $message .= "Your request has been approved by the previous approver and is now pending approval from the *{$approverLevel}*.";
+                } else {
+                    $message .= "Your request is in progress and pending approval.";
+                }
                 break;
             case 'Pending':
                 $message .= "Your leave request has been successfully submitted and is now pending approval.";
                 break;
             default:
                 // Fallback for other statuses
-                if ($this->leaveRequest->currentStep) {
+                if ($this->leaveRequest->currentStep && $this->leaveRequest->currentStep->approverRole) {
                     $approverLevel = $this->leaveRequest->currentStep->approverRole->name;
                     $message .= "The status of your leave request has been updated to '*{$status}*' by your '*{$approverLevel}*'.";
                 } else {
