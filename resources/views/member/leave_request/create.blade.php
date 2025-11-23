@@ -10,8 +10,22 @@
         </a>
         <h1 class="text-2xl font-bold">New Request</h1>
     </div>
-
+    
     <form @submit.prevent="submitForm" class="space-y-6">
+        {{-- Leave Period --}}
+        <div class="form-control w-full">
+            <label class="label">
+                <span class="label-text font-semibold">Period</span>
+            </label>
+            <select x-model="formData.leave_period" class="select select-bordered w-full" :class="{'select-error': errors.leave_period}" @change="calculateDuration">
+                <option value="full_day">Full Day</option>
+                <option value="half_day_morning">Half Day (Morning)</option>
+                <option value="half_day_afternoon">Half Day (Afternoon)</option>
+            </select>
+            <label class="label" x-show="errors.leave_period">
+                <span class="label-text-alt text-error" x-text="errors.leave_period"></span>
+            </label>
+        </div>
         
         {{-- Leave Type --}}
         <div class="form-control w-full">
@@ -61,27 +75,13 @@
                 <label class="label">
                     <span class="label-text font-semibold">End Date</span>
                 </label>
-                <input type="date" x-model="formData.end_date" class="input input-bordered w-full" :class="{'input-error': errors.end_date}" required @change="calculateDuration" />
+                <input type="date" x-model="formData.end_date" class="input input-bordered w-full" :class="{'input-error': errors.end_date}" required @change="calculateDuration" :disabled="formData.leave_period !== 'full_day'" />
                 <label class="label" x-show="errors.end_date">
                     <span class="label-text-alt text-error" x-text="errors.end_date"></span>
                 </label>
             </div>
         </div>
 
-        {{-- Leave Period --}}
-        <div class="form-control w-full">
-            <label class="label">
-                <span class="label-text font-semibold">Period</span>
-            </label>
-            <select x-model="formData.leave_period" class="select select-bordered w-full" :class="{'select-error': errors.leave_period}" @change="calculateDuration">
-                <option value="full_day">Full Day</option>
-                <option value="half_day_morning">Half Day (Morning)</option>
-                <option value="half_day_afternoon">Half Day (Afternoon)</option>
-            </select>
-            <label class="label" x-show="errors.leave_period">
-                <span class="label-text-alt text-error" x-text="errors.leave_period"></span>
-            </label>
-        </div>
 
         {{-- Duration Display --}}
         <div class="alert alert-info shadow-sm" x-show="duration > 0">
@@ -94,7 +94,7 @@
             <label class="label">
                 <span class="label-text font-semibold">Reason</span>
             </label>
-            <textarea x-model="formData.reason" class="textarea textarea-bordered h-24" :class="{'textarea-error': errors.reason}" placeholder="Please describe the reason for your leave..." required></textarea>
+            <textarea x-model="formData.reason" class="textarea textarea-bordered h-24 w-full p-4" :class="{'textarea-error': errors.reason}" placeholder="Please describe the reason for your leave..." required></textarea>
             <label class="label" x-show="errors.reason">
                 <span class="label-text-alt text-error" x-text="errors.reason"></span>
             </label>
@@ -189,6 +189,11 @@
             },
 
             calculateDuration() {
+                // If half day, force end date to be same as start date
+                if (this.formData.leave_period !== 'full_day' && this.formData.start_date) {
+                    this.formData.end_date = this.formData.start_date;
+                }
+
                 if (!this.formData.start_date || !this.formData.end_date) {
                     this.duration = 0;
                     return;
