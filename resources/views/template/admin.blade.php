@@ -8,6 +8,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-base-200">
     <div x-data="{ drawerOpen: localStorage.getItem('drawerOpen') === 'true' }" x-init="$watch('drawerOpen', value => localStorage.setItem('drawerOpen', value))">

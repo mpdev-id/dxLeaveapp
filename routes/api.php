@@ -63,5 +63,6 @@ Route::middleware(['auth:sanctum', 'role:Super Admin', 'throttle:120,1'])->prefi
     Route::get('upcoming-leaves', [\App\Http\Controllers\API\Admin\DashboardController::class, 'getUpcomingLeaves']);
     Route::get('leave-calendar', [\App\Http\Controllers\API\Admin\DashboardController::class, 'getLeaveCalendar']);
     Route::get('leave-requests-by-date', [\App\Http\Controllers\API\Admin\DashboardController::class, 'getLeaveRequestsByDate']);
+    Route::get('leave-chart-data', [\App\Http\Controllers\API\Admin\DashboardController::class, 'getLeaveChartData']);
 });
 

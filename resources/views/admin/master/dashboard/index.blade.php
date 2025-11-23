@@ -65,13 +65,40 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    {{-- Calendar --}}
-    <div class="card bg-base-100 shadow-xl mt-6">
-        <div class="card-body">
-            <h2 class="card-title">Leave & Holiday Calendar</h2>
-            <div id='calendar' class="w-full h-[70vh]"></div>
+        {{-- Monthly Chart --}}
+        <div class="card bg-base-100 shadow-xl mt-6">
+            <div class="card-body">
+                <div class="flex flex-wrap justify-between items-center mb-4">
+                    <h2 class="card-title">Monthly Leave Report</h2>
+                    <div class="flex items-center gap-2">
+                        <select x-model="chartYear" @change="fetchChartData()" class="select select-bordered select-sm">
+                            <template x-for="year in chartYears" :key="year">
+                                <option :value="year" x-text="year"></option>
+                            </template>
+                        </select>
+                        <select x-model="chartMonth" @change="fetchChartData()" class="select select-bordered select-sm">
+                            <template x-for="(month, index) in chartMonths" :key="index">
+                                <option :value="index + 1" x-text="month"></option>
+                            </template>
+                        </select>
+                    </div>
+                </div>
+                <div x-show="loadingChart" class="text-center p-8">
+                    <span class="loading loading-lg loading-spinner text-primary"></span>
+                </div>
+                <div x-show="!loadingChart">
+                    <canvas id="monthlyLeaveChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        {{-- Calendar --}}
+        <div class="card bg-base-100 shadow-xl mt-6">
+            <div class="card-body">
+                <h2 class="card-title">Leave & Holiday Calendar</h2>
+                <div id='calendar' class="w-full h-[70vh]"></div>
+            </div>
         </div>
     </div>
 
@@ -464,16 +491,30 @@ function dashboardData(baseApiUrl) {
         loadingStats: true,
         loadingBalances: true,
 
+        // Chart properties
+        chart: null,
+        loadingChart: true,
+        chartYear: new Date().getFullYear(),
+        chartMonth: new Date().getMonth() + 1,
+        chartYears: [],
+        chartMonths: [
+            'January', 'February', 'March', 'April', 'May', 'June', 
+            'July', 'August', 'September', 'October', 'November', 'December'
+        ],
+
         async fetchData() {
             const token = localStorage.getItem('authToken');
             if (!token) {
-                // Already handled in main DOMContentLoaded, but good to have here too
-                console.error('No auth token found. Redirecting to login.');
+                console.error('No auth token found.');
                 return;
             }
+            // Initialize chart setup first
+            this.initChart();
+
             await Promise.all([
                 this.fetchStats(token),
-                this.fetchLeaveBalances(token)
+                this.fetchLeaveBalances(token),
+                this.fetchChartData(token) // Also fetch initial chart data
             ]);
         },
 
@@ -481,25 +522,13 @@ function dashboardData(baseApiUrl) {
             this.loadingStats = true;
             try {
                 const response = await fetch(`${baseApiUrl}/admin/dashboard/stats`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Accept': 'application/json'
-                    }
+                    headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
                 });
-                if (!response.ok) {
-                    throw new Error('Network response was not ok for stats');
-                }
+                if (!response.ok) throw new Error('Failed to fetch stats');
                 const data = await response.json();
-                if (data.data) {
-                    this.stats = data.data;
-                }
+                if (data.data) this.stats = data.data;
             } catch (error) {
                 console.error('Error fetching stats:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Oops...',
-                    text: 'Could not fetch dashboard statistics.',
-                });
             } finally {
                 this.loadingStats = false;
             }
@@ -509,28 +538,100 @@ function dashboardData(baseApiUrl) {
             this.loadingBalances = true;
             try {
                 const response = await fetch(`${baseApiUrl}/user/leave-balances`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Accept': 'application/json'
-                    }
+                    headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
                 });
-                if (!response.ok) {
-                    throw new Error('Network response was not ok for leave balances');
-                }
+                if (!response.ok) throw new Error('Failed to fetch leave balances');
                 const data = await response.json();
-                if (data.data) {
-                    this.leaveBalances = data.data;
-                }
+                if (data.data) this.leaveBalances = data.data;
             } catch (error) {
                 console.error('Error fetching leave balances:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Oops...',
-                    text: 'Could not fetch user leave balances.',
-                });
             } finally {
                 this.loadingBalances = false;
             }
+        },
+
+        // --- Chart Methods ---
+        initChart() {
+            const currentYear = new Date().getFullYear();
+            this.chartYears = Array.from({length: 5}, (v, i) => currentYear - i);
+            // The fetchChartData will be called from fetchData
+        },
+
+        async fetchChartData() {
+            this.loadingChart = true;
+            const token = localStorage.getItem('authToken');
+            try {
+                const params = new URLSearchParams({ year: this.chartYear, month: this.chartMonth });
+                const response = await fetch(`${baseApiUrl}/admin/dashboard/leave-chart-data?${params}`, {
+                    headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+                });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.meta.message || 'Failed to fetch chart data');
+                }
+                const result = await response.json();
+                
+                console.log('--- CHART DEBUG ---');
+                console.log('Full API Response:', JSON.stringify(result, null, 2));
+                console.log('--- END CHART DEBUG ---');
+
+                if (result.data && Array.isArray(result.data.labels)) {
+                    this.renderChart(result.data.labels, result.data.data);
+                } else {
+                    console.error('API response for chart data has unexpected structure:', result);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Chart Data Error',
+                        text: 'Failed to load chart data due to unexpected API response structure. Please check console for details.',
+                    });
+                }
+            } catch (error) {
+                console.error('Error fetching chart data:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Fetch Error',
+                    text: error.message || 'An unexpected error occurred while fetching chart data.',
+                });
+            } finally {
+                this.loadingChart = false;
+            }
+        },
+
+        renderChart(labels, data) {
+            const ctx = document.getElementById('monthlyLeaveChart').getContext('2d');
+            if (this.chart) {
+                this.chart.destroy();
+            }
+            this.chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels.map(day => `Day ${day}`),
+                    datasets: [{
+                        label: 'Leave Requests',
+                        data: data,
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
         }
     }
 }

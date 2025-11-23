@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use App\Models\PublicHoliday;
 use App\Services\EntitlementService;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -181,6 +182,41 @@ class DashboardController extends Controller
 
         } catch (\Exception $e) {
             return ResponseFormatter::error(null, 'Failed to retrieve calendar data: ' . $e->getMessage(), 500);
+        }
+    }
+
+    public function getLeaveChartData(Request $request)
+    {
+        try {
+            $request->validate([
+                'year' => 'required|integer|min:2000|max:' . (date('Y') + 1),
+                'month' => 'required|integer|min:1|max:12',
+            ]);
+
+            $year = $request->year;
+            $month = $request->month;
+
+            $daysInMonth = Carbon::createFromDate($year, $month)->daysInMonth;
+            
+            $leaveCounts = LeaveRequest::whereYear('start_date', $year)
+                ->whereMonth('start_date', $month)
+                ->where('current_status', '!=', 'Draft')
+                ->select(DB::raw('DAY(start_date) as day'), DB::raw('count(*) as total'))
+                ->groupBy('day')
+                ->pluck('total', 'day');
+
+            $labels = range(1, $daysInMonth);
+            $data = array_map(function($day) use ($leaveCounts) {
+                return $leaveCounts->get($day, 0);
+            }, $labels);
+
+            return ResponseFormatter::success([
+                'labels' => $labels,
+                'data' => $data,
+            ], 'Leave chart data retrieved successfully');
+
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to retrieve chart data: ' . $e->getMessage(), 500);
         }
     }
 }
