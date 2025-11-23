@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="corporate">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline - DXLeave</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.14/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card w-96 bg-base-100 shadow-2xl">
+        <div class="card-body items-center text-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 text-warning mb-4" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 2.829a4.978 4.978 0 01-1.414-2.83m-1.414 5.658a9 9 0 01-2.167-9.238m7.824 2.167a1 1 0 111.414 1.414m-1.414-1.414L3 3m8.293 8.293l1.414 1.414" />
+            </svg>
+
+            <h2 class="card-title text-2xl">You're Offline</h2>
+            <p class="text-base-content/70">
+                It looks like you've lost your internet connection.
+                Please check your network and try again.
+            </p>
+
+            <div class="divider"></div>
+
+            <div class="stats stats-vertical shadow">
+                <div class="stat">
+                    <div class="stat-title">Status</div>
+                    <div class="stat-value text-warning text-lg">Disconnected</div>
+                    <div class="stat-desc">Waiting for connection...</div>
+                </div>
+            </div>
+
+            <div class="card-actions justify-center mt-4">
+                <button onclick="window.location.reload()" class="btn btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Try Again
+                </button>
+                <button onclick="history.back()" class="btn btn-ghost">Go Back</button>
+            </div>
+
+            <div class="alert alert-info mt-4">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                    class="stroke-current shrink-0 w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span class="text-sm">Some features may be available offline</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto-reload when connection is restored
+        window.addEventListener('online', () => {
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        });
+
+        // Update status indicator
+        function updateStatus() {
+            const statusEl = document.querySelector('.stat-value');
+            const descEl = document.querySelector('.stat-desc');
+
+            if (navigator.onLine) {
+                statusEl.textContent = 'Connected';
+                statusEl.classList.remove('text-warning');
+                statusEl.classList.add('text-success');
+                descEl.textContent = 'Reloading...';
+                setTimeout(() => window.location.reload(), 500);
+            } else {
+                statusEl.textContent = 'Disconnected';
+                statusEl.classList.remove('text-success');
+                statusEl.classList.add('text-warning');
+                descEl.textContent = 'Waiting for connection...';
+            }
+        }
+
+        window.addEventListener('online', updateStatus);
+        window.addEventListener('offline', updateStatus);
+
+        // Check status every 3 seconds
+        setInterval(updateStatus, 3000);
+    </script>
+</body>
+
+</html>

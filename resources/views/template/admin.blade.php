@@ -5,6 +5,22 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    
+    {{-- PWA Meta Tags --}}
+    <meta name="description" content="DXLeave - Employee Leave Management System">
+    <meta name="theme-color" content="#0d6efd">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="DXLeave">
+    
+    {{-- Manifest --}}
+    <link rel="manifest" href="/manifest.json">
+    
+    {{-- Icons --}}
+    <link rel="icon" type="image/png" sizes="192x192" href="/images/icons/icon-192x192.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="/images/icons/icon-192x192.png">
+    
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
@@ -201,9 +217,99 @@
                     form.submit(); // Submit the original form to logout from web session
                 } else {
                     window.location.href = '/login'; // Fallback if something is wrong
+            }
+        });
+    }
+
+    {{-- PWA Service Worker Registration --}}
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+                .then((registration) => {
+                    console.log('[PWA] Service Worker registered:', registration.scope);
+                    
+                    // Check for updates
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                // Show update notification
+                                if (confirm('New version available! Reload to update?')) {
+                                    newWorker.postMessage({ action: 'skipWaiting' });
+                                    window.location.reload();
+                                }
+                            }
+                        });
+                    });
+                })
+                .catch((error) => {
+                    console.error('[PWA] Service Worker registration failed:', error);
+                });
+        });
+
+        // Handle controller change (new service worker activated)
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            window.location.reload();
+        });
+    }
+
+    {{-- PWA Install Prompt --}}
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        
+        // Show install button or banner
+        const installBanner = document.createElement('div');
+        installBanner.className = 'alert alert-info fixed bottom-20 left-4 right-4 z-50 shadow-lg lg:left-auto lg:right-4 lg:w-96';
+        installBanner.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <div>
+                <h3 class="font-bold">Install DXLeave App</h3>
+                <div class="text-xs">Add to home screen for better experience</div>
+            </div>
+            <div class="flex gap-2">
+                <button class="btn btn-sm btn-primary" onclick="installPWA()">Install</button>
+                <button class="btn btn-sm btn-ghost" onclick="dismissInstall()">Later</button>
+            </div>
+        `;
+        installBanner.id = 'install-banner';
+        document.body.appendChild(installBanner);
+    });
+
+    function installPWA() {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    console.log('[PWA] User accepted the install prompt');
                 }
+                deferredPrompt = null;
+                dismissInstall();
             });
         }
-    </script>
+    }
+
+    function dismissInstall() {
+        const banner = document.getElementById('install-banner');
+        if (banner) {
+            banner.remove();
+        }
+    }
+
+    {{-- Online/Offline Status --}}
+    window.addEventListener('online', () => {
+        console.log('[PWA] Back online');
+        // You can show a toast notification here
+    });
+
+    window.addEventListener('offline', () => {
+        console.log('[PWA] Gone offline');
+        // You can show a toast notification here
+    });
+</script>
 </body>
 </html>
+```
