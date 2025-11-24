@@ -70,7 +70,7 @@
         }
 
         .label-col {
-            line-height: 1.5;
+            line-height: 1.4;
             background-color: #EFEFEF;
             width: 17.5%;
             font-size: 12pt;
@@ -94,15 +94,15 @@
         }
 
         .note-text {
-            font-size: 12pt;
-            margin-top: 5px;
+            font-size: 11pt;
+            /* margin-top: 5px; */
             font-style: italic;
+            font-weight: thin !important;
         }
 
         .declaration {
-            margin-bottom: 5px;
-            font-size: 12pt;
-            font-weight: thin;
+            margin-bottom: 1px;
+            font-size: 11pt;
         }
 
         .approval-table th {
@@ -127,7 +127,7 @@
         
         .footer-note {
             font-size: 11pt;
-            margin-top: 0px;
+            margin-top: -5px;
         }
 
         /* Helper to map leave types */
@@ -264,54 +264,59 @@
         <tr>
             <!-- Requester -->
             <td>
-                <div style="margin-bottom: 5pt;">{{ $leaveRequest->user->name }}</div>
+                <div style="margin-bottom: 45px;">{{ $leaveRequest->user->name }}</div>
                 <div class="approval-date">Date: {{ $leaveRequest->created_at->format('d/m/Y') }}</div>
             </td>
 
             <!-- Section Leader -->
             <td>
-                @if($slApproval && $slApproval->action == 'Approved')
-                    <div style="margin-bottom: 5pt;">{{ $slApproval->approver->name }}</div>
+                @if($slApproval)
+                    <div style="margin-bottom: 5px;">{{ $slApproval->approver->name }}</div>
+                    <div style="font-weight: bold; margin-bottom: 10px;">{{ $slApproval->action }}</div>
                     <div class="approval-date">Date: {{ \Carbon\Carbon::parse($slApproval->acted_at)->format('d/m/Y') }}</div>
                 @endif
             </td>
 
             <!-- Supervisor -->
             <td>
-                @if($spvApproval && $spvApproval->action == 'Approved')
-                    <div style="margin-bottom: 5pt;">{{ $spvApproval->approver->name }}</div>
+                @if($spvApproval)
+                    <div style="margin-bottom: 5px;">{{ $spvApproval->approver->name }}</div>
+                    <div style="font-weight: bold; margin-bottom: 10px;">{{ $spvApproval->action }}</div>
                     <div class="approval-date">Date: {{ \Carbon\Carbon::parse($spvApproval->acted_at)->format('d/m/Y') }}</div>
                 @endif
             </td>
 
             <!-- Assistant Mgr -->
             <td>
-                @if($asmenApproval && $asmenApproval->action == 'Approved')
-                    <div style="margin-bottom: 5pt;">{{ $asmenApproval->approver->name }}</div>
+                @if($asmenApproval)
+                    <div style="margin-bottom: 5px;">{{ $asmenApproval->approver->name }}</div>
+                    <div style="font-weight: bold; margin-bottom: 10px;">{{ $asmenApproval->action }}</div>
                     <div class="approval-date">Date: {{ \Carbon\Carbon::parse($asmenApproval->acted_at)->format('d/m/Y') }}</div>
                 @endif
             </td>
 
             <!-- Team Mgr -->
             <td>
-                @if($tlApproval && $tlApproval->action == 'Approved')
-                    <div style="margin-bottom: 5pt;">{{ $tlApproval->approver->name }}</div>
+                @if($tlApproval)
+                    <div style="margin-bottom: 5px;">{{ $tlApproval->approver->name }}</div>
+                    <div style="font-weight: bold; margin-bottom: 10px;">{{ $tlApproval->action }}</div>
                     <div class="approval-date">Date: {{ \Carbon\Carbon::parse($tlApproval->acted_at)->format('d/m/Y') }}</div>
                 @endif
             </td>
 
             <!-- Dept Mgr -->
             <td>
-                @if($managerApproval && $managerApproval->action == 'Approved')
-                    <div style="margin-bottom: 5pt;">{{ $managerApproval->approver->name }}</div>
+                @if($managerApproval)
+                    <div style="margin-bottom: 5px;">{{ $managerApproval->approver->name }}</div>
+                    <div style="font-weight: bold; margin-bottom: 10px;">{{ $managerApproval->action }}</div>
                     <div class="approval-date">Date: {{ \Carbon\Carbon::parse($managerApproval->acted_at)->format('d/m/Y') }}</div>
                 @endif
             </td>
         </tr>
     </table>
 
-    <div class="footer-note">
-        ※Please keep the column blank if the position is empty(직책 보임자가 없는 경우 비워 두십시오).
+    <div class="footer-note" style="margin-top: -20px !important;">
+       &nbsp;&nbsp;&nbsp; ※Please keep the column blank if the position is empty(직책 보임자가 없는 경우 비워 두십시오).
     </div>
 
 </body>
