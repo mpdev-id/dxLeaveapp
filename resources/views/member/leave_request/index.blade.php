@@ -66,7 +66,7 @@
         <template x-for="balance in balances" :key="balance.leave_type_id">
             <div class="stat bg-base-100 shadow-sm rounded-box p-3 border border-base-200">
                 <div class="stat-title text-[10px] font-bold uppercase tracking-wider truncate" x-text="balance.leave_type_name"></div>
-                <div class="stat-value text-primary text-xl" x-text="balance.remaining_balance"></div>
+                <div class="stat-value text-primary text-xl" x-text="balance.remaining_days"></div>
                 <div class="stat-desc text-[10px]">Days Remaining</div>
             </div>
         </template>

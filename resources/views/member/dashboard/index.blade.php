@@ -20,7 +20,7 @@
             <div class="stats shadow bg-base-100 border border-base-200">
                 <div class="stat">
                     <div class="stat-title font-bold text-base-content" x-text="balance.leave_type_name"></div>
-                    <div class="stat-value text-primary text-3xl" x-text="balance.initial_balance"></div>
+                    <div class="stat-value text-primary text-3xl" x-text="balance.remaining_days"></div>
                     <div class="stat-desc text-xs mt-1">Days Remaining</div>
                     
                     <div class="divider my-1"></div>
@@ -90,7 +90,36 @@
 
     {{-- My Recent Requests --}}
     <div class="space-y-4">
-        <h2 class="text-lg font-bold">My Recent Requests</h2>
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+            <h2 class="text-lg font-bold">My Recent Requests</h2>
+            
+            {{-- Filters --}}
+            <div class="flex flex-wrap gap-2 w-full md:w-auto">
+                <input 
+                    type="text" 
+                    x-model="searchQuery" 
+                    placeholder="Search..." 
+                    class="input input-bordered input-sm w-full md:w-48"
+                >
+                <select x-model="filterStatus" class="select select-bordered select-sm w-full md:w-32">
+                    <option value="">All Status</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Approved">Approved</option>
+                    <option value="Rejected">Rejected</option>
+                    <option value="Draft">Draft</option>
+                </select>
+                <select x-model="sortBy" class="select select-bordered select-sm w-full md:w-40">
+                    <option value="date_desc">Newest First</option>
+                    <option value="date_asc">Oldest First</option>
+                    <option value="start_date_desc">Start Date (Latest)</option>
+                    <option value="start_date_asc">Start Date (Earliest)</option>
+                </select>
+                <button @click="resetFilters" class="btn btn-ghost btn-sm btn-square" title="Reset Filters">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                </button>
+            </div>
+        </div>
+
         <div class="overflow-x-auto bg-base-100 rounded-box shadow">
             <table class="table table-zebra w-full">
                 <thead>
@@ -101,7 +130,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <template x-for="request in myRequests" :key="request.id">
+                    <template x-for="request in filteredRequests" :key="request.id">
                         <tr>
                             <td>
                                 <div class="font-bold text-sm" x-text="request.leave_type.name"></div>
@@ -117,13 +146,16 @@
                             </td>
                         </tr>
                     </template>
-                    <template x-if="myRequests.length === 0 && !loadingRequests">
+                    <template x-if="filteredRequests.length === 0 && !loadingRequests">
                         <tr>
                             <td colspan="3" class="text-center py-4 text-base-content/50">No leave requests found.</td>
                         </tr>
                     </template>
                 </tbody>
             </table>
+        </div>
+        <div class="text-xs text-right text-base-content/60" x-show="myRequests.length > 0">
+            Showing <span x-text="filteredRequests.length"></span> of <span x-text="myRequests.length"></span> requests
         </div>
     </div>
 
@@ -141,6 +173,11 @@
             loadingBalances: true,
             loadingRequests: true,
             token: localStorage.getItem('authToken'),
+            
+            // Filter states
+            searchQuery: '',
+            filterStatus: '',
+            sortBy: 'date_desc',
 
             async init() {
                 if (!this.token) return; 
@@ -151,6 +188,48 @@
                     this.fetchBalances(),
                     this.fetchRequests()
                 ]);
+            },
+
+            get filteredRequests() {
+                let filtered = this.myRequests;
+
+                // Apply search filter
+                if (this.searchQuery) {
+                    const query = this.searchQuery.toLowerCase();
+                    filtered = filtered.filter(r => 
+                        r.leave_type.name.toLowerCase().includes(query) ||
+                        (r.reason && r.reason.toLowerCase().includes(query))
+                    );
+                }
+
+                // Apply status filter
+                if (this.filterStatus) {
+                    filtered = filtered.filter(r => r.current_status === this.filterStatus);
+                }
+
+                // Apply sorting
+                filtered = [...filtered].sort((a, b) => {
+                    switch(this.sortBy) {
+                        case 'date_desc':
+                            return new Date(b.created_at) - new Date(a.created_at);
+                        case 'date_asc':
+                            return new Date(a.created_at) - new Date(b.created_at);
+                        case 'start_date_desc':
+                            return new Date(b.start_date) - new Date(a.start_date);
+                        case 'start_date_asc':
+                            return new Date(a.start_date) - new Date(b.start_date);
+                        default:
+                            return 0;
+                    }
+                });
+
+                return filtered;
+            },
+
+            resetFilters() {
+                this.searchQuery = '';
+                this.filterStatus = '';
+                this.sortBy = 'date_desc';
             },
 
             async fetchUser() {

@@ -29,11 +29,33 @@
             </div>
             <div>
                 <label class="text-xs text-base-content/60 uppercase block">Hire Date</label>
-                <div class="font-medium" x-text="formatDate(user.hire_date)"></div>
+                <div class="font-medium">
+                    <span x-text="formatDate(user.hire_date)"></span>
+                    <span class="text-sm opacity-70 ml-1" x-text="calculateTenure(user.hire_date)"></span>
+                </div>
             </div>
-            <div>
+            
+            <!-- <div>
                 <label class="text-xs text-base-content/60 uppercase block">Manager</label>
                 <div class="font-medium" x-text="user.manager?.name || '-'"></div>
+            </div> -->
+        </div>
+    </div>
+
+    <div class="bg-base-100 rounded-box shadow-sm overflow-hidden mt-6">
+        <div class="p-4 border-b border-base-200 font-bold">Leave Balances</div>
+        <div class="p-4">
+            <div class="grid grid-cols-2 gap-3">
+                <template x-for="balance in balances" :key="balance.leave_type_id">
+                    <div class="stat bg-base-100 shadow-sm rounded-box p-3 border border-base-200">
+                        <div class="stat-title text-[10px] font-bold uppercase tracking-wider truncate" x-text="balance.leave_type_name"></div>
+                        <div class="stat-value text-primary text-xl" x-text="balance.remaining_days"></div>
+                        <div class="stat-desc text-[10px]">Days Remaining</div>
+                    </div>
+                </template>
+                <template x-if="balances.length === 0">
+                    <div class="col-span-2 text-center text-sm opacity-50 py-2">No leave balance data available.</div>
+                </template>
             </div>
         </div>
     </div>
@@ -59,11 +81,15 @@
     function userProfile(baseApiUrl) {
         return {
             user: {},
+            balances: [],
             token: localStorage.getItem('authToken'),
 
             async init() {
                 if (!this.token) return;
-                await this.fetchUser();
+                await Promise.all([
+                    this.fetchUser(),
+                    this.fetchBalances()
+                ]);
             },
 
             async fetchUser() {
@@ -78,11 +104,55 @@
                 } catch (e) { console.error('Error fetching user:', e); }
             },
 
+            async fetchBalances() {
+                try {
+                    const response = await fetch(`${baseApiUrl}/user/leave-balances`, {
+                        headers: { 'Authorization': `Bearer ${this.token}`, 'Accept': 'application/json' }
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        this.balances = data.data;
+                    }
+                } catch (e) { console.error('Error fetching balances:', e); }
+            },
+
             formatDate(dateString) {
                 if (!dateString) return '-';
                 return new Date(dateString).toLocaleDateString('en-GB', {
                     day: 'numeric', month: 'long', year: 'numeric'
                 });
+            },
+
+            calculateTenure(dateString) {
+                if (!dateString) return '';
+                const start = new Date(dateString);
+                const end = new Date();
+                
+                let years = end.getFullYear() - start.getFullYear();
+                let months = end.getMonth() - start.getMonth();
+                let days = end.getDate() - start.getDate();
+
+                if (days < 0) {
+                    months--;
+                    // Get days in previous month
+                    const prevMonthDate = new Date(end.getFullYear(), end.getMonth(), 0);
+                    days += prevMonthDate.getDate();
+                }
+                
+                if (months < 0) {
+                    years--;
+                    months += 12;
+                }
+                
+                let result = '(';
+                if (years > 0) result += `${years} Tahun `;
+                if (months > 0) result += `${months} Bulan `;
+                if (days > 0) result += `${days} Hari`;
+                
+                // If exactly 0 days diff (today), handle gracefully
+                if (result === '(') return '(Hari Pertama)';
+                
+                return result.trim() + ')';
             },
 
             logout() {
