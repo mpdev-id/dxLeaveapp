@@ -208,7 +208,7 @@
                         'aria-label': 'Type your message here'
                     },
                     showCancelButton: true,
-                    confirmButtonText: action === 'approve' ? 'Approve' : 'Reject',
+                    confirmButtonText: action === 'approve' ? 'Approved' : 'Rejected',
                     confirmButtonColor: action === 'approve' ? '#36D399' : '#F87272',
                     inputValidator: (value) => {
                         if (action === 'reject' && !value) {

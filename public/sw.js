@@ -7,7 +7,7 @@ const STATIC_ASSETS = [
     '/',
     '/css/app.css',
     '/js/app.js',
-    '/manifest.json',
+    '/manifest.json', 
     '/offline.html',
 ];
 
