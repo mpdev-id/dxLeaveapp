@@ -79,8 +79,8 @@
                             <div class="mt-1 text-base-content/80 italic" x-text="`Reason: ${request.reason}`"></div>
                         </div>
                         <div class="card-actions justify-end mt-4">
-                            <button @click="handleApproval(request.id, 'reject')" class="btn btn-sm btn-error btn-outline">Reject</button>
-                            <button @click="handleApproval(request.id, 'approve')" class="btn btn-sm btn-success text-white">Approve</button>
+                            <button @click="handleApproval(request.id, 'Rejected')" class="btn btn-sm btn-error btn-outline">Reject</button>
+                            <button @click="handleApproval(request.id, 'Approved')" class="btn btn-sm btn-success text-white">Approve</button>
                         </div>
                     </div>
                 </div>
@@ -200,18 +200,22 @@
             },
 
             async handleApproval(id, action) {
+                // Ensure action matches the ENUM values expected by the backend (Approved/Rejected)
+                // The buttons pass 'Approved' or 'Rejected', so we should check against those.
+                const isApproved = action === 'Approved';
+                
                 const { value: text } = await Swal.fire({
                     input: 'textarea',
-                    inputLabel: action === 'approve' ? 'Approval Comment (Optional)' : 'Rejection Reason (Required)',
+                    inputLabel: isApproved ? 'Approval Comment (Optional)' : 'Rejection Reason (Required)',
                     inputPlaceholder: 'Type your message here...',
                     inputAttributes: {
                         'aria-label': 'Type your message here'
                     },
                     showCancelButton: true,
-                    confirmButtonText: action === 'approve' ? 'Approved' : 'Rejected',
-                    confirmButtonColor: action === 'approve' ? '#36D399' : '#F87272',
+                    confirmButtonText: isApproved ? 'Approve' : 'Reject',
+                    confirmButtonColor: isApproved ? '#36D399' : '#F87272',
                     inputValidator: (value) => {
-                        if (action === 'reject' && !value) {
+                        if (!isApproved && !value) {
                             return 'You need to write a reason for rejection!'
                         }
                     }
