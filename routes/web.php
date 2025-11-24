@@ -60,5 +60,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
 Route::get('/dashboard-member', [\App\Http\Controllers\Member\DashboardController::class, 'index'])->name('dashboard-member');
 Route::get('/member/leaves', [\App\Http\Controllers\Member\LeaveRequestController::class, 'index'])->name('member.leaves.index');
 Route::get('/member/leaves/create', [\App\Http\Controllers\Member\LeaveRequestController::class, 'create'])->name('member.leaves.create');
+Route::get('/member/leaves/{id}/print', [\App\Http\Controllers\Member\LeaveRequestController::class, 'print'])->name('member.leaves.print');
 Route::get('/member/profile', [\App\Http\Controllers\Member\ProfileController::class, 'index'])->name('member.profile.index');
 Route::get('/member/approver-log', [\App\Http\Controllers\Member\ApproverLogController::class, 'index'])->name('member.approver-log.index');

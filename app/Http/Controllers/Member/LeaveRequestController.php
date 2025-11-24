@@ -16,4 +16,15 @@ class LeaveRequestController extends Controller
     {
         return view('member.leave_request.create');
     }
+
+    public function print($id)
+    {
+        $leaveRequest = \App\Models\LeaveRequest::with([
+            'user.department', 
+            'leaveType', 
+            'approvals.approver.roles'
+        ])->findOrFail($id);
+
+        return view('member.leave_request.print', compact('leaveRequest'));
+    }
 }
