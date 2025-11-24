@@ -326,4 +326,49 @@ class LeaveRequestController extends Controller
             return ResponseFormatter::error($e->getMessage(), 'A system error occurred.', 500);
         }
     }
+
+    /**
+     * Get approval history for the current user (approver log)
+     */
+    public function getApproverLog(Request $request)
+    {
+        try {
+            $approver = Auth::user();
+            
+            // Get all approval history where this user was the approver
+            $approvalHistory = DB::table('approvals_history as ah')
+                ->join('leave_requests as lr', function($join) {
+                    $join->on('ah.approvable_id', '=', 'lr.id')
+                         ->where('ah.approvable_type', '=', LeaveRequest::class);
+                })
+                ->join('users as u', 'lr.user_id', '=', 'u.id')
+                ->join('leave_types as lt', 'lr.leave_type_id', '=', 'lt.id')
+                ->join('workflow_steps as ws', 'ah.workflow_step_id', '=', 'ws.id')
+                ->leftJoin('roles as r', 'ws.approver_role_id', '=', 'r.id')
+                ->where('ah.approver_user_id', $approver->id)
+                ->select(
+                    'ah.id as approval_id',
+                    'ah.action',
+                    'ah.comments',
+                    'ah.acted_at',
+                    'lr.id as leave_request_id',
+                    'lr.start_date',
+                    'lr.end_date',
+                    'lr.duration_days',
+                    'lr.reason',
+                    'lr.current_status',
+                    'u.name as employee_name',
+                    'u.employee_code',
+                    'lt.name as leave_type_name',
+                    'ws.step_number',
+                    'r.name as approver_role_name'
+                )
+                ->orderBy('ah.acted_at', 'desc')
+                ->get();
+
+            return ResponseFormatter::success($approvalHistory, 'Approver log retrieved successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to retrieve approver log: ' . $e->getMessage(), 500);
+        }
+    }
 }

@@ -166,20 +166,36 @@
                             <td>
                                 <div class="flex items-center space-x-3">
                                     <div class="avatar">
-                                        <div class="mask mask-squircle w-12 h-12">
-                                            <img :src="user.profile_photo_url" :alt="user.name" />
+                                        <div class="mask mask-squircle w-12 h-12 bg-gradient-to-br from-primary to-secondary">
+                                            <img 
+                                                :src="`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random&color=fff&size=128&bold=true`" 
+                                                :alt="user.name"
+                                                class="w-full h-full object-cover"
+                                                loading="lazy"
+                                            />
                                         </div>
                                     </div>
                                     <div>
-                                        <div class="font-bold " x-text="user.name"></div>
+                                        <div class="font-bold" x-text="user.name"></div>
                                         <div class="text-sm opacity-50" x-text="user.email"></div>
                                     </div>
                                 </div>
                             </td>
-                            <td class="badge badge-primary rounded-3xl " x-text="user.roles.length > 0 ? user.roles[0].name : 'N/A'"></td>
+                            <td>
+                                <div class="flex flex-wrap gap-1">
+                                    <template x-if="user.roles && user.roles.length > 0">
+                                        <template x-for="role in user.roles" :key="role.id">
+                                            <span class="badge badge-primary badge-sm" x-text="role.name"></span>
+                                        </template>
+                                    </template>
+                                    <template x-if="!user.roles || user.roles.length === 0">
+                                        <span class="badge badge-ghost badge-sm">No Role</span>
+                                    </template>
+                                </div>
+                            </td>
                             <td x-text="user.hire_date ? new Date(user.hire_date).toLocaleDateString() : 'N/A'"></td>
                             <td>
-                                <span class="badge  rounded-3xl " :class="user.status === 'active' ? 'badge-success' : 'badge-error'" x-text="user.status"></span>
+                                <span class="badge rounded-3xl" :class="user.status === 'active' ? 'badge-success' : 'badge-error'" x-text="user.status"></span>
                             </td>
                             <td>
                                 <button class="btn btn-sm btn-info  rounded-3xl" @click="openEditModal(user)">Edit</button>

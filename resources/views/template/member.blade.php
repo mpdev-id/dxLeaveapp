@@ -39,7 +39,7 @@
 <body class="bg-base-200 min-h-screen pb-16 md:pb-0">
 
     {{-- Top Navbar (Desktop/Tablet) --}}
-    <div class="navbar bg-base-100 shadow-lg sticky top-0 z-50">
+    <div class="navbar bg-base-100 shadow-lg sticky top-0 z-50" x-data="navbarUser('{{ config('app.base_api') }}')" x-init="init()">
         <div class="flex-1">
             <a class="btn btn-ghost text-xl">{{ config('app.name', 'DXLeave') }}</a>
         </div>
@@ -47,12 +47,19 @@
             <div class="dropdown dropdown-end">
                 <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
                     <div class="w-10 rounded-full">
-                        <img alt="User Avatar" src="https://ui-avatars.com/api/?name=User&background=random" id="user-avatar-nav" />
+                        <img 
+                            alt="User Avatar" 
+                            :src="`https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=random&color=fff&size=128&bold=true`" 
+                            class="w-full h-full object-cover"
+                        />
                     </div>
                 </div>
                 <ul tabindex="0" class="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
                     <li><a href="{{ route('dashboard-member') }}">Dashboard</a></li>
                     <li><a href="{{ route('member.leaves.index') }}">My Leaves</a></li>
+                    @can('approve leave request')
+                        <li><a href="{{ route('member.approver-log.index') }}">Approver Log</a></li>
+                    @endcan
                     <li><a href="{{ route('member.profile.index') }}">Profile</a></li>
                     <li><a href="#" onclick="logoutApi(event)">Logout</a></li>
                 </ul>
@@ -75,6 +82,12 @@
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
             <span class="text-[10px] font-medium">Leaves</span>
         </a>
+        <!-- @can('approve leave request')
+            <a href="{{ route('member.approver-log.index') }}" class="{{ request()->routeIs('member.approver-log.*') ? 'active text-primary bg-primary/10' : 'text-base-content/60 hover:text-primary' }} flex-1 flex flex-col items-center justify-center gap-1 h-full transition-colors duration-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <span class="text-[10px] font-medium">Approvals</span>
+            </a>
+            @endcan -->
         <a href="{{ route('member.profile.index') }}" class="{{ request()->routeIs('member.profile.*') ? 'active text-primary bg-primary/10' : 'text-base-content/60 hover:text-primary' }} flex-1 flex flex-col items-center justify-center gap-1 h-full transition-colors duration-200">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
             <span class="text-[10px] font-medium">Profile</span>
@@ -84,6 +97,38 @@
     @stack('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        // Alpine.js component for navbar user info
+        function navbarUser(baseApiUrl) {
+            return {
+                userName: 'User',
+                
+                async init() {
+                    await this.fetchUser();
+                },
+                
+                async fetchUser() {
+                    try {
+                        const token = localStorage.getItem('authToken');
+                        if (!token) return;
+                        
+                        const response = await fetch(`${baseApiUrl}/user`, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Accept': 'application/json'
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            this.userName = data.data.name || 'User';
+                        }
+                    } catch (error) {
+                        console.error('Error fetching user:', error);
+                    }
+                }
+            }
+        }
+        
         function logoutApi(event) {
             event.preventDefault();
             const baseApiUrl = '{{ config('app.base_api') }}'; // Ensure this config is available

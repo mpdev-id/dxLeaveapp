@@ -54,12 +54,46 @@ class LeaveTypeController extends Controller
     public function store(Request $request)
     {
         try {
-            $validator = Validator::make($request->all(), [
+            // Convert empty strings to null and string numbers to integers
+            $data = $request->all();
+            
+            // Handle default_entitlement_days
+            if (isset($data['default_entitlement_days'])) {
+                if ($data['default_entitlement_days'] === '' || $data['default_entitlement_days'] === null) {
+                    $data['default_entitlement_days'] = 0; // Set default to 0 if empty
+                } else {
+                    $data['default_entitlement_days'] = (int) $data['default_entitlement_days'];
+                }
+            }
+            
+            // Handle max_carry_over_days (nullable)
+            if (isset($data['max_carry_over_days'])) {
+                if ($data['max_carry_over_days'] === '' || $data['max_carry_over_days'] === null) {
+                    $data['max_carry_over_days'] = null;
+                } else {
+                    $data['max_carry_over_days'] = (int) $data['max_carry_over_days'];
+                }
+            }
+            
+            // Handle accrual_frequency (nullable string)
+            if (isset($data['accrual_frequency']) && $data['accrual_frequency'] === '') {
+                $data['accrual_frequency'] = null;
+            }
+            
+            // Handle boolean fields
+            if (isset($data['is_paid'])) {
+                $data['is_paid'] = filter_var($data['is_paid'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
+            }
+            if (isset($data['requires_attachment'])) {
+                $data['requires_attachment'] = filter_var($data['requires_attachment'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
+            }
+            
+            $validator = Validator::make($data, [
                 'name' => 'required|string|max:255',
                 'default_entitlement_days' => 'required|integer|min:0',
                 'accrual_frequency' => 'sometimes|string|nullable',
                 'is_paid' => 'required|boolean',
-                'max_carry_over_days' => 'sometimes|integer|min:0|nullable',
+                'max_carry_over_days' => 'sometimes|nullable|integer|min:0',
                 'requires_attachment' => 'required|boolean',
             ]);
 
@@ -92,12 +126,46 @@ class LeaveTypeController extends Controller
     public function update(Request $request, LeaveType $leaveType)
     {
         try {
-            $validator = Validator::make($request->all(), [
+            // Convert empty strings to null and string numbers to integers
+            $data = $request->all();
+            
+            // Handle default_entitlement_days
+            if (isset($data['default_entitlement_days'])) {
+                if ($data['default_entitlement_days'] === '' || $data['default_entitlement_days'] === null) {
+                    $data['default_entitlement_days'] = 0; // Set default to 0 if empty
+                } else {
+                    $data['default_entitlement_days'] = (int) $data['default_entitlement_days'];
+                }
+            }
+            
+            // Handle max_carry_over_days (nullable)
+            if (isset($data['max_carry_over_days'])) {
+                if ($data['max_carry_over_days'] === '' || $data['max_carry_over_days'] === null) {
+                    $data['max_carry_over_days'] = null;
+                } else {
+                    $data['max_carry_over_days'] = (int) $data['max_carry_over_days'];
+                }
+            }
+            
+            // Handle accrual_frequency (nullable string)
+            if (isset($data['accrual_frequency']) && $data['accrual_frequency'] === '') {
+                $data['accrual_frequency'] = null;
+            }
+            
+            // Handle boolean fields
+            if (isset($data['is_paid'])) {
+                $data['is_paid'] = filter_var($data['is_paid'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
+            }
+            if (isset($data['requires_attachment'])) {
+                $data['requires_attachment'] = filter_var($data['requires_attachment'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
+            }
+            
+            $validator = Validator::make($data, [
                 'name' => 'sometimes|required|string|max:255',
                 'default_entitlement_days' => 'sometimes|required|integer|min:0',
                 'accrual_frequency' => 'sometimes|string|nullable',
                 'is_paid' => 'sometimes|required|boolean',
-                'max_carry_over_days' => 'sometimes|integer|min:0|nullable',
+                'max_carry_over_days' => 'sometimes|nullable|integer|min:0',
                 'requires_attachment' => 'sometimes|required|boolean',
             ]);
 

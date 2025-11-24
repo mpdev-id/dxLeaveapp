@@ -230,7 +230,8 @@
                                 'Content-Type': 'application/json',
                                 'Accept': 'application/json'
                             },
-                            body: JSON.stringify({ action: action, comments: text })
+                            // Force action to be 'Approved' or 'Rejected' based on the boolean check
+                            body: JSON.stringify({ action: isApproved ? 'Approved' : 'Rejected', comments: text })
                         });
                         
                         const result = await response.json();

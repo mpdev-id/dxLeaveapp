@@ -38,6 +38,10 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     // Endpoint ini dilindungi oleh Spatie Middleware: hanya user dengan peran 'manager' ATAU izin 'approve leave request' yang bisa mengakses
     Route::patch('leave-requests/{leaveRequest}/approve', [LeaveRequestController::class, 'handleApproval'])
         ->middleware('role_or_permission:manager|approve leave request'); 
+    
+    // 3. Approver Log - History of approvals by the current user
+    Route::get('approver-log', [LeaveRequestController::class, 'getApproverLog'])
+        ->middleware('role_or_permission:manager|approve leave request'); 
 });
 
 Route::get('departments', [DepartmentController::class,'index'])->name('globalDepartments');

@@ -15,24 +15,60 @@
                 <form @submit.prevent="isEdit ? updateLeaveType() : addLeaveType()" class="space-y-4">
                     <div class="form-control">
                         <label class="label">
-                            <span class="label-text flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v2a2 2 0 01-2 2h-5m-5 0a2 2 0 01-2-2v-2a2 2 0 012-2h5m-9 0a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                                Name
-                            </span>
+                            <span class="label-text font-semibold">Name *</span>
                         </label>
                         <input type="text" x-model="newLeaveType.name" placeholder="e.g., Annual Leave" class="input input-bordered w-full" :class="{'input-error': errors.name}" required>
                         <div x-show="errors.name" class="text-error text-sm mt-1" x-text="errors.name ? errors.name[0] : ''"></div>
                     </div>
+                    
                     <div class="form-control">
                         <label class="label">
-                            <span class="label-text flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                                Days
-                            </span>
+                            <span class="label-text font-semibold">Default Entitlement Days *</span>
                         </label>
-                        <input type="number" x-model="newLeaveType.days" placeholder="e.g., 12" class="input input-bordered w-full" :class="{'input-error': errors.days}" required>
-                        <div x-show="errors.days" class="text-error text-sm mt-1" x-text="errors.days ? errors.days[0] : ''"></div>
+                        <input type="number" x-model="newLeaveType.default_entitlement_days" placeholder="e.g., 12" class="input input-bordered w-full" :class="{'input-error': errors.default_entitlement_days}" required min="0">
+                        <div x-show="errors.default_entitlement_days" class="text-error text-sm mt-1" x-text="errors.default_entitlement_days ? errors.default_entitlement_days[0] : ''"></div>
                     </div>
+                    
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">Max Carry Over Days</span>
+                        </label>
+                        <input type="number" x-model="newLeaveType.max_carry_over_days" placeholder="e.g., 5 (optional)" class="input input-bordered w-full" :class="{'input-error': errors.max_carry_over_days}" min="0">
+                        <label class="label">
+                            <span class="label-text-alt">Leave blank if no carry over allowed</span>
+                        </label>
+                        <div x-show="errors.max_carry_over_days" class="text-error text-sm mt-1" x-text="errors.max_carry_over_days ? errors.max_carry_over_days[0] : ''"></div>
+                    </div>
+                    
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">Accrual Frequency</span>
+                        </label>
+                        <select x-model="newLeaveType.accrual_frequency" class="select select-bordered w-full" :class="{'select-error': errors.accrual_frequency}">
+                            <option value="">None</option>
+                            <option value="monthly">Monthly</option>
+                            <option value="quarterly">Quarterly</option>
+                            <option value="yearly">Yearly</option>
+                        </select>
+                        <div x-show="errors.accrual_frequency" class="text-error text-sm mt-1" x-text="errors.accrual_frequency ? errors.accrual_frequency[0] : ''"></div>
+                    </div>
+                    
+                    <div class="form-control">
+                        <label class="label cursor-pointer justify-start gap-4">
+                            <input type="checkbox" x-model="newLeaveType.is_paid" class="checkbox checkbox-primary">
+                            <span class="label-text font-semibold">Is Paid Leave?</span>
+                        </label>
+                        <div x-show="errors.is_paid" class="text-error text-sm mt-1" x-text="errors.is_paid ? errors.is_paid[0] : ''"></div>
+                    </div>
+                    
+                    <div class="form-control">
+                        <label class="label cursor-pointer justify-start gap-4">
+                            <input type="checkbox" x-model="newLeaveType.requires_attachment" class="checkbox checkbox-primary">
+                            <span class="label-text font-semibold">Requires Attachment?</span>
+                        </label>
+                        <div x-show="errors.requires_attachment" class="text-error text-sm mt-1" x-text="errors.requires_attachment ? errors.requires_attachment[0] : ''"></div>
+                    </div>
+                    
                     <div class="modal-action">
                         <button type="button" class="btn btn-ghost" onclick="hideModal('leavetype_modal')">Cancel</button>
                         <button type="submit" class="btn btn-primary" :disabled="loading" x-text="isEdit ? 'Update' : 'Create'"></button>
@@ -106,7 +142,11 @@
             newLeaveType: {
                 id: null,
                 name: '',
-                days: ''
+                default_entitlement_days: '',
+                max_carry_over_days: '',
+                accrual_frequency: '',
+                is_paid: true,
+                requires_attachment: false
             },
             errors: {},
 
@@ -157,14 +197,30 @@
 
             openAddModal() {
                 this.isEdit = false;
-                this.newLeaveType = { id: null, name: '', days: '' };
+                this.newLeaveType = { 
+                    id: null, 
+                    name: '', 
+                    default_entitlement_days: '',
+                    max_carry_over_days: '',
+                    accrual_frequency: '',
+                    is_paid: true,
+                    requires_attachment: false
+                };
                 this.errors = {};
                 showModal('leavetype_modal');
             },
 
             openEditModal(leaveType) {
                 this.isEdit = true;
-                this.newLeaveType = { ...leaveType, days: parseFloat(leaveType.default_entitlement_days) };
+                this.newLeaveType = { 
+                    id: leaveType.id,
+                    name: leaveType.name,
+                    default_entitlement_days: leaveType.default_entitlement_days || '',
+                    max_carry_over_days: leaveType.max_carry_over_days || '',
+                    accrual_frequency: leaveType.accrual_frequency || '',
+                    is_paid: leaveType.is_paid === 1 || leaveType.is_paid === true,
+                    requires_attachment: leaveType.requires_attachment === 1 || leaveType.requires_attachment === true
+                };
                 this.errors = {};
                 showModal('leavetype_modal');
             },

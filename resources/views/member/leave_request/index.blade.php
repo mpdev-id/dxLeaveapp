@@ -13,7 +13,53 @@
         </a>
     </div>
 
-    {{-- Filters (Optional, can be added later) --}}
+    {{-- Filters & Search --}}
+    <div class="card bg-base-100 shadow-sm border border-base-200">
+        <div class="card-body p-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div class="form-control">
+                    <label class="label py-1">
+                        <span class="label-text text-xs font-semibold">Search</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        x-model="searchQuery" 
+                        placeholder="Search by leave type or reason..." 
+                        class="input input-bordered input-sm w-full"
+                    >
+                </div>
+                <div class="form-control">
+                    <label class="label py-1">
+                        <span class="label-text text-xs font-semibold">Filter by Status</span>
+                    </label>
+                    <select x-model="filterStatus" class="select select-bordered select-sm w-full">
+                        <option value="">All Status</option>
+                        <option value="Draft">Draft</option>
+                        <option value="Pending">Pending</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Approved">Approved</option>
+                        <option value="Rejected">Rejected</option>
+                    </select>
+                </div>
+                <div class="form-control">
+                    <label class="label py-1">
+                        <span class="label-text text-xs font-semibold">Sort by</span>
+                    </label>
+                    <select x-model="sortBy" class="select select-bordered select-sm w-full">
+                        <option value="date_desc">Date (Newest First)</option>
+                        <option value="date_asc">Date (Oldest First)</option>
+                        <option value="start_date_desc">Start Date (Latest)</option>
+                        <option value="start_date_asc">Start Date (Earliest)</option>
+                        <option value="status">Status</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex justify-between items-center mt-2">
+                <span class="text-xs text-base-content/60" x-text="`Showing ${filteredRequests.length} of ${requests.length} requests`"></span>
+                <button @click="resetFilters" class="btn btn-ghost btn-xs">Reset Filters</button>
+            </div>
+        </div>
+    </div>
     
     {{-- Leave Balances --}}
     <div class="grid grid-cols-2 gap-3 mb-6">
@@ -39,14 +85,14 @@
             </div>
         </template>
 
-        <template x-if="!loading && requests.length === 0">
+        <template x-if="!loading && filteredRequests.length === 0">
             <div class="text-center py-10 opacity-50">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
                 <p>No leave requests found.</p>
             </div>
         </template>
 
-        <template x-for="request in requests" :key="request.id">
+        <template x-for="request in filteredRequests" :key="request.id">
             <div class="card bg-base-100 shadow-sm border border-base-200">
                 <div class="card-body p-4">
                     <div class="flex justify-between items-start mb-2">
@@ -119,6 +165,9 @@
             loadingBalances: true,
             token: localStorage.getItem('authToken'),
             user: null,
+            searchQuery: '',
+            filterStatus: '',
+            sortBy: 'date_desc',
 
             async init() {
                 if (!this.token) return;
@@ -127,6 +176,50 @@
                     this.fetchRequests(),
                     this.fetchBalances()
                 ]);
+            },
+
+            get filteredRequests() {
+                let filtered = this.requests;
+
+                // Apply search filter
+                if (this.searchQuery) {
+                    const query = this.searchQuery.toLowerCase();
+                    filtered = filtered.filter(r => 
+                        r.leave_type.name.toLowerCase().includes(query) ||
+                        r.reason.toLowerCase().includes(query)
+                    );
+                }
+
+                // Apply status filter
+                if (this.filterStatus) {
+                    filtered = filtered.filter(r => r.current_status === this.filterStatus);
+                }
+
+                // Apply sorting
+                filtered = [...filtered].sort((a, b) => {
+                    switch(this.sortBy) {
+                        case 'date_desc':
+                            return new Date(b.created_at) - new Date(a.created_at);
+                        case 'date_asc':
+                            return new Date(a.created_at) - new Date(b.created_at);
+                        case 'start_date_desc':
+                            return new Date(b.start_date) - new Date(a.start_date);
+                        case 'start_date_asc':
+                            return new Date(a.start_date) - new Date(b.start_date);
+                        case 'status':
+                            return a.current_status.localeCompare(b.current_status);
+                        default:
+                            return 0;
+                    }
+                });
+
+                return filtered;
+            },
+
+            resetFilters() {
+                this.searchQuery = '';
+                this.filterStatus = '';
+                this.sortBy = 'date_desc';
             },
 
             async fetchBalances() {
