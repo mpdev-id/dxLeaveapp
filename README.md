@@ -33,8 +33,8 @@ A modern, API-driven leave management system built with Laravel 11. It provides 
 
 1.  **Clone the repository:**
     ```sh
-    git clone https://github.com/mnprasetya/dxleaveApp.git
-    cd dxleaveApp
+    git clone https://github.com/mnprasetya/CutikuyApp.git
+    cd CutikuyApp
     ```
 
 2.  **Install dependencies:**

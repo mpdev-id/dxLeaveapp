@@ -46,9 +46,10 @@
                         </label>
                         <select x-model="newLeaveType.accrual_frequency" class="select select-bordered w-full" :class="{'select-error': errors.accrual_frequency}">
                             <option value="">None</option>
-                            <option value="monthly">Monthly</option>
-                            <option value="quarterly">Quarterly</option>
-                            <option value="yearly">Yearly</option>
+                            <option value="Annually">Annually</option>
+                            <option value="Monthly">Monthly</option>
+                            <option value="LumpSum">Lump Sum</option>
+                            <option value="Per Request">Per Request</option>
                         </select>
                         <div x-show="errors.accrual_frequency" class="text-error text-sm mt-1" x-text="errors.accrual_frequency ? errors.accrual_frequency[0] : ''"></div>
                     </div>

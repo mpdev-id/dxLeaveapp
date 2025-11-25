@@ -167,6 +167,9 @@ document.addEventListener('DOMContentLoaded', function() {
         initialView: 'dayGridMonth',
         editable: false,
         selectable: true,
+        weekends: false, // Don't show Saturday and Sunday
+   
+        height: '800px',
         dayMaxEvents: true, // allow "more" link when too many events
         events: function(fetchInfo, successCallback, failureCallback) {
             fetch(`${baseApiUrl}/admin/dashboard/leave-calendar?start=${fetchInfo.startStr}&end=${fetchInfo.endStr}`, {
@@ -238,10 +241,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                         return null; // Should not happen
                     }).filter(Boolean); // Filter out nulls
-                    console.log('Events array sent to FullCalendar:', events); // Added for debugging
+                    //console.log('Events array sent to FullCalendar:', events); // Added for debugging
                     successCallback(events);
                 } else {
-                    console.log('No events data or unexpected format received.'); // Added for debugging
+                    //console.log('No events data or unexpected format received.'); // Added for debugging
                     successCallback([]); // No data or unexpected format
                 }
             })

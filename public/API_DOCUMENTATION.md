@@ -1,6 +1,6 @@
-# DXLeave API Documentation
+# Cutikuy API Documentation
 
-Welcome to the **DXLeave API Documentation**. This document provides comprehensive information about all available API endpoints for the DXLeave Management System.
+Welcome to the **Cutikuy API Documentation**. This document provides comprehensive information about all available API endpoints for the Cutikuy Management System.
 
 ## 📚 Table of Contents
 
@@ -26,7 +26,7 @@ Welcome to the **DXLeave API Documentation**. This document provides comprehensi
 
 ## Introduction
 
-The DXLeave API is a RESTful API that provides endpoints for managing:
+The Cutikuy API is a RESTful API that provides endpoints for managing:
 - Employee leave requests
 - User management
 - Department management
@@ -767,8 +767,8 @@ Submit a draft leave request for approval.
 ## Support
 
 For issues or questions, please contact:
-- **Email:** support@dxleave.com
-- **GitHub:** [github.com/mnprasetya/dxleaveApp](https://github.com/mnprasetya/dxleaveApp)
+- **Email:** support@Cutikuy.com
+- **GitHub:** [github.com/mnprasetya/CutikuyApp](https://github.com/mnprasetya/CutikuyApp)
 
 ---
 

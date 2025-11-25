@@ -176,16 +176,32 @@
                     <span class="checkbox-box">{{ $isSick ? 'V' : '' }}</span> Sick Leave (병가)
                 </div>
                 <div class="checkbox-item">
-                    <span class="checkbox-box">{{ $isMaternity ? 'V' : '' }}</span> Maternity Leave (출산 휴가)
+                    <span class="checkbox-box">
+                        @if($isMaternity)
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        @endif
+                    </span> Maternity Leave (출산 휴가)
                 </div>
                 <div class="checkbox-item">
-                    <span class="checkbox-box">{{ $isSpecial ? 'V' : '' }}</span> Special Leave (청원 휴가)
+                    <span class="checkbox-box">
+                        @if($isSpecial)
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        @endif
+                    </span> Special Leave (청원 휴가)
                 </div>
                 <div class="checkbox-item">
-                    <span class="checkbox-box">{{ $isUnpaid ? 'V' : '' }}</span> Unpaid Leave (무급 휴가)
+                    <span class="checkbox-box">
+                        @if($isUnpaid)
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        @endif
+                    </span> Unpaid Leave (무급 휴가)
                 </div>
                 <div class="checkbox-item">
-                    <span class="checkbox-box">{{ $isMonthly ? 'V' : '' }}</span> Monthly Leave (월간 휴가)
+                    <span class="checkbox-box"> 
+                        @if($isMonthly)
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        @endif
+                    </span> Monthly Leave (월간 휴가)
                 </div>
                 <div class="note-text">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ※Applicable for employee under 12 months only (12 개월 미만자 적용)</div>
             </td>

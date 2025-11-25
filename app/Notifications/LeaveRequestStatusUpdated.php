@@ -94,7 +94,7 @@ class LeaveRequestStatusUpdated extends Notification implements ShouldQueue
                 break;
         }
 
-        $message .= "\n\nThank you,\nDXLeave System";
+        $message .= "\n\nThank you,\nCutikuy System";
 
         return $message;
     }

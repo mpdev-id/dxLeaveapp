@@ -296,7 +296,7 @@
                         const data = await response.json();
                         // UserResource returns role as an array of strings
                         this.userRoles = data.data.role || [];
-                        console.log('Fetched User Roles:', this.userRoles);
+                        // console.log('Fetched User Roles:', this.userRoles);
                     } catch (error) {
                         console.error('Error fetching user:', error);
                     }

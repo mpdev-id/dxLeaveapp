@@ -7,12 +7,12 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     
     {{-- PWA Meta Tags --}}
-    <meta name="description" content="DXLeave - Employee Leave Management System">
+    <meta name="description" content="Cutikuy - Employee Leave Management System">
     <meta name="theme-color" content="#0d6efd">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="DXLeave">
+    <meta name="apple-mobile-web-app-title" content="Cutikuy">
     
     {{-- Manifest --}}
     <link rel="manifest" href="/manifest.json">
@@ -41,7 +41,7 @@
     {{-- Top Navbar (Desktop/Tablet) --}}
     <div class="navbar bg-base-100 shadow-lg sticky top-0 z-50" x-data="navbarUser('{{ config('app.base_api') }}')" x-init="init()">
         <div class="flex-1">
-            <a class="btn btn-ghost text-xl">{{ config('app.name', 'DXLeave') }}</a>
+            <a class="btn btn-ghost text-xl">{{ config('app.name', 'Cutikuy') }}</a>
         </div>
         <div class="flex-none gap-2">
             <div class="dropdown dropdown-end">

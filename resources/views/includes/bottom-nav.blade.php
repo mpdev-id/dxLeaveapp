@@ -1,4 +1,4 @@
-<div class="fixed bottom-0 left-0 z-50 w-full h-16 bg-base-100 border-t border-base-300 lg:hidden">
+<div class="fixed bottom-0 left-0 z-1 w-full h-16 bg-base-100 border-t border-base-300 lg:hidden">
     <div class="grid h-full max-w-lg grid-cols-5 mx-auto font-medium">
         {{-- Dashboard --}}
         <a href="{{ route('admin.dashboard.index') }}" class="inline-flex flex-col items-center justify-center px-5 hover:bg-base-200 group {{ request()->routeIs('admin.dashboard.index') ? 'text-primary' : 'text-base-content' }}">

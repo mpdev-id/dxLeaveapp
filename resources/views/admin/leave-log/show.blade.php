@@ -219,8 +219,8 @@
 
                 showDetails(leaveRequest) {
                     this.selectedLeaveRequest = leaveRequest; // Set the Alpine state
-                    console.log('Leave Request passed to modal:', leaveRequest); // Debugging
-                    console.log('selectedLeaveRequest state:', this.selectedLeaveRequest); // Debugging
+                    // console.log('Leave Request passed to modal:', leaveRequest); // Debugging
+                    // console.log('selectedLeaveRequest state:', this.selectedLeaveRequest); // Debugging
                     showModal('leave_request_details_modal'); // Show the native dialog
                 },
             }

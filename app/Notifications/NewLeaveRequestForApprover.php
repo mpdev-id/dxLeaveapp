@@ -72,8 +72,8 @@ class NewLeaveRequestForApprover extends Notification implements ShouldQueue
             $message .= "Reason: *" . ucfirst($this->leaveRequest->reason) . "*\n";
         }
         $message .= "\n";
-        $message .= "Please log in to the DXLeave system to *Approve* or *Reject* this request.";
-        $message .= "\n\nThank you,\nDXLeave System";
+        $message .= "Please log in to the Cutikuy system to *Approve* or *Reject* this request.";
+        $message .= "\n\nThank you,\nCutikuy System";
 
         $payload = ['message' => $message];
 

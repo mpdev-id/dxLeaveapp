@@ -15,7 +15,7 @@ class DatabaseSeeder extends Seeder
             DepartmentsSeeder::class,
             RoleAndPermissionSeeder::class,
             UserSeeder::class,
-            LeaveApprovalWorkflowSeeder::class, // Alur kerja 5 langkah yang baru
+            CutikuyrovalWorkflowSeeder::class, // Alur kerja 5 langkah yang baru
             LeaveTypeSeeder::class,
             PublicHolidaySeeder::class,
         ]);

@@ -164,7 +164,7 @@ class UserController extends Controller
                 $this->entitlementService->createEntitlement([
                     'user_id' => $newUser->id,
                     'leave_type_id' => $leaveTypeId,
-                    'year' => $request->hire_date ? Carbon::parse($request->hire_date)->year : null,
+                    'year' => $currentYear,
                     'initial_balance' => 12, // Default 12 days
                     'days_taken' => 0,
                     'carry_over_days' => 0,

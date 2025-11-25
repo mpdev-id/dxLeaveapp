@@ -8,7 +8,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 
-class LeaveApprovalWorkflowSeeder extends Seeder
+class CutikuyrovalWorkflowSeeder extends Seeder
 {
     /**
      * Run the database seeds.

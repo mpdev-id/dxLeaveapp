@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="corporate">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <title>@yield('title') - {{ config('app.name', 'Laravel') }}</title>
     <meta charset="utf-8">
@@ -7,12 +7,12 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     
     {{-- PWA Meta Tags --}}
-    <meta name="description" content="DXLeave - Employee Leave Management System">
+    <meta name="description" content="Cutikuy - Employee Leave Management System">
     <meta name="theme-color" content="#0d6efd">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="DXLeave">
+    <meta name="apple-mobile-web-app-title" content="Cutikuy">
     
     {{-- Manifest --}}
     <link rel="manifest" href="/manifest.json">
@@ -43,7 +43,7 @@
                         {{-- This is for the mobile view, but the menu is now on the bottom nav --}}
                     </div>
                     <div class="flex-none hidden lg:block">
-                        <label for="my-drawer" @click="drawerOpen = !drawerOpen" aria-label="open sidebar" class="btn btn-square btn-ghost">
+                        <label for="my-drawer" @click="drawerOpen = !drawerOpen" aria-label="open sidebar" class="btn btn-square btn-ghost ">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-5 h-5 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                         </label>
                     </div>
@@ -60,9 +60,9 @@
             </div> 
 
             {{-- Drawer Sidebar --}}
-            <div class="drawer-side">
+            <div class="drawer-side bg-purple-400/25 z-2">
                 <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
-                <ul class="menu p-4 w-60 min-h-full bg-base-200 text-base-content">
+                <ul class="menu p-4 w-60 min-h-full bg-base-200 text-base-content rounded-r-xl">
                     <li class="text-2xl font-bold p-4">{{ config('app.name', 'Laravel') }}</li>
                     <li>
                         <a href="{{ route('admin.dashboard.index') }}">
@@ -102,14 +102,12 @@
                         </details>
                     </li>
 
-                    <li>
+                        
+                        <li class="mt-auto">
                         <a href="{{ route('member.profile.index') }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                             Member Profile
                         </a>
-                    </li>
-                    
-                    <li class="mt-auto">
                         <form action="{{ route('logout') }}" method="POST" class="w-full">
                             @csrf
                             <button type="submit" class="w-full text-left flex" onclick="logoutApi(event, '{{ config('app.base_api') }}')">
@@ -239,7 +237,7 @@
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('/sw.js')
                 .then((registration) => {
-                    console.log('[PWA] Service Worker registered:', registration.scope);
+                    // console.log('[PWA] Service Worker registered:', registration.scope);
                     
                     // Check for updates
                     registration.addEventListener('updatefound', () => {
@@ -280,7 +278,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
             <div>
-                <h3 class="font-bold">Install DXLeave App</h3>
+                <h3 class="font-bold">Install Cutikuy App</h3>
                 <div class="text-xs">Add to home screen for better experience</div>
             </div>
             <div class="flex gap-2">
@@ -297,7 +295,7 @@
             deferredPrompt.prompt();
             deferredPrompt.userChoice.then((choiceResult) => {
                 if (choiceResult.outcome === 'accepted') {
-                    console.log('[PWA] User accepted the install prompt');
+                    // console.log('[PWA] User accepted the install prompt');
                 }
                 deferredPrompt = null;
                 dismissInstall();
@@ -314,12 +312,12 @@
 
     {{-- Online/Offline Status --}}
     window.addEventListener('online', () => {
-        console.log('[PWA] Back online');
+        // console.log('[PWA] Back online');
         // You can show a toast notification here
     });
 
     window.addEventListener('offline', () => {
-        console.log('[PWA] Gone offline');
+        // console.log('[PWA] Gone offline');
         // You can show a toast notification here
     });
 </script>

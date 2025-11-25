@@ -1,5 +1,5 @@
 /**
- * SPA Enhancement Utilities for DXLeave
+ * SPA Enhancement Utilities for Cutikuy
  * Provides smooth transitions, loading states, and better UX
  */
 
@@ -172,7 +172,7 @@ class SPAEnhancer {
         const data = Object.fromEntries(formData);
         const key = form.dataset.autosave || 'draft';
         localStorage.setItem(key, JSON.stringify(data));
-        console.log('Draft saved:', key);
+        //console.log('Draft saved:', key);
     }
 
     loadDraft(formId) {
@@ -309,4 +309,4 @@ window.SPAUtils = {
     lazyLoadImages
 };
 
-console.log('✨ SPA Enhancements loaded');
+//console.log('✨ SPA Enhancements loaded');

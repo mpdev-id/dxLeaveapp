@@ -1,6 +1,6 @@
-const CACHE_NAME = 'dxleave-v1.0.0';
-const STATIC_CACHE = 'dxleave-static-v1.0.0';
-const DYNAMIC_CACHE = 'dxleave-dynamic-v1.0.0';
+const CACHE_NAME = 'Cutikuy-v1.0.0';
+const STATIC_CACHE = 'Cutikuy-static-v1.0.0';
+const DYNAMIC_CACHE = 'Cutikuy-dynamic-v1.0.0';
 
 // Assets to cache on install
 const STATIC_ASSETS = [
@@ -13,15 +13,15 @@ const STATIC_ASSETS = [
 
 // Install event - cache static assets
 self.addEventListener('install', (event) => {
-    console.log('[Service Worker] Installing...');
+    //console.log('[Service Worker] Installing...');
     event.waitUntil(
         caches.open(STATIC_CACHE)
             .then((cache) => {
-                console.log('[Service Worker] Caching static assets');
+                //console.log('[Service Worker] Caching static assets');
                 return cache.addAll(STATIC_ASSETS.map(url => new Request(url, { cache: 'reload' })));
             })
             .catch((error) => {
-                console.error('[Service Worker] Cache failed:', error);
+                //console.error('[Service Worker] Cache failed:', error);
             })
     );
     self.skipWaiting();
@@ -29,13 +29,13 @@ self.addEventListener('install', (event) => {
 
 // Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
-    console.log('[Service Worker] Activating...');
+    //console.log('[Service Worker] Activating...');
     event.waitUntil(
         caches.keys().then((cacheNames) => {
             return Promise.all(
                 cacheNames.map((cacheName) => {
                     if (cacheName !== STATIC_CACHE && cacheName !== DYNAMIC_CACHE) {
-                        console.log('[Service Worker] Deleting old cache:', cacheName);
+                        //console.log('[Service Worker] Deleting old cache:', cacheName);
                         return caches.delete(cacheName);
                     }
                 })
@@ -115,7 +115,7 @@ self.addEventListener('fetch', (event) => {
 
 // Background sync for offline actions
 self.addEventListener('sync', (event) => {
-    console.log('[Service Worker] Background sync:', event.tag);
+   // console.log('[Service Worker] Background sync:', event.tag);
 
     if (event.tag === 'sync-leave-requests') {
         event.waitUntil(syncLeaveRequests());
@@ -124,10 +124,10 @@ self.addEventListener('sync', (event) => {
 
 // Push notification
 self.addEventListener('push', (event) => {
-    console.log('[Service Worker] Push received');
+   // console.log('[Service Worker] Push received');
 
     const data = event.data ? event.data.json() : {};
-    const title = data.title || 'DXLeave Notification';
+    const title = data.title || 'Cutikuy Notification';
     const options = {
         body: data.body || 'You have a new notification',
         icon: '/images/icons/icon-192x192.png',
@@ -144,7 +144,7 @@ self.addEventListener('push', (event) => {
 
 // Notification click
 self.addEventListener('notificationclick', (event) => {
-    console.log('[Service Worker] Notification clicked');
+   // console.log('[Service Worker] Notification clicked');
 
     event.notification.close();
 
@@ -199,7 +199,7 @@ async function syncLeaveRequests() {
 // Helper to open IndexedDB
 function openDB() {
     return new Promise((resolve, reject) => {
-        const request = indexedDB.open('dxleave-db', 1);
+        const request = indexedDB.open('Cutikuy-db', 1);
 
         request.onerror = () => reject(request.error);
         request.onsuccess = () => resolve(request.result);
