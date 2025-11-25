@@ -36,7 +36,8 @@
     </head>
     <body class="font-sans antialiased">
         <div id="animated-bg" class="fixed top-0 left-0 w-full h-full -z-10"></div>
-        <div class="hero min-h-screen bg-base-200/75 backdrop-blur-sm">
+        <!-- <div class="hero min-h-screen bg-base-200/75 backdrop-blur-sm"> -->
+        <div class="m-auto container-fluid">
             <div class="hero-content flex-col lg:flex-row-reverse">
                 <div class="text-center lg:text-left px-8">
                     <h1 class="text-5xl font-bold">{{ config('app.name', 'SIALAN') }}</h1>

@@ -140,11 +140,11 @@
                             </div>
                             <p class="mb-2"><span class="font-semibold">Reason:</span> <span x-text="request.reason"></span></p>
                             
-                            <div class="divider my-1">Approval History</div>
-                            <ul class="steps steps-vertical lg:steps-horizontal w-full">
+                            <div class="divider my-4">Approval History</div>
+                            <ul class="steps steps-vertical lg:steps-horizontal w-full overflow-x-hidden">
                                 <template x-for="item in getTimeline(request)" :key="item.step_name">
                                     <li class="step" :class="getStepClass(item.status)">
-                                        <div class="text-left w-full ml-2">
+                                        <div class="text-center w-full ml-2">
                                             <div class="font-bold text-xs" x-text="item.approver_name || item.step_name"></div>
                                             <div class="text-[10px] uppercase font-semibold" :class="getStatusTextColor(item.status)" x-text="item.status"></div>
                                             <div x-show="item.comments" class="text-xs italic opacity-70" x-text="`Comment: ${item.comments}`"></div>
