@@ -170,10 +170,18 @@
             <td class="label-col" rowspan="1">Type of Leave</td>
             <td colspan="3">
                 <div class="checkbox-item">
-                    <span class="checkbox-box">{{ $isAnnual ? 'V' : '' }}</span> Annual Leave (연차)
+                    <span class="checkbox-box">
+                        @if($isAnnual)
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        @endif
+                    </span> Annual Leave (연차)
                 </div>
                 <div class="checkbox-item">
-                    <span class="checkbox-box">{{ $isSick ? 'V' : '' }}</span> Sick Leave (병가)
+                    <span class="checkbox-box">
+                        @if($isSick)
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        @endif
+                    </span> Sick Leave (병가)
                 </div>
                 <div class="checkbox-item">
                     <span class="checkbox-box">
