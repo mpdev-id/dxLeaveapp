@@ -316,10 +316,10 @@
                         const result = await response.json();
                         
                         if (response.ok) {
-                            Swal.fire('Success', result.meta.message, 'success');
+                            Swal.fire('Success', result.meta?.message || 'Action successful', 'success');
                             this.fetchRequests(); 
                         } else {
-                            Swal.fire('Error', result.meta.message || 'Action failed', 'error');
+                            Swal.fire('Error', result.meta?.message || 'Action failed', 'error');
                         }
                     } catch (e) {
                         Swal.fire('Error', 'Network error', 'error');

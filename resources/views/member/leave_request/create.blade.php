@@ -321,7 +321,7 @@
                         if (createResponse.status === 422) {
                             this.errors = createData.data.errors;
                         } else {
-                            Swal.fire('Error', createData.meta.message || 'Failed to create request', 'error');
+                            Swal.fire('Error', createData.meta?.message || 'Failed to create request', 'error');
                         }
                         return;
                     }

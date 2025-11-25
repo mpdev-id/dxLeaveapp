@@ -163,15 +163,15 @@
                     if (!response.ok) {
                         this.success = false;
                         if (response.status === 422) {
-                            this.errors = data.data?.errors || data.errors || {};
-                            this.message = data.meta?.message || data.message || 'Please check the form for errors.';
+                            this.errors = data.data?.errors || {};
+                            this.message = data.meta?.message || 'Please check the form for errors.';
                         } else {
-                            this.message = data.meta?.message || data.message || 'An unknown error occurred.';
+                            this.message = data.meta?.message || 'An unknown error occurred.';
                         }
                         return; // Stop execution
                     }
                     
-                    this.message = data.meta?.message || data.message || 'Registration successful! Please log in.';
+                    this.message = data.meta?.message || 'Registration successful! Please log in.';
                     this.success = true;
                     this.errors = {};
                     this.formData = { name: '', employee_code: '', email: '', phone_number: '', password: '', password_confirmation: '', department_id: '', hire_date: '', status: 'active' };

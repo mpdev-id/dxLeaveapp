@@ -114,7 +114,7 @@
                         if (response.status === 422 && data.data && data.data.errors) {
                             this.errors = data.data.errors;
                         } else {
-                            this.errorMessage = data.message || data.meta.message || 'An unknown error occurred.';
+                            this.errorMessage = data.meta?.message || 'An unknown error occurred.';
                         }
                         return; // Stop execution
                     }
@@ -131,7 +131,7 @@
                             window.location.href = '/dashboard-member';
                         }
                     } else {
-                        this.errorMessage = data.meta?.message || data.message || 'Login successful, but no token was provided.';
+                        this.errorMessage = data.meta?.message || 'Login successful, but no token was provided.';
                     }
 
                 } catch (error) {
