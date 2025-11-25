@@ -18,10 +18,12 @@ class LeaveRequestResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
+            'id' => $this->uuid,
             'user' => new UserResource($this->whenLoaded('user')),
             'leave_type' => new LeaveTypeResource($this->whenLoaded('leaveType')),
+            'leave_type_id' => $this->leave_type_id,
             'workflow' => $this->whenLoaded('workflow'),
+            'workflow_id' => $this->workflow_id,
             'approvals' => ApprovalHistoryResource::collection($this->whenLoaded('approvals')),
             
             'start_date' => $this->start_date->format('Y-m-d'),

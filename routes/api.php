@@ -32,7 +32,7 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     // --- Rute Modul Cuti (Leave Requests) ---
     
     // 1. Pengajuan dan Daftar Cuti (Akses oleh Karyawan & Manajer)
-    Route::resource('leave-requests', LeaveRequestController::class)->only(['index', 'store', 'update']);
+    Route::resource('leave-requests', LeaveRequestController::class)->only(['index', 'store', 'update', 'show']);
 
     // 2. Tindakan Persetujuan/Penolakan Cuti
     // Endpoint ini dilindungi oleh Spatie Middleware: hanya user dengan peran 'manager' ATAU izin 'approve leave request' yang bisa mengakses

@@ -14,6 +14,7 @@ class LeaveRequest extends Model
     use HasFactory;
 
     protected $fillable = [
+        'uuid',
         'user_id',
         'leave_type_id',
         'start_date',
@@ -26,6 +27,27 @@ class LeaveRequest extends Model
         'workflow_id',
         'current_workflow_step_id',
     ];
+
+    /**
+     * Get the route key for the model.
+     *
+     * @return string
+     */
+    public function getRouteKeyName()
+    {
+        return 'uuid';
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            if (empty($model->uuid)) {
+                $model->uuid = (string) \Illuminate\Support\Str::uuid();
+            }
+        });
+    }
 
     protected $casts = [
         'start_date' => 'date',

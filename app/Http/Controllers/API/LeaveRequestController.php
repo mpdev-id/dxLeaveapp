@@ -86,6 +86,29 @@ class LeaveRequestController extends Controller
     }
 
     /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show(LeaveRequest $leaveRequest)
+    {
+        try {
+            $leaveRequest->load(['user.department', 'leaveType', 'workflow']);
+
+            // Authorization: Ensure user can only view their own request or if they are an approver/admin
+            $user = Auth::user();
+            if ($leaveRequest->user_id !== $user->id && !$user->hasPermissionTo('approve leave request')) {
+                 return ResponseFormatter::error(null, 'Unauthorized access to leave request', 403);
+            }
+
+            return ResponseFormatter::success(new LeaveRequestResource($leaveRequest), 'Leave request retrieved successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Leave request not found: ' . $e->getMessage(), 404);
+        }
+    }
+
+    /**
      * Simpan permintaan cuti yang baru (Pengajuan oleh Karyawan).
      */
     public function store(Request $request)

@@ -1,14 +1,14 @@
 @extends('template.member')
 
-@section('title', 'New Leave Request')
+@section('title', 'Edit Leave Request')
 
 @section('content')
-<div x-data="createLeave('{{ config('app.base_api') }}')" x-init="init()" class="pb-20">
+<div x-data="editLeave('{{ config('app.base_api') }}', '{{ $id }}')" x-init="init()" class="pb-20">
     <div class="flex items-center gap-2 mb-6">
         <a href="{{ route('member.leaves.index') }}" class="btn btn-ghost btn-circle btn-sm">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
         </a>
-        <h1 class="text-2xl font-bold">New Request</h1>
+        <h1 class="text-2xl font-bold">Edit Request</h1>
     </div>
     
     <div class="grid grid-cols-2 gap-3 mb-6">
@@ -21,7 +21,13 @@
         </template>
     </div>
 
-    <form @submit.prevent="submitForm" class="space-y-6">
+    <template x-if="loading">
+        <div class="flex justify-center py-12">
+            <span class="loading loading-spinner loading-lg"></span>
+        </div>
+    </template>
+
+    <form x-show="!loading" @submit.prevent="submitForm" class="space-y-6">
         {{-- Leave Period --}}
         <div class="form-control w-full">
             <label class="label">
@@ -119,13 +125,16 @@
             <label class="label">
                 <span class="label-text-alt">Max 2MB (JPG, PNG, PDF)</span>
             </label>
+            <div x-show="existingAttachment" class="text-xs mt-1">
+                Current file: <a :href="existingAttachment" target="_blank" class="link link-primary">View Attachment</a>
+            </div>
         </div>
 
         {{-- Submit Buttons --}}
         <div class="pt-4 grid grid-cols-2 gap-4">
             <button type="button" @click="submitForm('draft')" class="btn btn-outline btn-secondary w-full" :disabled="submitting">
                 <span x-show="submitting && action === 'draft'" class="loading loading-spinner"></span>
-                <span x-text="submitting && action === 'draft' ? 'Saving...' : 'Save as Draft'"></span>
+                <span x-text="submitting && action === 'draft' ? 'Saving...' : 'Update Draft'"></span>
             </button>
             <button type="submit" class="btn btn-primary w-full" :disabled="submitting">
                 <span x-show="submitting && action === 'submit'" class="loading loading-spinner"></span>
@@ -138,7 +147,7 @@
 
 @push('scripts')
 <script>
-    function createLeave(baseApiUrl) {
+    function editLeave(baseApiUrl, requestId) {
         return {
             leaveTypes: [],
             workflows: [],
@@ -152,26 +161,23 @@
                 reason: '',
                 supporting_document: null
             },
+            existingAttachment: null,
             duration: 0,
             errors: {},
             submitting: false,
+            loading: true,
             action: 'submit', // 'submit' or 'draft'
             token: localStorage.getItem('authToken'),
 
             async init() {
                 if (!this.token) return;
                 await this.fetchMasterData();
-                
-                // Set default dates to today
-                const today = new Date().toISOString().split('T')[0];
-                this.formData.start_date = today;
-                this.formData.end_date = today;
-                this.calculateDuration();
+                await this.fetchRequestData();
+                this.loading = false;
             },
 
             async fetchMasterData() {
                 try {
-                    // Fetch Master Data (Leave Types, Workflows) AND User Balances
                     const [masterResponse, balanceResponse] = await Promise.all([
                         fetch(`${baseApiUrl}/master-data`, {
                             headers: { 'Authorization': `Bearer ${this.token}`, 'Accept': 'application/json' }
@@ -184,29 +190,51 @@
                     const masterData = await masterResponse.json();
                     const balanceData = await balanceResponse.json();
 
-                    if (masterResponse.ok && balanceResponse.ok) {
+                    if (masterResponse.ok && balanceData.data) {
                         const allLeaveTypes = masterData.data.leave_types;
-                        this.workflows = masterData.data.workflows || []; // Assuming workflows are returned in master-data
+                        this.workflows = masterData.data.workflows || [];
                         const userBalances = balanceData.data;
-                        this.balances = userBalances; // Store balances for display
+                        this.balances = userBalances;
 
-                        // Filter leave types: Only show if user has an entitlement (balance record) for it
                         const availableLeaveTypeIds = userBalances.map(b => b.leave_type_id);
                         this.leaveTypes = allLeaveTypes.filter(type => availableLeaveTypeIds.includes(type.id));
-                        
-                        // If only one workflow exists, select it automatically
-                        if (this.workflows.length === 1) {
-                            this.formData.workflow_id = this.workflows[0].id;
-                        }
                     }
                 } catch (e) {
-                    console.error('Error fetching data:', e);
-                    Swal.fire('Error', 'Failed to load master data', 'error');
+                    console.error('Error fetching master data:', e);
+                }
+            },
+
+            async fetchRequestData() {
+                try {
+                    const response = await fetch(`${baseApiUrl}/leave-requests/${requestId}`, {
+                        headers: { 'Authorization': `Bearer ${this.token}`, 'Accept': 'application/json' }
+                    });
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        const req = data.data;
+                        this.formData.leave_type_id = req.leave_type_id;
+                        this.formData.workflow_id = req.workflow_id; // Ensure backend sends this
+                        this.formData.start_date = req.start_date;
+                        this.formData.end_date = req.end_date;
+                        this.formData.leave_period = req.leave_period;
+                        this.formData.reason = req.reason;
+                        // Handle attachment URL if available
+                        // this.existingAttachment = req.attachment_url; 
+                        
+                        this.calculateDuration();
+                    } else {
+                        Swal.fire('Error', 'Failed to load request data', 'error');
+                        window.location.href = '{{ route("member.leaves.index") }}';
+                    }
+                } catch (e) {
+                    console.error('Error fetching request:', e);
+                    Swal.fire('Error', 'Network error', 'error');
                 }
             },
 
             calculateDuration() {
-                // If half day, force end date to be same as start date
+                // Same logic as create
                 if (this.formData.leave_period !== 'full_day' && this.formData.start_date) {
                     this.formData.end_date = this.formData.start_date;
                 }
@@ -228,12 +256,10 @@
                 }
 
                 if (this.formData.leave_period !== 'full_day') {
-                    // Half day is always 0.5 days and must be same day
                     if (this.formData.start_date !== this.formData.end_date) {
                         this.errors.end_date = 'Half day leave must be on the same day';
                         this.duration = 0;
                     } else {
-                        // Check if the single day is a weekend
                         const day = start.getDay();
                         if (day === 0 || day === 6) {
                             this.errors.end_date = 'Cannot apply for leave on weekends';
@@ -244,12 +270,11 @@
                         }
                     }
                 } else {
-                    // Calculate working days (exclude weekends)
                     let count = 0;
                     let curDate = new Date(start);
                     while (curDate <= end) {
                         const dayOfWeek = curDate.getDay();
-                        if (dayOfWeek !== 0 && dayOfWeek !== 6) { // 0 = Sunday, 6 = Saturday
+                        if (dayOfWeek !== 0 && dayOfWeek !== 6) {
                             count++;
                         }
                         curDate.setDate(curDate.getDate() + 1);
@@ -263,7 +288,7 @@
                 if (file) {
                     if (file.size > 2048 * 1024) {
                         Swal.fire('Error', 'File size exceeds 2MB limit', 'error');
-                        event.target.value = ''; // Clear input
+                        event.target.value = '';
                         this.formData.supporting_document = null;
                         return;
                     }
@@ -276,7 +301,6 @@
                 this.action = actionType;
                 this.errors = {};
 
-                // Basic validation before sending
                 if (this.formData.leave_period !== 'full_day' && this.formData.start_date !== this.formData.end_date) {
                     this.errors.end_date = 'Half day leave must be on the same day';
                     this.submitting = false;
@@ -284,89 +308,58 @@
                 }
 
                 const formData = new FormData();
+                formData.append('_method', 'PUT'); // Important for Laravel to treat this as PUT
                 formData.append('leave_type_id', this.formData.leave_type_id);
-                formData.append('workflow_id', this.formData.workflow_id); // Add workflow_id
+                formData.append('workflow_id', this.formData.workflow_id);
                 formData.append('start_date', this.formData.start_date);
                 formData.append('end_date', this.formData.end_date);
                 formData.append('leave_period', this.formData.leave_period);
                 formData.append('reason', this.formData.reason);
+                
+                // Set status based on action
+                if (actionType === 'draft') {
+                    formData.append('current_status', 'Draft');
+                } else {
+                    formData.append('current_status', 'Pending');
+                }
+
                 if (this.formData.supporting_document) {
                     formData.append('supporting_document', this.formData.supporting_document);
                 }
 
                 try {
-                    // Step 1: Create Draft (POST)
-                    // The controller sets 'current_status' => 'Draft' automatically in store method.
-                    const createResponse = await fetch(`${baseApiUrl}/leave-requests`, {
-                        method: 'POST',
+                    // We use POST with _method=PUT to support file uploads
+                    const response = await fetch(`${baseApiUrl}/leave-requests/${requestId}`, {
+                        method: 'POST', 
                         headers: { 
                             'Authorization': `Bearer ${this.token}`,
                             'Accept': 'application/json'
-                            // Content-Type not set for FormData
                         },
                         body: formData
                     });
 
-                    const createData = await createResponse.json();
+                    const data = await response.json();
 
-                    if (!createResponse.ok) {
-                        if (createResponse.status === 422) {
-                            this.errors = createData.data.errors;
+                    if (!response.ok) {
+                        if (response.status === 422) {
+                            this.errors = data.data.errors;
                         } else {
-                            Swal.fire('Error', createData.meta?.message || 'Failed to create request', 'error');
+                            Swal.fire('Error', data.meta?.message || 'Failed to update request', 'error');
                         }
                         return;
                     }
 
-                    // If action is 'draft', we are done!
-                    if (this.action === 'draft') {
-                        Swal.fire({
-                            title: 'Saved!',
-                            text: 'Leave request saved as Draft.',
-                            icon: 'success',
-                            confirmButtonText: 'OK'
-                        }).then(() => {
-                            window.location.href = '{{ route("member.leaves.index") }}';
-                        });
-                        return;
-                    }
-
-                    // If action is 'submit', proceed to update status to Pending
-                    const leaveRequestId = createData.data.id;
-
-                    // Step 2: Submit (Update status to Pending)
-                    const submitResponse = await fetch(`${baseApiUrl}/leave-requests/${leaveRequestId}`, {
-                        method: 'PUT', // or PATCH
-                        headers: { 
-                            'Authorization': `Bearer ${this.token}`,
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            current_status: 'Pending',
-                            _method: 'PUT' // Laravel sometimes needs this
-                        })
+                    Swal.fire({
+                        title: 'Success!',
+                        text: actionType === 'draft' ? 'Request updated as Draft.' : 'Request submitted successfully.',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        window.location.href = '{{ route("member.leaves.index") }}';
                     });
-                    
-                    const submitData = await submitResponse.json();
-
-                    if (submitResponse.ok) {
-                        Swal.fire({
-                            title: 'Success!',
-                            text: 'Leave request submitted successfully.',
-                            icon: 'success',
-                            confirmButtonText: 'OK'
-                        }).then(() => {
-                            window.location.href = '{{ route("member.leaves.index") }}';
-                        });
-                    } else {
-                         // If submission fails, warn user but they have a draft
-                         Swal.fire('Warning', 'Request saved as Draft but failed to submit. Please check "My Leaves" to submit it.', 'warning');
-                         window.location.href = '{{ route("member.leaves.index") }}';
-                    }
 
                 } catch (e) {
-                    console.error('Error submitting form:', e);
+                    console.error('Error updating form:', e);
                     Swal.fire('Error', 'An unexpected error occurred', 'error');
                 } finally {
                     this.submitting = false;

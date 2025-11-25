@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Member;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
+use App\Models\LeaveRequest;
+
 class LeaveRequestController extends Controller
 {
     public function index()
@@ -17,13 +19,20 @@ class LeaveRequestController extends Controller
         return view('member.leave_request.create');
     }
 
-    public function print($id)
+    public function edit(LeaveRequest $leaveRequest)
     {
-        $leaveRequest = \App\Models\LeaveRequest::with([
+        // Pass the UUID to the view as 'id' so the JS can use it
+        $id = $leaveRequest->uuid;
+        return view('member.leave_request.edit', compact('id'));
+    }
+
+    public function print(LeaveRequest $leaveRequest)
+    {
+        $leaveRequest->load([
             'user.department', 
             'leaveType', 
             'approvals.approver.roles'
-        ])->findOrFail($id);
+        ]);
 
         return view('member.leave_request.print', compact('leaveRequest'));
     }
