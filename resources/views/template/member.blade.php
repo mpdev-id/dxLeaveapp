@@ -41,7 +41,7 @@
     {{-- Top Navbar (Desktop/Tablet) --}}
     <div class="navbar bg-base-100 shadow-lg sticky top-0 z-50" x-data="navbarUser('{{ config('app.base_api') }}')" x-init="init()">
         <div class="flex-1 flex items-center gap-2">
-            <img src="{{ asset('images/cute_duck_attendance.png') }}" alt="Cutikuy" class="w-10 h-10 object-contain">
+            <img src="{{ asset('images/cute_duck_attendance.png') }}" alt="Cutikuy" class="w-10 h-10 object-contain rounded-full">
             <a class="btn btn-ghost text-xl">{{ config('app.name', 'Cutikuy') }}</a>
         </div>
         <div class="flex-none gap-2">

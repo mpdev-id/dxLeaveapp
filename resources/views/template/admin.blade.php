@@ -64,7 +64,7 @@
                 <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
                 <ul class="menu p-4 w-60 min-h-full bg-base-200 text-base-content rounded-r-xl">
                     <li class="flex items-center justify-center mb-2">
-                        <img src="{{ asset('images/cute_duck_attendance.png') }}" alt="Cutikuy" class="w-20 h-20 object-contain">
+                        <img src="{{ asset('images/cute_duck_attendance.png') }}" alt="Cutikuy" class="w-20 h-20 object-contain rounded-full animated pulse">
                     </li>
                     <li class="text-2xl font-bold p-4 text-center">{{ config('app.name', 'Laravel') }}</li>
                     <li>

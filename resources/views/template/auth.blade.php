@@ -37,11 +37,11 @@
     <body class="font-sans antialiased">
         <div id="animated-bg" class="fixed top-0 left-0 w-full h-full -z-10"></div>
         <!-- <div class="hero min-h-screen bg-base-200/75 backdrop-blur-sm"> -->
-        <div class="m-auto container-fluid">
+        <div class="hero min-h-screen bg-base-200/75 backdrop-blur-sm">
             <div class="hero-content flex-col lg:flex-row-reverse">
                 <div class="text-center lg:text-left px-8">
                     <div class="flex justify-center lg:justify-start mb-4">
-                        <img src="{{ asset('images/cute_duck_attendance.png') }}" alt="Cutikuy Mascot" class="w-48 h-48 object-contain drop-shadow-2xl">
+                        <img src="{{ asset('images/cute_duck_attendance.png') }}" alt="Cutikuy Mascot" class="w-48 h-48 object-contain drop-shadow-2xl transition-all duration-700 hover:rounded-full hover:rotate-[360deg]">
                     </div>
                     <h1 class="text-5xl font-bold">{{ config('app.name', 'SIALAN') }}</h1>
                     <p class="py-6">Sistem Informasi Admin Leave App Nich! Please log in to access your account and manage your leave requests.</p>
