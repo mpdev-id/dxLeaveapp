@@ -238,47 +238,82 @@
                         return [];
                     }
 
-                    const approvers = new Map();
+                    // Get current workflow step
+                    const currentStepId = this.selectedRequest.current_workflow_step_id;
+                    console.log('Current Step ID:', currentStepId);
+                    console.log('Selected Request:', this.selectedRequest);
+                    
+                    if (!currentStepId) {
+                        console.warn('No current step, request might be completed or not started');
+                        return [];
+                    }
 
-                    this.selectedRequest.workflow.steps.forEach(step => {
-                        // 1. Specific User Assigned (Calculated by Backend)
-                        if (step.approver_user) {
-                            approvers.set(step.approver_user.id, step.approver_user);
+                    // Find the current step
+                    const currentStep = this.selectedRequest.workflow.steps.find(s => s.id === currentStepId);
+                    console.log('Current Step:', currentStep);
+                    console.log('All Steps:', this.selectedRequest.workflow.steps);
+                    
+                    if (!currentStep) {
+                        console.warn('Current workflow step not found in workflow steps');
+                        return [];
+                    }
+
+                    const options = [];
+                    let stepApprovers = [];
+
+                    // 1. Specific User Assigned (Calculated by Backend)
+                    if (currentStep.assigned_approver) {
+                         console.log('Using assigned_approver:', currentStep.assigned_approver);
+                         // If backend already resolved it (which we added in LeaveRequestResource)
+                         const user = this.users.find(u => u.id == currentStep.assigned_approver.id);
+                         if (user) stepApprovers.push(user);
+                         else stepApprovers.push(currentStep.assigned_approver); // Fallback if not in users list
+                    }
+                    // 2. Specific User ID in Step Definition (Fallback if assigned_approver missing)
+                    else if (currentStep.required_approver_type === 'User' && currentStep.approver_user_id) {
+                        console.log('Using specific user:', currentStep.approver_user_id);
+                        const user = this.users.find(u => u.id == currentStep.approver_user_id);
+                        if (user) stepApprovers.push(user);
+                    }
+                    // 3. Manager Type - Requester's Manager
+                    else if (currentStep.required_approver_type === 'Manager') {
+                        console.log('Using Manager type');
+                        if (this.selectedRequest.user && this.selectedRequest.user.manager) {
+                             const managerId = this.selectedRequest.user.manager.id;
+                             const manager = this.users.find(u => u.id == managerId) || this.selectedRequest.user.manager;
+                             if (manager) stepApprovers.push(manager);
                         }
-                        // 2. Specific User ID in Step Definition
-                        else if (step.required_approver_type === 'User' && step.approver_user_id) {
-                            const user = this.users.find(u => u.id == step.approver_user_id);
-                            if (user) approvers.set(user.id, user);
-                        }
-                        // 3. Manager Type - Requester's Manager
-                        else if (step.required_approver_type === 'Manager') {
-                            if (this.selectedRequest.user && this.selectedRequest.user.manager) {
-                                 const managerId = this.selectedRequest.user.manager.id;
-                                 const manager = this.users.find(u => u.id == managerId) || this.selectedRequest.user.manager;
-                                 if (manager) approvers.set(manager.id, manager);
-                            }
-                        }
-                        // 4. Department Head
-                        else if (step.required_approver_type === 'DepartmentHead') {
-                            if (this.selectedRequest.user && this.selectedRequest.user.manager) {
-                                 const managerId = this.selectedRequest.user.manager.id;
-                                 const manager = this.users.find(u => u.id == managerId) || this.selectedRequest.user.manager;
-                                 if (manager) approvers.set(manager.id, manager);
-                            }
-                        }
-                        // 5. Role Based
-                        else if (step.required_approver_type === 'Role' && step.approver_role) {
-                            const roleName = step.approver_role.name;
-                            const roleUsers = this.users.filter(u => {
-                                if (!u.role) return false;
-                                const userRoles = Array.isArray(u.role) ? u.role : [u.role];
-                                return userRoles.some(r => r === roleName);
-                            });
-                            roleUsers.forEach(user => approvers.set(user.id, user));
-                        }
+                    }
+                    // 4. Role Based
+                    else if (currentStep.required_approver_type === 'Role' && currentStep.approver_role) {
+                        console.log('Using Role type:', currentStep.approver_role.name);
+                        const roleName = currentStep.approver_role.name;
+                        const roleUsers = this.users.filter(u => {
+                            if (!u.role) return false;
+                            const userRoles = Array.isArray(u.role) ? u.role : [u.role];
+                            return userRoles.some(r => r === roleName);
+                        });
+                        console.log('Role users found:', roleUsers);
+                        stepApprovers = stepApprovers.concat(roleUsers);
+                    }
+
+                    console.log('Step Approvers:', stepApprovers);
+
+                    // Add to options with step info (only current step)
+                    stepApprovers.forEach(user => {
+                        options.push({
+                            id: user.id,
+                            name: user.name,
+                            role: user.role, 
+                            step_number: currentStep.step_number,
+                            step_role: currentStep.approver_role ? currentStep.approver_role.name : currentStep.required_approver_type
+                        });
                     });
 
-                    return Array.from(approvers.values()).sort((a, b) => a.name.localeCompare(b.name));
+                    console.log('Final options:', options);
+
+                    // Sort by name
+                    return options.sort((a, b) => a.name.localeCompare(b.name));
                 },
 
                 init() {
@@ -424,7 +459,7 @@
                 },
                 openEditModal(req) {
                     // Prevent editing approved requests
-                    if (req.current_status === 'Approved') {
+                    if (req.current_status === 'Approved' || req.current_status === 'Rejected') {
                         this.showToast("Cannot edit approved leave requests. Approved requests are final.", 'warning');
                         return;
                     }

@@ -22,7 +22,39 @@ class LeaveRequestResource extends JsonResource
             'user' => new UserResource($this->whenLoaded('user')),
             'leave_type' => new LeaveTypeResource($this->whenLoaded('leaveType')),
             'leave_type_id' => $this->leave_type_id,
-            'workflow' => $this->whenLoaded('workflow'),
+            'workflow' => $this->whenLoaded('workflow', function () {
+                if (!$this->workflow) return null;
+                return [
+                    'id' => $this->workflow->id,
+                    'name' => $this->workflow->name,
+                    'steps' => $this->workflow->steps->map(function ($step) {
+                        // Resolve the approver for this step
+                        $approver = null;
+                        if ($this->user) {
+                            try {
+                                $approver = app(\App\Services\WorkflowService::class)->findApproverForStep($this->user, $step);
+                            } catch (\Exception $e) {
+                                // Ignore errors in resolving approver (e.g. if user has no manager)
+                            }
+                        }
+
+                        return [
+                            'id' => $step->id,
+                            'step_number' => $step->step_number,
+                            'required_approver_type' => $step->required_approver_type,
+                            'approver_user_id' => $step->approver_user_id,
+                            'approver_role' => $step->approverRole ? [
+                                'id' => $step->approverRole->id,
+                                'name' => $step->approverRole->name,
+                            ] : null,
+                            'assigned_approver' => $approver ? [
+                                'id' => $approver->id,
+                                'name' => $approver->name,
+                            ] : null,
+                        ];
+                    }),
+                ];
+            }),
             'workflow_id' => $this->workflow_id,
             'approvals' => ApprovalHistoryResource::collection($this->whenLoaded('approvals')),
             
@@ -35,6 +67,7 @@ class LeaveRequestResource extends JsonResource
             'supporting_attachment_path' => $this->supporting_attachment_path,
             
             'current_status' => $this->current_status,
+            'current_workflow_step_id' => $this->current_workflow_step_id,
             'current_step' => $this->whenLoaded('currentStep'),
             'remaining_leave_balance' => $this->remaining_leave_balance,
 

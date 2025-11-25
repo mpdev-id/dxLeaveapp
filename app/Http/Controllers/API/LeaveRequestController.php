@@ -164,12 +164,17 @@ class LeaveRequestController extends Controller
                 return ResponseFormatter::error(null, 'Leave workflow not found.', 500);
             }
 
+            // Find first step
+            $firstStep = $workflow->steps()->orderBy('step_number', 'asc')->first();
+            $currentWorkflowStepId = $firstStep ? $firstStep->id : null;
+
             // 5. Buat Permintaan Cuti
-            $leaveRequest = DB::transaction(function () use ($validatedData, $workflow, $duration, $attachmentPath) {
+            $leaveRequest = DB::transaction(function () use ($validatedData, $workflow, $duration, $attachmentPath, $currentWorkflowStepId) {
                 return LeaveRequest::create([
                     'user_id' => Auth::id(),
                     'leave_type_id' => $validatedData['leave_type_id'],
                     'workflow_id' => $workflow->id,
+                    'current_workflow_step_id' => $currentWorkflowStepId,
                     'start_date' => $validatedData['start_date'],
                     'end_date' => $validatedData['end_date'],
                     'leave_period' => $validatedData['leave_period'],
@@ -217,7 +222,7 @@ class LeaveRequestController extends Controller
 
             // Cek status: Hanya izinkan edit jika statusnya masih 'Draft'.
             if ($leaveRequest->current_status !== 'Draft') {
-                Log::warning('Attempted to update a non-draft leave request', ['leave_request_id' => $leaveRequest->id, 'current_status' => $leaveRequest->current_status]);
+                // Log::warning('Attempted to update a non-draft leave request', ['leave_request_id' => $leaveRequest->id, 'current_status' => $leaveRequest->current_status]);
                 return ResponseFormatter::error(
                     null,
                     'This leave request cannot be edited because it is already being processed.',
@@ -257,7 +262,7 @@ class LeaveRequestController extends Controller
 
             // Jika status diubah ke 'Pending', lakukan validasi penuh dan mulai alur kerja
             if (isset($validatedData['current_status']) && $validatedData['current_status'] === 'Pending') {
-                Log::info('Attempting to change status to Pending');
+                // Log::info('Attempting to change status to Pending');
 
                 // Validasi field yang wajib ada saat submit
                 $submitData = array_merge($leaveRequest->toArray(), $validatedData);

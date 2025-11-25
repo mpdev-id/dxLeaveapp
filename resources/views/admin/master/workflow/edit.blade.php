@@ -142,7 +142,7 @@
                                                 </label>
                                                 <select :name="`steps[${index}][approver_user_id]`" class="select select-bordered select-sm w-full mt-2" x-model="step.approver_user_id">
                                                     <option value="">Any user with this role</option>
-                                                    <template x-for="user in getUsersByRole(step.approver_role_id)" :key="user.id">
+                                                    <template x-for="user in getSelectableUsers(step.approver_role_id, step.approver_user_id)" :key="user.id">
                                                         <option :value="user.id" x-text="user.name"></option>
                                                     </template>
                                                 </select>
@@ -223,7 +223,7 @@
             return [
                 'required_approver_type' => $step->required_approver_type,
                 'approver_role_id' => $step->approver_role_id,
-                'approver_user_id' => $step->approver_user_id,
+                'approver_user_id' => $step->approver_user_id ?? '',
                 'required_approvals' => $step->required_approvals,
                 'is_final_step' => (bool) $step->is_final_step,
             ];
@@ -241,6 +241,17 @@
                     return this.users.filter(user => {
                         return user.roles.some(r => r.id == roleId);
                     });
+                },
+                getSelectableUsers(roleId, currentUserId) {
+                    const users = this.getUsersByRole(roleId);
+                    if (currentUserId) {
+                        const assignedUser = this.users.find(u => u.id == currentUserId);
+                        // If assigned user exists and is not already in the list
+                        if (assignedUser && !users.some(u => u.id == assignedUser.id)) {
+                            return [...users, assignedUser];
+                        }
+                    }
+                    return users;
                 },
                 addStep() {
                     this.steps.push({

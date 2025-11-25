@@ -141,19 +141,24 @@
                             <p class="mb-2"><span class="font-semibold">Reason:</span> <span x-text="request.reason"></span></p>
                             
                             <div class="divider my-1">Approval History</div>
-                            <ul class="steps steps-vertical w-full">
-                                <template x-for="approval in request.approvals" :key="approval.id">
-                                    <li class="step" :class="getStepClass(approval.status)">
+                            <ul class="steps steps-vertical lg:steps-horizontal w-full">
+                                <template x-for="item in getTimeline(request)" :key="item.step_name">
+                                    <li class="step" :class="getStepClass(item.status)">
                                         <div class="text-left w-full ml-2">
-                                            <div class="font-bold text-xs" x-text="approval.approver_name || 'System'"></div>
-                                            <div class="text-xs" x-text="approval.status"></div>
-                                            <div x-show="approval.comments" class="text-xs italic opacity-70" x-text="`Comment: ${approval.comments}`"></div>
-                                            <div class="text-[10px] opacity-50" x-text="formatDate(approval.created_at)"></div>
+                                            <div class="font-bold text-xs" x-text="item.approver_name || item.step_name"></div>
+                                            <div class="text-[10px] uppercase font-semibold" :class="getStatusTextColor(item.status)" x-text="item.status"></div>
+                                            <div x-show="item.comments" class="text-xs italic opacity-70" x-text="`Comment: ${item.comments}`"></div>
+                                            <div class="text-[10px] opacity-50" x-show="item.date" x-text="formatDate(item.date)"></div>
                                         </div>
                                     </li>
                                 </template>
-                                <template x-if="request.approvals.length === 0">
-                                    <li class="step step-neutral">Pending Approval</li>
+                                
+                                <template x-if="!request.workflow">
+                                    <li class="step step-error" data-content="!">Workflow Not Found</li>
+                                </template>
+                                
+                                <template x-if="request.workflow && (!request.workflow.steps || request.workflow.steps.length === 0)">
+                                    <li class="step step-warning" data-content="?">Workflow has no steps</li>
                                 </template>
                             </ul>
                         </div>
@@ -291,11 +296,57 @@
             },
 
             getStepClass(status) {
-                switch(status) {
-                    case 'approved': return 'step-success';
-                    case 'rejected': return 'step-error';
-                    default: return 'step-neutral';
-                }
+                const s = (status || '').toLowerCase();
+                if (s === 'Approved') return 'step-success';
+                if (s === 'Rejected') return 'step-error';
+                return ''; 
+            },
+
+            getStatusTextColor(status) {
+                const s = (status || '').toLowerCase();
+                if (s === 'Approved') return 'text-success';
+                if (s === 'Rejected') return 'text-error';
+                return 'text-base-content/50';
+            },
+
+            getTimeline(request) {
+                if (!request.workflow) return [];
+                
+                const stepsData = request.workflow.steps || [];
+                if (stepsData.length === 0) return [];
+                
+                // Sort steps by step_number
+                const steps = [...stepsData].sort((a, b) => a.step_number - b.step_number);
+                
+                return steps.map(step => {
+                    // Find approval for this step
+                    const approval = request.approvals ? request.approvals.find(a => a.workflow_step_id === step.id) : null;
+                    
+                    let status = 'Pending';
+                    let approverName = null;
+                    let comments = null;
+                    let date = null;
+
+                    if (approval) {
+                        status = approval.status; // 'Approved' or 'Rejected'
+                        approverName = approval.approver ? approval.approver.name : 'Unknown';
+                        comments = approval.comments;
+                        date = approval.created_at;
+                    } else {
+                        // Show who is supposed to approve
+                        if (step.assigned_approver) {
+                            approverName = step.assigned_approver.name;
+                        }
+                    }
+
+                    return {
+                        step_name: step.approver_role ? step.approver_role.name : 'Approver',
+                        status: status,
+                        approver_name: approverName,
+                        comments: comments,
+                        date: date
+                    };
+                });
             }
         }
     }

@@ -62,41 +62,36 @@ class WorkflowService
     public function findApproverForStep(User $user, WorkflowStep $step): ?User
     {
         // Prioritas 1: Jika langkah alur kerja memiliki approverUser spesifik
-        try {
+        if ($step->approver_user_id) {
             return $step->approverUser;
-        } catch (\Throwable $th) {
-            Log::warning('Gagal menemukan approverUser untuk langkah alur kerja', [
-                'step' => $step,
-                'error' => $th->getMessage(),
-            ]);
         }
 
         // Prioritas 2: Jika tidak ada approverUser spesifik, cari berdasarkan peran di hierarki manajer
-        // $currentApprover = $user->manager;
-        // $maxLevels = 5; // Safeguard against deep hierarchies
-        // $level = 0;
+        $currentApprover = $user->manager;
+        $maxLevels = 5; // Safeguard against deep hierarchies
+        $level = 0;
 
         // Loop ke atas melalui rantai manager_id hingga peran yang sesuai ditemukan.
-        // while ($currentApprover && $level < $maxLevels) {
-        //     // Periksa apakah manager saat ini memiliki peran yang dibutuhkan oleh langkah alur kerja
-        //     if ($currentApprover->hasRole($step->approverRole->name)) {
-        //         return $currentApprover;
-        //     }
+        while ($currentApprover && $level < $maxLevels) {
+            // Periksa apakah manager saat ini memiliki peran yang dibutuhkan oleh langkah alur kerja
+            if ($step->approverRole && $currentApprover->hasRole($step->approverRole->name)) {
+                return $currentApprover;
+            }
 
-        //     // Pindah ke atasan manajer (naik satu tingkat)
-        //     $currentApprover = $currentApprover->manager;
-        //     $level++;
-        // }
+            // Pindah ke atasan manajer (naik satu tingkat)
+            $currentApprover = $currentApprover->manager;
+            $level++;
+        }
 
-        // if ($level >= $maxLevels) {
-        //     Log::warning("Could not find an approver for User ID: {$user->id} within {$maxLevels} levels based on role '{$step->approverRole->name}'. Manager hierarchy might be too deep or misconfigured.", ['user_id' => $user->id, 'step_id' => $step->id]);
-        // } else {
-        //     Log::warning("Could not find an approver with the required role '{$step->approverRole->name}' for User ID: {$user->id} on step: {$step->id}. No specific approver user defined and no manager with the role found.", [
-        //         'user_id' => $user->id,
-        //         'step_id' => $step->id,
-        //         'role_needed' => $step->approverRole->name ?? 'N/A'
-        //     ]);
-        // }
-        // return null;
+        if ($level >= $maxLevels) {
+            Log::warning("Could not find an approver for User ID: {$user->id} within {$maxLevels} levels based on role '{$step->approverRole->name}'. Manager hierarchy might be too deep or misconfigured.", ['user_id' => $user->id, 'step_id' => $step->id]);
+        } else {
+            // Log::warning("Could not find an approver with the required role '{$step->approverRole->name}' for User ID: {$user->id} on step: {$step->id}. No specific approver user defined and no manager with the role found.", [
+            //     'user_id' => $user->id,
+            //     'step_id' => $step->id,
+            //     'role_needed' => $step->approverRole->name ?? 'N/A'
+            // ]);
+        }
+        return null;
     }
 }

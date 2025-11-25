@@ -322,13 +322,38 @@ class LeaveRequestController extends Controller
             $comments = $request->input('comments');
             $approverId = $request->input('approver_id');
 
+            // Get current workflow step
+            $currentStep = $this->workflowService->getCurrentStep($leaveRequest);
+            if (!$currentStep) {
+                return ResponseFormatter::error(null, 'No pending approval step found for this request.', 400);
+            }
+
             // Allow admin to approve on behalf of another user
             if ($approverId && $admin->hasRole('Super Admin')) {
                 $approver = User::find($approverId);
                 if (!$approver) {
                     return ResponseFormatter::error(null, 'Selected approver not found.', 404);
                 }
-                // We use the selected approver to process the approval
+
+                // VALIDATE: Selected approver must be valid for CURRENT step only (enforce sequential approval)
+                if (!$this->workflowService->isApproverForStep($approver, $currentStep)) {
+                    // Get the expected approver for better error message
+                    $expectedApprover = $this->workflowService->findApproverForStep($leaveRequest->user, $currentStep);
+                    $stepInfo = "Step {$currentStep->step_number}";
+                    if ($currentStep->approverRole) {
+                        $stepInfo .= " ({$currentStep->approverRole->name})";
+                    }
+                    
+                    $errorMsg = "Selected approver '{$approver->name}' is not authorized for the current workflow step ({$stepInfo}).";
+                    if ($expectedApprover) {
+                        $errorMsg .= " Expected approver: {$expectedApprover->name}.";
+                    }
+                    $errorMsg .= " Approvals must be processed in sequential order.";
+                    
+                    return ResponseFormatter::error(null, $errorMsg, 403);
+                }
+
+                // Process approval with selected approver
                 $this->leaveRequestService->processApproval($leaveRequest, $approver, $action, $comments);
             } else {
                 // Normal flow: Authenticated user approves

@@ -27,12 +27,12 @@
                     </label>
                     <select x-model="approvalData.approver_id" class="select select-bordered w-full">
                         <option value="">Myself ({{ optional(Auth::user())->name ?? 'Myself' }})</option>
-                        <template x-for="user in suggestedApprovers" :key="user.id">
-                            <option :value="user.id" x-text="user.name + ' (' + (user.role ? user.role.join(', ') : '') + ')'"></option>
+                        <template x-for="option in suggestedApprovers" :key="option.id + '-' + option.step_number">
+                            <option :value="option.id" x-text="`Step ${option.step_number}: ${option.name} (${option.step_role})`"></option>
                         </template>
                     </select>
                     <label class="label">
-                        <span class="label-text-alt">Leave blank to approve as yourself. Select a user to approve on their behalf.</span>
+                        <span class="label-text-alt text-xs">Leave blank to approve as yourself. Select a user to approve on their behalf.</span>
                     </label>
                 </div>
 

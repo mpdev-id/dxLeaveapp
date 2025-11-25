@@ -32,9 +32,9 @@
                         <p class="font-semibold">Duration</p>
                         <p x-text="selectedRequest.duration_days + ' day(s)'"></p>
                     </div>
-                    <div x-show="typeof selectedRequest.remaining_leave_balance !== 'undefined'">
+                    <div x-show="typeof selectedRequest.initial_balance !== 'undefined'">
                         <p class="font-semibold">Remaining Leave</p>
-                        <p x-text="selectedRequest.remaining_leave_balance + ' day(s)'"></p>
+                        <p x-text="selectedRequest.initial_balance + ' day(s)'"></p>
                     </div>
                     <div>
                         <p class="font-semibold">Period</p>
@@ -63,17 +63,46 @@
                 </div>
 
                 <!-- Approval Workflow -->
-                <div class="mt-6" x-show="selectedRequest.workflow && selectedRequest.workflow.steps && selectedRequest.workflow.steps.length > 0">
+                <div class="mt-6 w-full overflow-x-auto">
                     <h4 class="font-bold mb-2">Approval Workflow</h4>
                     <ul class="timeline timeline-horizontal">
                         <template x-for="(step, index) in selectedRequest.workflow.steps" :key="step.id">
                             <li>
                                 <hr x-show="index > 0" />
-                                <div class="timeline-start" x-text="step.approver_role.name"></div>
                                 <div class="timeline-middle">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-info"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94l-1.72-1.72z" clip-rule="evenodd" /></svg>
+                                    <template x-if="step.status === 'Approved'">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-7 h-7 text-success">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
+                                        </svg>
+                                    </template>
+                                    <template x-if="step.status === 'Rejected'">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-7 h-7 text-error">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94l-1.72-1.72z" clip-rule="evenodd" />
+                                        </svg>
+                                    </template>
+                                    <template x-if="step.status === 'Pending'">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7 text-warning">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </template>
                                 </div>
-                                <div class="timeline-end timeline-box" x-text="step.approver_user ? step.approver_user.name : 'N/A'">
+                                <div class="timeline-end timeline-box min-w-[150px] p-3 rounded-box shadow-md bg-base-100 border"
+                                    :class="{
+                                        'border-success': step.status === 'Approved',
+                                        'border-error': step.status === 'Rejected',
+                                        'border-warning': step.status === 'Pending'
+                                    }">
+                                    <div class="font-bold text-sm" x-text="step.approver_role.name"></div>
+                                    <div class="text-xs text-gray-700" x-text="step.approver_user ? step.approver_user.name : 'Not Assigned'"></div>
+                                    <span class="badge badge-sm mt-1"
+                                        :class="{
+                                            'badge-success': step.status === 'Approved',
+                                            'badge-error': step.status === 'Rejected',
+                                            'badge-warning': step.status === 'Pending',
+                                            'badge-ghost': !step.status
+                                        }"
+                                        x-text="step.status ? step.status.charAt(0).toUpperCase() + step.status.slice(1) : 'Pending'">
+                                    </span>
                                 </div>
                                 <hr x-show="index < selectedRequest.workflow.steps.length - 1" />
                             </li>
