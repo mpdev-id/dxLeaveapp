@@ -79,8 +79,8 @@
                             <div class="mt-1 text-base-content/80 italic" x-text="`Reason: ${request.reason}`"></div>
                         </div>
                         <div class="card-actions justify-end mt-4">
-                            <button @click="handleApproval(request.id, 'Rejected')" class="btn btn-sm btn-error btn-outline">Reject</button>
-                            <button @click="handleApproval(request.id, 'Approved')" class="btn btn-sm btn-success text-white">Approve</button>
+                            <button @click="openApprovalModal(request, 'Rejected')" class="btn btn-sm btn-error btn-outline">Reject</button>
+                            <button @click="openApprovalModal(request, 'Approved')" class="btn btn-sm btn-success text-white">Approve</button>
                         </div>
                     </div>
                 </div>
@@ -159,10 +159,12 @@
         </div>
     </div>
 
+    @include('member.dashboard.modal-approval')
 </div>
 @endsection
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
 <script>
     function memberDashboard(baseApiUrl) {
         return {
@@ -178,6 +180,14 @@
             searchQuery: '',
             filterStatus: '',
             sortBy: 'date_desc',
+
+            // Approval Data
+            selectedRequest: null,
+            approvalData: {
+                action: 'Approved',
+                comments: '',
+                signature: ''
+            },
 
             async init() {
                 if (!this.token) return; 
@@ -278,52 +288,143 @@
                 this.approvals = allRequests.filter(r => r.user.id !== this.user.id);
             },
 
-            async handleApproval(id, action) {
-                // Ensure action matches the ENUM values expected by the backend (Approved/Rejected)
-                // The buttons pass 'Approved' or 'Rejected', so we should check against those.
-                const isApproved = action === 'Approved';
-                
-                const { value: text } = await Swal.fire({
-                    input: 'textarea',
-                    inputLabel: isApproved ? 'Approval Comment (Optional)' : 'Rejection Reason (Required)',
-                    inputPlaceholder: 'Type your message here...',
-                    inputAttributes: {
-                        'aria-label': 'Type your message here'
-                    },
-                    showCancelButton: true,
-                    confirmButtonText: isApproved ? 'Approve' : 'Reject',
-                    confirmButtonColor: isApproved ? '#36D399' : '#F87272',
-                    inputValidator: (value) => {
-                        if (!isApproved && !value) {
-                            return 'You need to write a reason for rejection!'
-                        }
-                    }
-                });
+            openApprovalModal(request, action) {
+                this.selectedRequest = request;
+                this.approvalData = {
+                    action: action,
+                    comments: '',
+                    signature: ''
+                };
+                showModal('approval_modal');
+                this.setupSignaturePad();
+            },
 
-                if (text !== undefined) { 
-                    try {
-                        const response = await fetch(`${baseApiUrl}/leave-requests/${id}/approve`, {
-                            method: 'PATCH',
-                            headers: {
-                                'Authorization': `Bearer ${this.token}`,
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json'
-                            },
-                            // Force action to be 'Approved' or 'Rejected' based on the boolean check
-                            body: JSON.stringify({ action: isApproved ? 'Approved' : 'Rejected', comments: text })
-                        });
-                        
-                        const result = await response.json();
-                        
-                        if (response.ok) {
-                            Swal.fire('Success', result.meta?.message || 'Action successful', 'success');
-                            this.fetchRequests(); 
-                        } else {
-                            Swal.fire('Error', result.meta?.message || 'Action failed', 'error');
-                        }
-                    } catch (e) {
-                        Swal.fire('Error', 'Network error', 'error');
+            async submitApproval() {
+                if (!this.selectedRequest) return;
+                
+                // Validate rejection reason
+                if (this.approvalData.action === 'Rejected' && !this.approvalData.comments) {
+                    Swal.fire('Error', 'Please provide a reason for rejection.', 'error');
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`${baseApiUrl}/leave-requests/${this.selectedRequest.id}/approve`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Authorization': `Bearer ${this.token}`,
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify(this.approvalData)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        hideModal('approval_modal');
+                        Swal.fire('Success', result.meta?.message || 'Action successful', 'success');
+                        this.fetchRequests(); 
+                    } else {
+                        Swal.fire('Error', result.meta?.message || 'Action failed', 'error');
                     }
+                } catch (e) {
+                    Swal.fire('Error', 'Network error', 'error');
+                }
+            },
+
+            // --- SIGNATURE PAD ---
+            signaturePad: null,
+            isFullScreen: false,
+            isLandscape: false,
+
+            setupSignaturePad() {
+                this.$nextTick(() => {
+                    const canvas = document.getElementById('signature-pad');
+                    if (!canvas) return;
+                    
+                    // Destroy previous instance if exists
+                    if (this.signaturePad) {
+                        this.signaturePad.off();
+                        this.signaturePad = null;
+                    }
+
+                    // Initialize SignaturePad
+                    this.signaturePad = new SignaturePad(canvas, {
+                        backgroundColor: 'rgba(255, 255, 255, 0)', // Transparent
+                        penColor: 'rgb(0, 0, 0)',
+                        velocityFilterWeight: 0.7,
+                        minWidth: 0.6,
+                        maxWidth: 1.8,
+                        throttle: 26,
+                        minDistance: 3,
+                    });
+
+                    // Auto full screen on mobile
+                    if (window.innerWidth < 768) {
+                        this.toggleFullScreen(true);
+                    } else {
+                        this.resizeCanvas();
+                    }
+
+                    // Update data model on end stroke
+                    this.signaturePad.addEventListener("endStroke", () => {
+                        if (!this.signaturePad.isEmpty()) {
+                            this.approvalData.signature = this.signaturePad.toDataURL();
+                        }
+                    });
+                    
+                    // Handle window resize
+                    window.addEventListener("resize", () => {
+                        this.resizeCanvas();
+                    });
+                });
+            },
+            
+            resizeCanvas() {
+                const canvas = document.getElementById('signature-pad');
+                if (!canvas || !this.signaturePad) return;
+                
+                const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                
+                // Store data as vector points to avoid distortion
+                const data = this.signaturePad.toData();
+                
+                canvas.width = canvas.offsetWidth * ratio;
+                canvas.height = canvas.offsetHeight * ratio;
+                canvas.getContext("2d").scale(ratio, ratio);
+                
+                this.signaturePad.clear(); // This is necessary after resizing
+                
+                // Restore data
+                if (data) {
+                    this.signaturePad.fromData(data);
+                }
+            },
+            
+            toggleFullScreen(forceState = null) {
+                if (forceState !== null) {
+                    this.isFullScreen = forceState;
+                } else {
+                    this.isFullScreen = !this.isFullScreen;
+                }
+
+                // Check for mobile portrait to force landscape
+                if (this.isFullScreen && window.innerWidth < 768 && window.innerHeight > window.innerWidth) {
+                    this.isLandscape = true;
+                } else {
+                    this.isLandscape = false;
+                }
+
+                this.$nextTick(() => {
+                    this.resizeCanvas();
+                });
+            },
+
+            clearSignature() {
+                if (this.signaturePad) {
+                    this.signaturePad.clear();
+                    this.approvalData.signature = '';
                 }
             },
 

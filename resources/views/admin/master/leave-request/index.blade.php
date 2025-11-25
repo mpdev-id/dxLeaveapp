@@ -196,7 +196,10 @@
         @include('admin.master.leave-request.modal-approval')
 
     </div>
-
+@endsection
+    
+    @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script>
         function leaveRequestData(baseApiUrl) {
             return {
@@ -486,8 +489,9 @@
                 },
                 openApprovalModal(req) {
                     this.selectedRequest = req;
-                    this.approvalData = { action: 'Approved', comments: '', approver_id: '' };
+                    this.approvalData = { action: 'Approved', comments: '', approver_id: '', signature: '' };
                     showModal('approval_modal');
+                    this.setupSignaturePad();
                 },
                 closeModal(id) {
                     hideModal(id);
@@ -605,8 +609,105 @@ if (fileInput) fileInput.value = '';
                     } catch (error) {
                         this.handleError(error);
                     }
+                },
+
+                // --- SIGNATURE PAD ---
+                // --- SIGNATURE PAD ---
+                signaturePad: null,
+                isFullScreen: false,
+                isLandscape: false,
+                
+                setupSignaturePad() {
+                    this.$nextTick(() => {
+                        const canvas = document.getElementById('signature-pad');
+                        if (!canvas) return;
+                        
+                        // Destroy previous instance if exists to avoid duplicates
+                        if (this.signaturePad) {
+                            this.signaturePad.off();
+                            this.signaturePad = null;
+                        }
+
+                        // Initialize SignaturePad
+                        this.signaturePad = new SignaturePad(canvas, {
+                            backgroundColor: 'rgba(255, 255, 255, 0)', // Transparent
+                            penColor: 'rgb(0, 0, 0)',
+                            velocityFilterWeight: 0.7,
+                            minWidth: 0.6,
+                            maxWidth: 1.8,
+                            throttle: 26,
+                            minDistance: 3,
+                        });
+
+                        // Auto full screen on mobile
+                        if (window.innerWidth < 768) {
+                            this.toggleFullScreen(true);
+                        } else {
+                            this.resizeCanvas();
+                        }
+
+                        // Update data model on end stroke
+                        this.signaturePad.addEventListener("endStroke", () => {
+                            if (!this.signaturePad.isEmpty()) {
+                                this.approvalData.signature = this.signaturePad.toDataURL();
+                            }
+                        });
+                        
+                        // Handle window resize
+                        window.addEventListener("resize", () => {
+                            this.resizeCanvas();
+                        });
+                    });
+                },
+                
+                resizeCanvas() {
+                    const canvas = document.getElementById('signature-pad');
+                    if (!canvas || !this.signaturePad) return;
+                    
+                    const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                    
+                    // Store data as vector points to avoid distortion
+                    const data = this.signaturePad.toData();
+                    
+                    canvas.width = canvas.offsetWidth * ratio;
+                    canvas.height = canvas.offsetHeight * ratio;
+                    canvas.getContext("2d").scale(ratio, ratio);
+                    
+                    this.signaturePad.clear(); // This is necessary after resizing
+                    
+                    // Restore data
+                    if (data) {
+                        this.signaturePad.fromData(data);
+                    }
+                },
+                
+                toggleFullScreen(forceState = null) {
+                    if (forceState !== null) {
+                        this.isFullScreen = forceState;
+                    } else {
+                        this.isFullScreen = !this.isFullScreen;
+                    }
+
+                    // Check for mobile portrait to force landscape
+                    if (this.isFullScreen && window.innerWidth < 768 && window.innerHeight > window.innerWidth) {
+                        this.isLandscape = true;
+                    } else {
+                        this.isLandscape = false;
+                    }
+
+                    this.$nextTick(() => {
+                        this.resizeCanvas();
+                    });
+                },
+
+                clearSignature() {
+                    if (this.signaturePad) {
+                        this.signaturePad.clear();
+                        this.approvalData.signature = '';
+                    }
                 }
             }
         }
     </script>
-@endsection
+
+    @endpush

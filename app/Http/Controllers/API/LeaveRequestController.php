@@ -335,6 +335,7 @@ class LeaveRequestController extends Controller
         $request->validate([
             'action' => 'required',
             'comments' => 'nullable|string',
+            'signature' => 'nullable|string',
         ]);
 
         try {
@@ -342,8 +343,27 @@ class LeaveRequestController extends Controller
             $action = $request->input('action');
             $comments = $request->input('comments');
 
+            $signaturePath = null;
+            if ($request->filled('signature')) {
+                $signatureData = $request->input('signature');
+                if (preg_match('/^data:image\/(\w+);base64,/', $signatureData, $type)) {
+                    $signatureData = substr($signatureData, strpos($signatureData, ',') + 1);
+                    $type = strtolower($type[1]); // jpg, png, gif
+                    if (!in_array($type, ['jpg', 'jpeg', 'gif', 'png'])) {
+                         // Handle invalid type if needed
+                    } else {
+                        $signatureData = base64_decode($signatureData);
+                        if ($signatureData !== false) {
+                            $fileName = 'signatures/' . uniqid() . '.' . $type;
+                            Storage::disk('public')->put($fileName, $signatureData);
+                            $signaturePath = $fileName;
+                        }
+                    }
+                }
+            }
+
             // Panggil Service Layer yang memegang semua logika sequential check.
-            $this->leaveRequestService->processApproval($leaveRequest, $approver, $action, $comments);
+            $this->leaveRequestService->processApproval($leaveRequest, $approver, $action, $comments, $signaturePath);
 
             return ResponseFormatter::success(new LeaveRequestResource($leaveRequest->fresh()), 'Approval action recorded successfully.');
 

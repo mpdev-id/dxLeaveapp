@@ -314,6 +314,7 @@ class LeaveRequestController extends Controller
             'action' => 'required|in:Approved,Rejected,Canceled',
             'comments' => 'nullable|string',
             'approver_id' => 'nullable|exists:users,id',
+            'signature' => 'nullable|string',
         ]);
 
         try {
@@ -326,6 +327,25 @@ class LeaveRequestController extends Controller
             $currentStep = $this->workflowService->getCurrentStep($leaveRequest);
             if (!$currentStep) {
                 return ResponseFormatter::error(null, 'No pending approval step found for this request.', 400);
+            }
+
+            $signaturePath = null;
+            if ($request->filled('signature')) {
+                $signatureData = $request->input('signature');
+                if (preg_match('/^data:image\/(\w+);base64,/', $signatureData, $type)) {
+                    $signatureData = substr($signatureData, strpos($signatureData, ',') + 1);
+                    $type = strtolower($type[1]); // jpg, png, gif
+                    if (!in_array($type, ['jpg', 'jpeg', 'gif', 'png'])) {
+                         // Handle invalid type if needed, or just ignore
+                    } else {
+                        $signatureData = base64_decode($signatureData);
+                        if ($signatureData !== false) {
+                            $fileName = 'signatures/' . uniqid() . '.' . $type;
+                            Storage::disk('public')->put($fileName, $signatureData);
+                            $signaturePath = $fileName;
+                        }
+                    }
+                }
             }
 
             // Allow admin to approve on behalf of another user
@@ -354,10 +374,10 @@ class LeaveRequestController extends Controller
                 }
 
                 // Process approval with selected approver
-                $this->leaveRequestService->processApproval($leaveRequest, $approver, $action, $comments);
+                $this->leaveRequestService->processApproval($leaveRequest, $approver, $action, $comments, $signaturePath);
             } else {
                 // Normal flow: Authenticated user approves
-                $this->leaveRequestService->processApproval($leaveRequest, $admin, $action, $comments);
+                $this->leaveRequestService->processApproval($leaveRequest, $admin, $action, $comments, $signaturePath);
             }
 
             return ResponseFormatter::success(new LeaveRequestResource($leaveRequest->fresh()), 'Approval action recorded successfully.');

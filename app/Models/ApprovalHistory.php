@@ -20,6 +20,7 @@ class ApprovalHistory extends Model
         'approver_user_id',
         'action',
         'comments',
+        'signature_path',
     ];
 
     /**

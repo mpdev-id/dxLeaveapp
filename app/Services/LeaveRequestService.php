@@ -25,9 +25,9 @@ class LeaveRequestService
     /**
      * Menangani tindakan persetujuan/penolakan untuk permintaan cuti.
      */
-    public function processApproval(LeaveRequest $request, User $approver, string $action, ?string $comments = null): void
+    public function processApproval(LeaveRequest $request, User $approver, string $action, ?string $comments = null, ?string $signaturePath = null): void
     {
-        DB::transaction(function () use ($request, $approver, $action, $comments) {
+        DB::transaction(function () use ($request, $approver, $action, $comments, $signaturePath) {
             $currentStep = $this->workflowService->getCurrentStep($request);
 
             if (!$currentStep) {
@@ -47,6 +47,7 @@ class LeaveRequestService
                 'approver_user_id' => $approver->id,
                 'action' => $action,
                 'comments' => $comments,
+                'signature_path' => $signaturePath,
             ]);
 
             // 2. PERBARUI STATUS PERMINTAAN CUTI
