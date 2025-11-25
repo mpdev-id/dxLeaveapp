@@ -8,7 +8,7 @@
     
     {{-- PWA Meta Tags --}}
     <meta name="description" content="Cutikuy - Employee Leave Management System">
-    <meta name="theme-color" content="#0d6efd">
+    <meta name="theme-color" content="#ffbffaff">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -40,7 +40,8 @@
 
     {{-- Top Navbar (Desktop/Tablet) --}}
     <div class="navbar bg-base-100 shadow-lg sticky top-0 z-50" x-data="navbarUser('{{ config('app.base_api') }}')" x-init="init()">
-        <div class="flex-1">
+        <div class="flex-1 flex items-center gap-2">
+            <img src="{{ asset('images/cute_duck_attendance.png') }}" alt="Cutikuy" class="w-10 h-10 object-contain">
             <a class="btn btn-ghost text-xl">{{ config('app.name', 'Cutikuy') }}</a>
         </div>
         <div class="flex-none gap-2">

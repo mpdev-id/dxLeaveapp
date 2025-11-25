@@ -9,7 +9,7 @@
 
         {{-- PWA Meta Tags --}}
         <meta name="description" content="Cutikuy - Employee Leave Management System">
-        <meta name="theme-color" content="#0d6efd">
+        <meta name="theme-color" content="#ffbffaff">
         <meta name="mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -40,6 +40,9 @@
         <div class="m-auto container-fluid">
             <div class="hero-content flex-col lg:flex-row-reverse">
                 <div class="text-center lg:text-left px-8">
+                    <div class="flex justify-center lg:justify-start mb-4">
+                        <img src="{{ asset('images/cute_duck_attendance.png') }}" alt="Cutikuy Mascot" class="w-48 h-48 object-contain drop-shadow-2xl">
+                    </div>
                     <h1 class="text-5xl font-bold">{{ config('app.name', 'SIALAN') }}</h1>
                     <p class="py-6">Sistem Informasi Admin Leave App Nich! Please log in to access your account and manage your leave requests.</p>
                     <a href="{{ url('/documentation.html') }}" class="btn btn-warning shadow-xl btn-sm btn-outline m-t">API Doc's</a>

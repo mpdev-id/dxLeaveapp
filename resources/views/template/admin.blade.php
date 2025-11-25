@@ -63,7 +63,10 @@
             <div class="drawer-side bg-purple-400/25 z-2">
                 <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
                 <ul class="menu p-4 w-60 min-h-full bg-base-200 text-base-content rounded-r-xl">
-                    <li class="text-2xl font-bold p-4">{{ config('app.name', 'Laravel') }}</li>
+                    <li class="flex items-center justify-center mb-2">
+                        <img src="{{ asset('images/cute_duck_attendance.png') }}" alt="Cutikuy" class="w-20 h-20 object-contain">
+                    </li>
+                    <li class="text-2xl font-bold p-4 text-center">{{ config('app.name', 'Laravel') }}</li>
                     <li>
                         <a href="{{ route('admin.dashboard.index') }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
