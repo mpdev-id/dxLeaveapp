@@ -29,6 +29,7 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     Route::get('user/leave-balances', [UserController::class, 'getLeaveBalances']);
     Route::patch('user/update-phone', [UserController::class, 'updatePhoneNumber']);
     Route::patch('user/change-password', [UserController::class, 'changePassword']);
+    Route::post('user/test-whatsapp', [UserController::class, 'testWhatsApp']);
     Route::post('logout', [UserController::class, 'logout']);
 
     // --- Rute Modul Cuti (Leave Requests) ---

@@ -6,18 +6,22 @@
 <div x-data="userProfile('{{ config('app.base_api') }}')" x-init="init()" class="max-w-4xl mx-auto">
     
     <!-- Profile Header Card -->
-    <div class="card bg-gradient-to-br from-primary to-secondary text-primary-content shadow-xl mb-6">
+    <div class="card bg-primary text-primary-content shadow-xl mb-6">
         <div class="card-body items-center text-center py-8">
             <div class="avatar online placeholder mb-4">
-                <div class="bg-base-100 text-primary rounded-full w-24 ring ring-primary-content ring-offset-base-100 ring-offset-2">
-                    <span class="text-3xl font-bold" x-text="user.name ? user.name.charAt(0).toUpperCase() : 'U'"></span>
+                <div class="w-24 rounded-full ring ring-primary-content ring-offset-base-100 ring-offset-2">
+                    <img
+                        alt="User Avatar"
+                        :src="`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'U')}&background=random&color=fff&size=128&bold=true`"
+                        class="w-full h-full object-cover"
+                    />
                 </div>
             </div>
             <h2 class="card-title text-2xl font-bold" x-text="user.name">Loading...</h2>
-            <div class="badge badge-lg badge-ghost" x-text="user.employee_code">-</div>
-            <div class="flex gap-2 mt-2">
-                <div class="badge badge-outline" x-text="user.department?.name || 'No Department'"></div>
-                <div class="badge badge-outline" x-text="user.role || 'Employee'"></div>
+            <div class="badge badge-lg badge-ghost mx-auto" x-text="user.employee_code">-</div>
+            <div class="flex flex-wrap justify-center gap-2 mt-2">
+                <div class="badge" :class="user.department?.name ? 'badge-primary' : 'badge-neutral'" x-text="user.department?.name || 'No Department'"></div>
+                <div class="badge" :class="user.role ? 'badge-secondary' : 'badge-neutral'" x-text="user.role || 'Employee'"></div>
             </div>
         </div>
     </div>
@@ -37,20 +41,22 @@
 
         <!-- Phone Card -->
         <div class="stat bg-base-100 shadow rounded-box">
-            <div class="stat-figure text-success">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
+            <div class="stat-figure text-success"  @click="testWhatsApp" :disabled="testingWhatsApp">
+                <span x-show="testingWhatsApp" class="loading loading-spinner"></span>
+                <svg x-show="!testingWhatsApp" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
                 </svg>
             </div>
             <div class="stat-title">WhatsApp</div>
-            <div class="stat-value text-sm flex items-center justify-between">
+            <div class="stat-value text-sm">
                 <span x-text="user.phone_number || '-'">-</span>
-                <button @click="openEditPhoneModal" class="btn btn-ghost btn-xs btn-circle">
+                <button  @click="openEditPhoneModal" class="btn btn-ghost btn-xs btn-circle">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
                     </svg>
                 </button>
             </div>
+                    </div>
         </div>
 
         <!-- Tenure Card -->
@@ -122,6 +128,20 @@
             </svg>
             Logout
         </button>
+    </div>
+
+    <!-- Test WhatsApp Button -->
+    <div class="mt-6">
+        <button @click="testWhatsApp" class="btn btn-success btn-outline w-full" :disabled="testingWhatsApp">
+            <span x-show="testingWhatsApp" class="loading loading-spinner"></span>
+            <svg x-show="!testingWhatsApp" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 9.75a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 01.778-.332 48.294 48.294 0 005.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+            </svg>
+            <span x-text="testingWhatsApp ? 'Sending...' : '📱 Test WhatsApp Message'"></span>
+        </button>
+        <p class="text-xs text-center text-base-content/50 mt-2">
+            test message
+        </p>
     </div>
 
     <!-- Edit Phone Number Modal -->
@@ -249,6 +269,7 @@
                 new_password_confirmation: ''
             },
             changingPassword: false,
+            testingWhatsApp: false,
 
             async init() {
                 if (!this.token) return;
@@ -320,8 +341,8 @@
                             confirmButtonText: 'OK'
                         });
 
-                        this.sendWhatsAppNotification(this.user.phone_number);
-                    } else {
+                        // this.sendWhatsAppNotification(this.user.phone_number);
+                    } else {                        
                         throw new Error(data.meta?.message || 'Failed to update phone number');
                     }
                 } catch (error) {
@@ -334,28 +355,6 @@
                 } finally {
                     this.updatingPhone = false;
                 }
-            },
-
-            sendWhatsAppNotification(phoneNumber) {
-                const message = `Halo ${this.user.name},\n\nNomor WhatsApp Anda telah berhasil diperbarui di sistem Cutikuy.\n\n📱 Nomor Baru: ${phoneNumber}\n\nJika Anda tidak melakukan perubahan ini, segera hubungi administrator.\n\nTerima kasih,\nTim Cutikuy`;
-                
-                const formattedPhone = phoneNumber.replace(/[^0-9]/g, '');
-                const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
-                
-                Swal.fire({
-                    title: 'Send WhatsApp Notification?',
-                    text: 'Would you like to send a confirmation message to your new WhatsApp number?',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#25D366',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Yes, send it!',
-                    cancelButtonText: 'Skip'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        window.open(whatsappUrl, '_blank');
-                    }
-                });
             },
 
             openChangePasswordModal() {
@@ -457,6 +456,52 @@
                 if (days > 0 && years === 0) result += `${days}d`;
                 
                 return result.trim() || 'Today';
+            },
+
+            async testWhatsApp() {
+                if (!this.user.phone_number) {
+                    Swal.fire({
+                        title: 'No Phone Number',
+                        text: 'Please add your WhatsApp number first',
+                        icon: 'warning',
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
+
+                this.testingWhatsApp = true;
+                try {
+                    const response = await fetch(`${baseApiUrl}/user/test-whatsapp`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${this.token}`,
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        Swal.fire({
+                            title: 'Success!',
+                            html: `Test message sent to:<br><strong>${this.user.phone_number}</strong><br><br>Please check your WhatsApp! 📱`,
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        });
+                    } else {
+                        throw new Error(data.meta?.message || data.data?.message || 'Failed to send test message');
+                    }
+                } catch (error) {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: error.message || 'Failed to send test message',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                } finally {
+                    this.testingWhatsApp = false;
+                }
             },
 
             logout() {

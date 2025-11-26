@@ -419,4 +419,58 @@ class UserController extends Controller
             );
         }
     }
+
+    /**
+     * Send test WhatsApp message to user
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function testWhatsApp(Request $request)
+    {
+        try {
+            $user = $request->user();
+
+            if (!$user->phone_number) {
+                return ResponseFormatter::error(
+                    ['message' => 'No phone number registered'],
+                    'Phone Number Required',
+                    400
+                );
+            }
+
+            $message = "Halo {$user->name}! 👋\n\n";
+            $message .= "Ini adalah pesan test dari sistem Cutikuy.\n\n";
+            $message .= "✅ WhatsApp API berfungsi dengan baik!\n";
+            $message .= "📱 Nomor: {$user->phone_number}\n";
+            $message .= "📧 Email: {$user->email}\n";
+            $message .= "🏢 Department: " . ($user->department->name ?? 'N/A') . "\n\n";
+            $message .= "Waktu: " . now()->format('d M Y H:i:s') . "\n\n";
+            $message .= "Terima kasih,\nTim Cutikuy 🦆";
+
+            $sent = $this->whatsappService->sendMessage($user->phone_number, $message);
+
+            if ($sent) {
+                return ResponseFormatter::success(
+                    [
+                        'message' => 'Test message sent successfully',
+                        'phone' => $user->phone_number
+                    ],
+                    'WhatsApp Test Successful'
+                );
+            } else {
+                return ResponseFormatter::error(
+                    ['message' => 'Failed to send WhatsApp message. Check logs for details.'],
+                    'WhatsApp Send Failed',
+                    500
+                );
+            }
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(
+                null,
+                'Failed to send test message: ' . $e->getMessage(),
+                500
+            );
+        }
+    }
 }
