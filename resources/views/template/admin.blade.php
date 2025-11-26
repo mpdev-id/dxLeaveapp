@@ -61,7 +61,7 @@
             </div> 
 
             {{-- Drawer Sidebar --}}
-            <div class="drawer-side bg-purple-400/25 z-1">
+            <div class="drawer-side bg-purple-400/25 z-2">
                 <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
                 <ul class="menu p-4 w-60 min-h-full bg-base-200 text-base-content z-1">
                     <li class="flex items-center justify-center mb-2">
