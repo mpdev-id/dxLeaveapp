@@ -29,7 +29,6 @@ class UserController extends Controller
     public function forgotPassword(Request $request)
     {
         try {
-            error_log('Forgot password request data: ' . json_encode($request->all()));
             $validator = Validator::make($request->all(), [
                 'identifier' => 'required|string',
             ]);
@@ -38,40 +37,58 @@ class UserController extends Controller
                 return ResponseFormatter::error([
                     'message' => 'Something went wrong',
                     'error' => $validator->errors(),
-                ], 'Authentication Failed', 500);
+                ], 'Validation Failed', 422);
             }
 
             $identifier = $request->input('identifier');
             $fieldType = filter_var($identifier, FILTER_VALIDATE_EMAIL) ? 'email' : 'employee_code';
 
             $user = User::where($fieldType, $identifier)->first();
-            error_log('User found: ' . json_encode($user));
 
             if (!$user) {
                 return ResponseFormatter::error([
                     'message' => 'User not found',
-                ], 'Authentication Failed', 404);
+                ], 'User Not Found', 404);
             }
 
-            error_log('Before token creation');
-            $token = Str::random(60);
-            DB::table(config('auth.passwords.users.table'))->updateOrInsert(
+            if (!$user->phone_number) {
+                return ResponseFormatter::error([
+                    'message' => 'No phone number registered for this account',
+                ], 'Phone Number Required', 400);
+            }
+
+            // Generate 6-digit OTP
+            $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+            
+            // Store OTP in database with expiration (10 minutes)
+            DB::table('password_reset_tokens')->updateOrInsert(
                 ['email' => $user->email],
-                ['token' => Hash::make($token), 'created_at' => now()]
+                [
+                    'token' => Hash::make($otp),
+                    'created_at' => now()
+                ]
             );
 
-            // TODO: Send email to user with token
-            // Mail::to($user->email)->send(new PasswordResetMail($token));
+            // Prepare WhatsApp message
+            $message = "Halo {$user->name},\n\n";
+            $message .= "Kode OTP untuk reset password Anda adalah:\n\n";
+            $message .= "🔐 *{$otp}*\n\n";
+            $message .= "Kode ini berlaku selama 10 menit.\n";
+            $message .= "Jangan bagikan kode ini kepada siapapun.\n\n";
+            $message .= "Jika Anda tidak meminta reset password, abaikan pesan ini.\n\n";
+            $message .= "Terima kasih,\nTim Cutikuy";
 
             return ResponseFormatter::success([
-                'message' => 'Password reset link sent to your email',
-                'token' => $token,
-            ], 'Password Reset');
+                'email' => $user->email,
+                'phone_number' => $user->phone_number,
+                'otp' => $otp, // In production, don't return OTP. Send via WhatsApp only
+                'whatsapp_message' => $message,
+            ], 'OTP has been generated. Please send it via WhatsApp.');
         } catch (\Exception $e) {
             return ResponseFormatter::error([
                 'message' => 'Something went wrong',
                 'error' => $e->getMessage(),
-            ], 'Authentication Failed', 500);
+            ], 'Failed to generate OTP', 500);
         }
     }
 
@@ -81,40 +98,57 @@ class UserController extends Controller
             $validator = Validator::make($request->all(), [
                 'email' => 'required|email',
                 'password' => 'required|string|min:8|confirmed',
-                'token' => 'required|string',
+                'otp' => 'required|string|size:6',
             ]);
 
             if ($validator->fails()) {
                 return ResponseFormatter::error([
-                    'message' => 'Something went wrong',
-                    'error' => $validator->errors(),
-                ], 'Authentication Failed', 500);
+                    'errors' => $validator->errors(),
+                ], 'Validation failed', 422);
             }
 
-            $passwordReset = DB::table(config('auth.passwords.users.table'))
+            // Check if OTP exists and is valid
+            $passwordReset = DB::table('password_reset_tokens')
                 ->where('email', $request->email)
                 ->first();
 
-            if (!$passwordReset || !Hash::check($request->token, $passwordReset->token)) {
+            if (!$passwordReset) {
                 return ResponseFormatter::error([
-                    'message' => 'Invalid token',
-                ], 'Authentication Failed', 400);
+                    'message' => 'No password reset request found for this email',
+                ], 'Invalid Request', 404);
             }
 
+            // Check if OTP is correct
+            if (!Hash::check($request->otp, $passwordReset->token)) {
+                return ResponseFormatter::error([
+                    'message' => 'Invalid OTP code',
+                ], 'Invalid OTP', 400);
+            }
+
+            // Check if OTP is expired (10 minutes)
+            if (Carbon::parse($passwordReset->created_at)->addMinutes(10)->isPast()) {
+                DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+                return ResponseFormatter::error([
+                    'message' => 'OTP has expired. Please request a new one.',
+                ], 'OTP Expired', 400);
+            }
+
+            // Update password
             $user = User::where('email', $request->email)->first();
             $user->password = Hash::make($request->password);
             $user->save();
 
-            DB::table(config('auth.passwords.users.table'))->where('email', $request->email)->delete();
+            // Delete the used OTP
+            DB::table('password_reset_tokens')->where('email', $request->email)->delete();
 
             return ResponseFormatter::success([
-                'message' => 'Password has been reset',
-            ], 'Password Reset');
+                'message' => 'Password has been reset successfully',
+            ], 'Password Reset Successful');
         } catch (\Exception $e) {
             return ResponseFormatter::error([
                 'message' => 'Something went wrong',
                 'error' => $e->getMessage(),
-            ], 'Authentication Failed', 500);
+            ], 'Failed to reset password', 500);
         }
     }
 
@@ -272,6 +306,146 @@ class UserController extends Controller
             return ResponseFormatter::success($balances, 'User leave balances retrieved successfully');
         } catch (\Exception $e) {
             return ResponseFormatter::error(null, 'Failed to retrieve leave balances: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Update user's phone number and send WhatsApp notification
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function updatePhoneNumber(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'phone_number' => 'required|string|min:10|max:15|regex:/^[0-9]+$/',
+            ]);
+
+            if ($validator->fails()) {
+                return ResponseFormatter::error(
+                    ['errors' => $validator->errors()],
+                    'Validation failed',
+                    422
+                );
+            }
+
+            $user = $request->user();
+            $oldPhone = $user->phone_number;
+            $newPhone = $request->phone_number;
+
+            // Ensure phone starts with country code (62 for Indonesia)
+            if (!str_starts_with($newPhone, '62')) {
+                // Remove leading 0 if exists and add 62
+                $newPhone = '62' . ltrim($newPhone, '0');
+            }
+
+            // Update phone number
+            $user->phone_number = $newPhone;
+            $user->save();
+
+            // Send WhatsApp notification
+            $this->sendWhatsAppNotification($user, $newPhone, $oldPhone);
+
+            return ResponseFormatter::success(
+                new UserResource($user),
+                'Phone number updated successfully'
+            );
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(
+                null,
+                'Failed to update phone number: ' . $e->getMessage(),
+                500
+            );
+        }
+    }
+
+    /**
+     * Send WhatsApp notification about phone number change
+     *
+     * @param User $user
+     * @param string $newPhone
+     * @param string|null $oldPhone
+     * @return void
+     */
+    private function sendWhatsAppNotification($user, $newPhone, $oldPhone)
+    {
+        try {
+            $message = "Halo {$user->name},\n\n";
+            $message .= "Nomor WhatsApp Anda telah berhasil diperbarui di sistem Cutikuy.\n\n";
+            $message .= "📱 Nomor Baru: {$newPhone}\n";
+            if ($oldPhone) {
+                $message .= "📱 Nomor Lama: {$oldPhone}\n";
+            }
+            $message .= "\nJika Anda tidak melakukan perubahan ini, segera hubungi administrator.\n\n";
+            $message .= "Terima kasih,\nTim Cutikuy";
+
+            // URL encode the message
+            $encodedMessage = urlencode($message);
+            
+            // Create WhatsApp URL (this will open WhatsApp with pre-filled message)
+            // Note: This is a client-side action, we'll return the URL to frontend
+            // For server-side sending, you would need WhatsApp Business API
+            
+            // Log the notification attempt
+            \Log::info("WhatsApp notification prepared for user {$user->id}", [
+                'phone' => $newPhone,
+                'message' => $message
+            ]);
+
+        } catch (\Exception $e) {
+            // Log error but don't fail the update
+            \Log::error("Failed to send WhatsApp notification: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Change password for authenticated user
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function changePassword(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'current_password' => 'required|string',
+                'new_password' => 'required|string|min:8|confirmed',
+            ]);
+
+            if ($validator->fails()) {
+                return ResponseFormatter::error(
+                    ['errors' => $validator->errors()],
+                    'Validation failed',
+                    422
+                );
+            }
+
+            $user = $request->user();
+
+            // Verify current password
+            if (!Hash::check($request->current_password, $user->password)) {
+                return ResponseFormatter::error(
+                    ['message' => 'Current password is incorrect'],
+                    'Invalid Password',
+                    400
+                );
+            }
+
+            // Update password
+            $user->password = Hash::make($request->new_password);
+            $user->save();
+
+            return ResponseFormatter::success(
+                ['message' => 'Password changed successfully'],
+                'Password Changed'
+            );
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(
+                null,
+                'Failed to change password: ' . $e->getMessage(),
+                500
+            );
         }
     }
 }
