@@ -161,17 +161,7 @@
                         this.phoneNumber = data.data.phone_number;
                         this.otpSent = true;
                         
-                        // Open WhatsApp with OTP message
-                        const message = data.data.whatsapp_message;
-                        const formattedPhone = this.phoneNumber.replace(/[^0-9]/g, '');
-                        const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
-                        
-                        this.successMessage = 'OTP generated! Opening WhatsApp...';
-                        
-                        // Open WhatsApp in new tab
-                        setTimeout(() => {
-                            window.open(whatsappUrl, '_blank');
-                        }, 1000);
+                        this.successMessage = 'OTP has been sent to your WhatsApp number. Please check your WhatsApp.';
                     } else {
                         this.errorMessage = data.meta?.message || 'Failed to send OTP';
                     }

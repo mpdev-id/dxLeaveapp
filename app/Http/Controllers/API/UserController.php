@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Services\EntitlementService;
+use App\Services\WhatsAppService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,10 +21,12 @@ use Spatie\Permission\Models\Role;
 class UserController extends Controller
 {
     protected $entitlementService;
+    protected $whatsappService;
 
-    public function __construct(EntitlementService $entitlementService)
+    public function __construct(EntitlementService $entitlementService, WhatsAppService $whatsappService)
     {
         $this->entitlementService = $entitlementService;
+        $this->whatsappService = $whatsappService;
     }
 
     public function forgotPassword(Request $request)
@@ -69,21 +72,21 @@ class UserController extends Controller
                 ]
             );
 
-            // Prepare WhatsApp message
-            $message = "Halo {$user->name},\n\n";
-            $message .= "Kode OTP untuk reset password Anda adalah:\n\n";
-            $message .= "🔐 *{$otp}*\n\n";
-            $message .= "Kode ini berlaku selama 10 menit.\n";
-            $message .= "Jangan bagikan kode ini kepada siapapun.\n\n";
-            $message .= "Jika Anda tidak meminta reset password, abaikan pesan ini.\n\n";
-            $message .= "Terima kasih,\nTim Cutikuy";
+            // Send OTP via WhatsApp
+            $sent = $this->whatsappService->sendOTP($user->phone_number, $otp, $user->name);
+
+            if (!$sent) {
+                \Log::warning('Failed to send OTP via WhatsApp, but OTP was generated', [
+                    'user_id' => $user->id,
+                    'phone' => $user->phone_number
+                ]);
+            }
 
             return ResponseFormatter::success([
                 'email' => $user->email,
                 'phone_number' => $user->phone_number,
-                'otp' => $otp, // In production, don't return OTP. Send via WhatsApp only
-                'whatsapp_message' => $message,
-            ], 'OTP has been generated. Please send it via WhatsApp.');
+                'message' => 'OTP has been sent to your WhatsApp number',
+            ], 'OTP sent successfully');
         } catch (\Exception $e) {
             return ResponseFormatter::error([
                 'message' => 'Something went wrong',
@@ -345,7 +348,14 @@ class UserController extends Controller
             $user->save();
 
             // Send WhatsApp notification
-            $this->sendWhatsAppNotification($user, $newPhone, $oldPhone);
+            $sent = $this->whatsappService->sendPhoneChangeNotification($newPhone, $user->name, $oldPhone);
+
+            if (!$sent) {
+                \Log::warning('Failed to send WhatsApp notification for phone change', [
+                    'user_id' => $user->id,
+                    'new_phone' => $newPhone
+                ]);
+            }
 
             return ResponseFormatter::success(
                 new UserResource($user),
@@ -357,45 +367,6 @@ class UserController extends Controller
                 'Failed to update phone number: ' . $e->getMessage(),
                 500
             );
-        }
-    }
-
-    /**
-     * Send WhatsApp notification about phone number change
-     *
-     * @param User $user
-     * @param string $newPhone
-     * @param string|null $oldPhone
-     * @return void
-     */
-    private function sendWhatsAppNotification($user, $newPhone, $oldPhone)
-    {
-        try {
-            $message = "Halo {$user->name},\n\n";
-            $message .= "Nomor WhatsApp Anda telah berhasil diperbarui di sistem Cutikuy.\n\n";
-            $message .= "📱 Nomor Baru: {$newPhone}\n";
-            if ($oldPhone) {
-                $message .= "📱 Nomor Lama: {$oldPhone}\n";
-            }
-            $message .= "\nJika Anda tidak melakukan perubahan ini, segera hubungi administrator.\n\n";
-            $message .= "Terima kasih,\nTim Cutikuy";
-
-            // URL encode the message
-            $encodedMessage = urlencode($message);
-            
-            // Create WhatsApp URL (this will open WhatsApp with pre-filled message)
-            // Note: This is a client-side action, we'll return the URL to frontend
-            // For server-side sending, you would need WhatsApp Business API
-            
-            // Log the notification attempt
-            \Log::info("WhatsApp notification prepared for user {$user->id}", [
-                'phone' => $newPhone,
-                'message' => $message
-            ]);
-
-        } catch (\Exception $e) {
-            // Log error but don't fail the update
-            \Log::error("Failed to send WhatsApp notification: " . $e->getMessage());
         }
     }
 
