@@ -3,7 +3,8 @@
 @section('title', 'Workflows')
 
 @section('content')
-    <div class="flex justify-between items-center mb-4">
+<div class="container mx-auto px-4 sm:px-8 bg-base-100 border border-base-200 rounded-lg">
+    <div class="flex justify-between items-center mb-4 py-8">
         <h1 class="text-2xl font-bold">Workflows</h1>
         <a href="{{ route('admin.workflows.create') }}" class="btn btn-primary">Create Workflow</a>
     </div>
@@ -43,4 +44,5 @@
             </tbody>
         </table>
     </div>
+</div>
 @endsection

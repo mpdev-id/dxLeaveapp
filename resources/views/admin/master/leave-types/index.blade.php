@@ -1,7 +1,7 @@
 @extends('template.admin')
 @section('title', 'Admin | Manage Leave Types')
 @section('content')
-<div class="container mx-auto px-4 sm:px-8">
+<div class="container mx-auto px-4 sm:px-8 bg-base-100 border border-base-200 rounded-lg">
     <div class="py-8" x-data="leaveTypesTable('{{ config('app.base_api') }}')" x-init="init()">
         <div class="flex justify-between items-center">
             <h2 class="text-2xl font-semibold leading-tight">Leave Types</h2>

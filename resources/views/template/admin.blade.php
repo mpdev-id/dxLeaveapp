@@ -38,7 +38,7 @@
 
             {{-- Page Content --}}
             <div class="drawer-content flex flex-col">
-                <div class="navbar bg-base-100 shadow-lg">
+                <div class="navbar bg-base-100 shadow-lg rounded-2xl">
                     <div class="flex-none lg:hidden">
                         {{-- This is for the mobile view, but the menu is now on the bottom nav --}}
                     </div>
@@ -47,22 +47,23 @@
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-5 h-5 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                         </label>
                     </div>
-                    <div class="flex-1">
+                    <div class="flex-1 flex-none hidden lg:block">
                         <a class="btn btn-ghost text-xl">@yield('title')</a>
                     </div>
                 </div>
 
                 <main class="p-4 md:p-6 pb-24 lg:pb-6">
-                    <div class="bg-base-100 rounded-box shadow p-4 md:p-6">
+                    <!-- <div class="bg-base-100 rounded-box shadow p-4 md:p-6"> -->
+                    <div class="p-4 md:p-6">
                         @yield('content')
                     </div>
                 </main>
             </div> 
 
             {{-- Drawer Sidebar --}}
-            <div class="drawer-side bg-purple-400/25 z-2">
+            <div class="drawer-side bg-purple-400/25 z-1">
                 <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
-                <ul class="menu p-4 w-60 min-h-full bg-base-200 text-base-content rounded-r-xl">
+                <ul class="menu p-4 w-60 min-h-full bg-base-200 text-base-content z-1">
                     <li class="flex items-center justify-center mb-2">
                         <img src="{{ asset('images/cute_duck_attendance.png') }}" alt="Cutikuy" class="w-20 h-20 object-contain rounded-full animated pulse">
                     </li>

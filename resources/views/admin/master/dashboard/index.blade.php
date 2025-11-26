@@ -5,7 +5,7 @@
 @section('content')
     {{-- Stats --}}
     <div x-data="dashboardData('{{ config('app.base_api') }}')" x-init="fetchData()" class="mb-6">
-        <div class="stats shadow w-full">
+        <div class="stats shadow w-full bg-base-100 border border-base-200">
             {{-- Stat Items --}}
             <div class="stat">
                 <div class="stat-figure text-primary">
@@ -36,7 +36,7 @@
         </div>
 
         {{-- User Leave Balances --}}
-        <div class="card bg-base-100 shadow-xl mt-6">
+        <div class="card bg-base-100 shadow mt-6">
             <div class="card-body">
                 <h2 class="card-title">My Leave Balances (Current Year)</h2>
                 <div x-show="loadingBalances" class="text-center">Loading leave balances...</div>
@@ -66,7 +66,7 @@
             </div>
         </div>
         {{-- Calendar --}}
-        <div class="card bg-base-100 shadow-xl mt-6">
+        <div class="card bg-base-100 shadow mt-6">
             <div class="card-body">
                 <h2 class="card-title">Leave & Holiday Calendar</h2>
                 <div id='calendar' class="w-full h-[70vh]"></div>
@@ -74,7 +74,7 @@
         </div>
 
           {{-- Monthly Chart --}}
-        <div class="card bg-base-100 shadow-xl mt-6">
+        <div class="card bg-base-100 shadow mt-6">
             <div class="card-body">
                 <div class="flex flex-wrap justify-between items-center mb-4">
                                     <h2 class="card-title">Monthly Leave Report</h2>

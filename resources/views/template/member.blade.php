@@ -35,6 +35,16 @@
             window.location.href = '/login';
         }
     </script>
+    </script>
+    <style>
+        body {
+            background-image: url({{asset('/images/grid-pattern.svg')}});
+            background-size: 650px;
+            background-repeat: repeat-x;
+            background-position: top;
+            background-attachment: fixed; /* Ensures the background stays fixed even if content scrolls */
+        }
+    </style>
 </head>
 <body class="bg-base-200 min-h-screen pb-16 md:pb-0">
 
