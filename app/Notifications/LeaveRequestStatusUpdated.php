@@ -7,6 +7,8 @@ use App\Models\LeaveRequest;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\WebPush\WebPushChannel;
+use NotificationChannels\WebPush\WebPushMessage;
 
 class LeaveRequestStatusUpdated extends Notification implements ShouldQueue
 {
@@ -37,7 +39,7 @@ class LeaveRequestStatusUpdated extends Notification implements ShouldQueue
      */
     public function via($notifiable)
     {
-        return [WhatsAppChannel::class];
+        return [WhatsAppChannel::class, WebPushChannel::class];
     }
 
     /**
@@ -97,5 +99,33 @@ class LeaveRequestStatusUpdated extends Notification implements ShouldQueue
         $message .= "\n\nThank you,\nCutikuy System";
 
         return $message;
+    }
+
+    /**
+     * Get the Web Push representation of the notification.
+     *
+     * @param  mixed  $notifiable
+     * @return \NotificationChannels\WebPush\WebPushMessage
+     */
+    public function toWebPush($notifiable, $notification)
+    {
+        $status = $this->leaveRequest->current_status;
+        $leaveType = $this->leaveRequest->leaveType->name;
+        
+        $title = "Leave Request Update";
+        $body = "Your {$leaveType} request is now {$status}.";
+
+        if ($status === 'Approved') {
+            $body = "Your {$leaveType} request has been approved! 🎉";
+        } elseif ($status === 'Rejected') {
+            $body = "Your {$leaveType} request was rejected.";
+        }
+
+        return (new WebPushMessage)
+            ->title($title)
+            ->icon('/images/icons/icon-192x192.png')
+            ->body($body)
+            ->action('View Request', 'view_request')
+            ->data(['url' => '/member/leaves']);
     }
 }

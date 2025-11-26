@@ -7,6 +7,8 @@ use App\Models\LeaveRequest;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\WebPush\WebPushChannel;
+use NotificationChannels\WebPush\WebPushMessage;
 
 class NewLeaveRequestForApprover extends Notification implements ShouldQueue
 {
@@ -37,7 +39,7 @@ class NewLeaveRequestForApprover extends Notification implements ShouldQueue
      */
     public function via($notifiable)
     {
-        return [WhatsAppChannel::class];
+        return [WhatsAppChannel::class, WebPushChannel::class];
     }
 
     /**
@@ -83,5 +85,24 @@ class NewLeaveRequestForApprover extends Notification implements ShouldQueue
         }
 
         return $payload;
+    }
+
+    /**
+     * Get the Web Push representation of the notification.
+     *
+     * @param  mixed  $notifiable
+     * @return \NotificationChannels\WebPush\WebPushMessage
+     */
+    public function toWebPush($notifiable, $notification)
+    {
+        $employee = $this->leaveRequest->user;
+        $leaveType = $this->leaveRequest->leaveType->name;
+        
+        return (new WebPushMessage)
+            ->title('New Leave Request')
+            ->icon('/images/icons/icon-192x192.png')
+            ->body("{$employee->name} has requested {$leaveType} leave.")
+            ->action('Review', 'review_request')
+            ->data(['url' => '/member/approver-log']);
     }
 }

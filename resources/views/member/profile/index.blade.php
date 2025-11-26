@@ -151,6 +151,14 @@
                     </a>
                 </template>
 
+                <button @click="togglePushNotifications" class="btn" :class="isPushEnabled ? 'btn-success text-white' : 'btn-outline'">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+                    <span x-text="isPushEnabled ? 'Notifications Enabled' : 'Enable Notifications'"></span>
+                    <span x-show="loadingPush" class="loading loading-spinner loading-xs"></span>
+                </button>
+
                 <button @click="openChangePasswordModal" class="btn btn-outline">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
@@ -285,6 +293,38 @@
 
 @push('scripts')
 <script>
+    function urlBase64ToUint8Array(base64String) {
+        if (!base64String) {
+            console.error('VAPID Public Key is missing.');
+            return new Uint8Array(0);
+        }
+        
+        // Remove any whitespace and clean the string
+        const base64Clean = base64String.replace(/\s/g, '');
+        
+        // Calculate padding
+        const padding = '='.repeat((4 - base64Clean.length % 4) % 4);
+        
+        // Add padding and replace URL-safe characters
+        const base64 = (base64Clean + padding)
+            .replace(/-/g, '+')
+            .replace(/_/g, '/');
+
+        try {
+            const rawData = window.atob(base64);
+            const outputArray = new Uint8Array(rawData.length);
+            for (let i = 0; i < rawData.length; ++i) {
+                outputArray[i] = rawData.charCodeAt(i);
+            }
+            return outputArray;
+        } catch (e) {
+            console.error('Failed to decode VAPID key:', e);
+            console.log('Input string:', base64String);
+            console.log('Processed string:', base64);
+            throw e;
+        }
+    }
+
     function userProfile(baseApiUrl) {
         return {
             user: {},
@@ -299,13 +339,95 @@
             },
             changingPassword: false,
             testingWhatsApp: false,
+            isPushEnabled: false,
+            loadingPush: false,
+            vapidPublicKey: '{{ config('webpush.vapid.public_key') }}'.trim(),
 
             async init() {
                 if (!this.token) return;
                 await Promise.all([
                     this.fetchUser(),
-                    this.fetchBalances()
+                    this.fetchBalances(),
+                    this.checkPushSubscription()
                 ]);
+            },
+
+            async checkPushSubscription() {
+                if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+                    return;
+                }
+                
+                const registration = await navigator.serviceWorker.ready;
+                const subscription = await registration.pushManager.getSubscription();
+                this.isPushEnabled = !!subscription;
+            },
+
+            async togglePushNotifications() {
+                if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+                    Swal.fire('Error', 'Push notifications are not supported in this browser.', 'error');
+                    return;
+                }
+
+                this.loadingPush = true;
+
+                try {
+                    const registration = await navigator.serviceWorker.ready;
+                    
+                    if (this.isPushEnabled) {
+                        // Unsubscribe
+                        const subscription = await registration.pushManager.getSubscription();
+                        if (subscription) {
+                            await subscription.unsubscribe();
+                            await this.updateServerSubscription(subscription, 'unsubscribe');
+                            this.isPushEnabled = false;
+                            Swal.fire('Unsubscribed', 'You will no longer receive push notifications.', 'success');
+                        }
+                    } else {
+                        // Subscribe
+                        const subscription = await registration.pushManager.subscribe({
+                            userVisibleOnly: true,
+                            applicationServerKey: urlBase64ToUint8Array(this.vapidPublicKey)
+                        });
+                        
+                        await this.updateServerSubscription(subscription, 'subscribe');
+                        this.isPushEnabled = true;
+                        Swal.fire('Subscribed', 'You will now receive push notifications!', 'success');
+                    }
+                } catch (error) {
+                    console.error('Push notification error:', error);
+                    Swal.fire('Error', 'Failed to update push notification settings.', 'error');
+                } finally {
+                    this.loadingPush = false;
+                }
+            },
+
+            async updateServerSubscription(subscription, action) {
+                const endpoint = action === 'subscribe' ? '/push/subscribe' : '/push/unsubscribe';
+                
+                try {
+                    const response = await fetch(`${baseApiUrl}${endpoint}`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${this.token}`,
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify(subscription)
+                    });
+
+                    const data = await response.json();
+                    
+                    if (!response.ok) {
+                        console.error('Server subscription error:', data);
+                        throw new Error(data.message || 'Failed to update subscription on server');
+                    }
+                    
+                    console.log('Subscription updated on server:', data);
+                    return data;
+                } catch (error) {
+                    console.error('Failed to update server subscription:', error);
+                    throw error;
+                }
             },
 
             async fetchUser() {

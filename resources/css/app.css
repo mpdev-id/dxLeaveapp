@@ -47,3 +47,8 @@
     left: 0;
     border-radius: 0.25rem;
 }
+
+.pattern-dots {
+    background-image: radial-gradient(currentColor 1px, transparent 1px);
+    background-size: 20px 20px;
+}

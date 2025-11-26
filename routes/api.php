@@ -45,6 +45,10 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     // 3. Approver Log - History of approvals by the current user
     Route::get('approver-log', [LeaveRequestController::class, 'getApproverLog'])
         ->middleware('role_or_permission:manager|approve leave request'); 
+
+    // Push Notifications
+    Route::post('push/subscribe', [\App\Http\Controllers\API\PushSubscriptionController::class, 'store']);
+    Route::post('push/unsubscribe', [\App\Http\Controllers\API\PushSubscriptionController::class, 'destroy']);
 });
 
 Route::get('departments', [DepartmentController::class,'index'])->name('globalDepartments');
@@ -62,6 +66,11 @@ Route::middleware(['auth:sanctum', 'role:Super Admin', 'throttle:120,1'])->prefi
 
     Route::get('users/{user}/status', [AdminUserController::class, 'getStatus'])->name('admin.users.status');
     Route::get('roles', [\App\Http\Controllers\API\MasterDataController::class, 'roles'])->name('admin.roles.index');
+    
+    // Push Notification Testing
+    Route::get('push-notifications/subscribed-users', [\App\Http\Controllers\API\Admin\PushNotificationTestController::class, 'getSubscribedUsers']);
+    Route::post('push-notifications/test', [\App\Http\Controllers\API\Admin\PushNotificationTestController::class, 'sendTest']);
+    Route::post('push-notifications/test-all', [\App\Http\Controllers\API\Admin\PushNotificationTestController::class, 'sendToAll']);
 });
 // --- Rute Administrasi Dasbor (Hanya untuk Admin) ---
 Route::middleware(['auth:sanctum', 'role:Super Admin', 'throttle:120,1'])->prefix('admin/dashboard')->group(function () {

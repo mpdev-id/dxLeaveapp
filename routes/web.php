@@ -54,6 +54,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // New route for Employee's individual Leave Log
     Route::get('/leave-log/{user}', [LeaveLogController::class, 'show'])->name('leave-log.show');
 
+    // Push Notification Test
+    Route::get('/push-notifications/test', function () {
+        return view('admin.push-notifications.test');
+    })->name('push-notifications.test');
+
     Route::resource('workflows', \App\Http\Controllers\Admin\Master\WorkflowController::class);
 });
 
