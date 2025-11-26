@@ -79,18 +79,35 @@
         return {
             formData: {
                 identifier: '',
-                password: ''
+                password: '',
+                remember: false
             },
             loading: false,
             errorMessage: '',
             errors: {},
             init() {
-                // The init function will no longer redirect.
-                // This ensures that every time this page is loaded, the user must log in,
-                // and their role will be checked by the submitForm function.
-                // This prevents non-admin users with a stored token from being redirected incorrectly.
+                // Check if there are remembered credentials
+                const rememberedUser = localStorage.getItem('rememberedUser');
+                if (rememberedUser) {
+                    try {
+                        const userData = JSON.parse(atob(rememberedUser));
+                        this.formData.identifier = userData.identifier || '';
+                        this.formData.password = userData.password || '';
+                        this.formData.remember = true;
+                        
+                        // Update checkbox state
+                        this.$nextTick(() => {
+                            const checkbox = document.querySelector('input[name="remember"]');
+                            if (checkbox) checkbox.checked = true;
+                        });
+                    } catch (e) {
+                        // If decoding fails, remove the corrupted data
+                        localStorage.removeItem('rememberedUser');
+                    }
+                }
+                
+                // Optional: Clear token if exists to force fresh login
                 if (localStorage.getItem('authToken')) {
-                    // Optional: You could clear the token to force a fresh login
                     // localStorage.removeItem('authToken');
                 }
             },
@@ -98,6 +115,11 @@
                 this.loading = true;
                 this.errorMessage = '';
                 this.errors = {};
+                
+                // Get remember me checkbox value
+                const rememberCheckbox = document.querySelector('input[name="remember"]');
+                this.formData.remember = rememberCheckbox ? rememberCheckbox.checked : false;
+                
                 try {
                     const response = await fetch(`${baseApiUrl}/login`, {
                         method: 'POST',
@@ -105,7 +127,10 @@
                             'Content-Type': 'application/json',
                             'Accept': 'application/json'
                         },
-                        body: JSON.stringify(this.formData)
+                        body: JSON.stringify({
+                            identifier: this.formData.identifier,
+                            password: this.formData.password
+                        })
                     });
 
                     const data = await response.json();
@@ -116,18 +141,32 @@
                         } else {
                             this.errorMessage = data.meta?.message || 'An unknown error occurred.';
                         }
-                        return; // Stop execution
+                        return;
                     }
 
                     if (data.data && data.data.access_token) {
                         const user = data.data.user;
-                        // Check if the user is a super admin
-                        if (user && user.role && user.role.includes('Super Admin')) {
-                            localStorage.setItem('authToken', data.data.access_token);
-                            window.location.href = '/admin/dashboard'; // Redirect to dashboard for super admin
+                        
+                        // Handle Remember Me
+                        if (this.formData.remember) {
+                            // Store credentials (base64 encoded for basic obfuscation)
+                            const userData = {
+                                identifier: this.formData.identifier,
+                                password: this.formData.password
+                            };
+                            localStorage.setItem('rememberedUser', btoa(JSON.stringify(userData)));
                         } else {
-                            // Allow other users to login and redirect to member dashboard
-                            localStorage.setItem('authToken', data.data.access_token);
+                            // Remove remembered credentials if unchecked
+                            localStorage.removeItem('rememberedUser');
+                        }
+                        
+                        // Store auth token
+                        localStorage.setItem('authToken', data.data.access_token);
+                        
+                        // Redirect based on role
+                        if (user && user.role && user.role.includes('Super Admin')) {
+                            window.location.href = '/admin/dashboard';
+                        } else {
                             window.location.href = '/dashboard-member';
                         }
                     } else {
