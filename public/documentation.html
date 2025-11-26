@@ -64,6 +64,11 @@
 
         html {
             scroll-behavior: smooth;
+            overflow-x: hidden;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
         }
 
         body {
@@ -74,6 +79,9 @@
             display: flex;
             transition: background-color 0.3s, color 0.3s;
             background-attachment: fixed;
+            overflow-x: hidden;
+            max-width: 100vw;
+            width: 100%;
         }
 
         body.light-mode {
@@ -459,6 +467,35 @@
             display: block;
         }
 
+        .tab-content {
+            display: none;
+            padding: 15px;
+            overflow-y: auto;
+            max-height: calc(100vh - 200px);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .text-center {
+            text-align: center;
+            color: var(--text-color);
+            padding: 40px 20px;
+            opacity: 0.6;
+        }
+
+        #parameters-container table,
+        #response-container table {
+            margin-top: 0;
+        }
+
+        #response-container h4 {
+            color: var(--heading-color);
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -488,6 +525,285 @@
         .comment {
             color: var(--comment-color);
         }
+
+        /* Mobile Menu Toggle */
+        #mobile-menu-toggle {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 1002;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 56px;
+            height: 56px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            cursor: pointer;
+        }
+
+        #mobile-menu-toggle svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+
+        /* Prevent horizontal scroll */
+        html, body {
+            overflow-x: hidden;
+            max-width: 100vw;
+        }
+
+        /* Responsive Styles */
+        @media screen and (max-width: 1200px) {
+            :root {
+                --code-sidebar-width: 350px;
+            }
+
+            #main-content {
+                padding: 40px 30px;
+            }
+        }
+
+        @media screen and (max-width: 992px) {
+            :root {
+                --sidebar-width: 250px;
+                --code-sidebar-width: 320px;
+            }
+
+            #main-content {
+                padding: 30px 20px;
+            }
+
+            .top-right-controls {
+                top: 10px;
+                right: 10px;
+                gap: 5px;
+            }
+
+            .control-btn {
+                width: 36px;
+                height: 36px;
+            }
+
+            .lang-btn {
+                padding: 8px 12px;
+                font-size: 13px;
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            #sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                z-index: 1100;
+                width: 280px;
+            }
+
+            #sidebar.mobile-open {
+                transform: translateX(0);
+            }
+
+            #code-sidebar {
+                width: 100%;
+                max-width: 100%;
+                height: 80vh;
+                top: auto;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                border-left: none;
+                border-top: 1px solid var(--border-color);
+                border-radius: 20px 20px 0 0;
+                transform: translateY(100%);
+                transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+            }
+
+            #code-sidebar.mobile-peek {
+                transform: translateY(20%);
+            }
+
+            #code-sidebar.mobile-full {
+                transform: translateY(0);
+                height: 100vh;
+                border-radius: 0;
+            }
+
+            #code-sidebar.hidden {
+                transform: translateY(100%);
+            }
+
+            #code-sidebar .swipe-handle {
+                display: block;
+                width: 40px;
+                height: 4px;
+                background: var(--border-color);
+                border-radius: 2px;
+                margin: 12px auto 8px;
+                cursor: grab;
+            }
+
+            #code-sidebar .swipe-handle:active {
+                cursor: grabbing;
+            }
+
+            #main-content {
+                margin-left: 0;
+                margin-right: 0;
+                width: 100%;
+                max-width: 100vw;
+                padding: 20px 15px;
+                padding-bottom: 80px;
+                box-sizing: border-box;
+            }
+
+            body.code-sidebar-hidden #main-content {
+                margin-right: 0;
+            }
+
+            #mobile-menu-toggle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .top-right-controls {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .section h2 {
+                font-size: 24px;
+                word-wrap: break-word;
+            }
+
+            .section, .endpoint {
+                max-width: 100%;
+                overflow: hidden;
+            }
+
+            .endpoint-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .endpoint-path {
+                font-size: 14px;
+                word-break: break-all;
+                max-width: 100%;
+            }
+
+            table {
+                font-size: 12px;
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+
+            pre {
+                font-size: 12px;
+                padding: 15px;
+            }
+
+            #code-sidebar h3 {
+                margin-top: 0;
+                font-size: 18px;
+                padding: 0 15px;
+            }
+
+            #hide-code-btn {
+                font-size: 28px;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            :root {
+                --sidebar-width: 100%;
+            }
+
+            #sidebar {
+                width: 100%;
+                max-width: 320px;
+            }
+
+            #main-content {
+                padding: 15px 10px;
+            }
+
+            .section h2 {
+                font-size: 20px;
+            }
+
+            .endpoint-path {
+                font-size: 12px;
+            }
+
+            .method {
+                font-size: 12px;
+                padding: 4px 8px;
+                min-width: 60px;
+            }
+
+            .badge {
+                font-size: 10px;
+                padding: 3px 8px;
+            }
+
+            .code-tab {
+                padding: 8px 10px;
+                font-size: 12px;
+            }
+
+            .top-right-controls {
+                top: 5px;
+                right: 5px;
+            }
+
+            .control-btn {
+                width: 32px;
+                height: 32px;
+            }
+
+            .control-btn svg {
+                width: 16px;
+                height: 16px;
+            }
+
+            .lang-btn {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+
+            #mobile-menu-toggle {
+                width: 48px;
+                height: 48px;
+                bottom: 15px;
+                left: 15px;
+            }
+        }
+
+        /* Overlay for mobile menu */
+        #mobile-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1050;
+        }
+
+        #mobile-overlay.active {
+            display: block;
+        }
     </style>
 </head>
 
@@ -514,6 +830,16 @@
             </svg>
         </button>
     </div>
+
+    <!-- Mobile Menu Toggle -->
+    <button id="mobile-menu-toggle" aria-label="Toggle Menu">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+        </svg>
+    </button>
+
+    <!-- Mobile Overlay -->
+    <div id="mobile-overlay"></div>
 
     <div id="sidebar">
         <h1 data-i18n="sidebarTitle">Cutikuy API</h1>
@@ -672,32 +998,56 @@
     </div>
 
     <div id="code-sidebar">
+        <div class="swipe-handle" style="display: none;"></div>
         <h3>
             <span data-i18n="codeExamplesTitle">Code Examples</span>
             <button id="hide-code-btn" title="Hide Code Examples">&times;</button>
         </h3>
-        <div class="code-tabs" id="language-tabs">
-            <button class="code-tab active" data-lang="curl">cURL</button>
-            <button class="code-tab" data-lang="php">PHP</button>
-            <button class="code-tab" data-lang="js">JavaScript</button>
+        <div class="code-tabs" id="main-tabs">
+            <button class="code-tab active" data-tab="parameters">Parameters</button>
+            <button class="code-tab" data-tab="response">Response</button>
+            <button class="code-tab" data-tab="code">Code</button>
         </div>
-        <div id="code-examples">
-            <div class="code-content active" data-lang-content="curl">
-                <div class="code-block">
-                    <pre data-i18n="clickEndpointHint">Click an endpoint to see an example.</pre><button
-                        class="copy-btn" data-i18n="copyBtn">Copy</button>
-                </div>
+        
+        <!-- Parameters Tab -->
+        <div id="parameters-content" class="tab-content active">
+            <div id="parameters-container">
+                <p class="text-center" data-i18n="clickEndpointHint">Click an endpoint to see parameters.</p>
             </div>
-            <div class="code-content" data-lang-content="php">
-                <div class="code-block">
-                    <pre data-i18n="clickEndpointHint">Click an endpoint to see an example.</pre><button
-                        class="copy-btn" data-i18n="copyBtn">Copy</button>
-                </div>
+        </div>
+
+        <!-- Response Tab -->
+        <div id="response-content" class="tab-content">
+            <div id="response-container">
+                <p class="text-center" data-i18n="clickEndpointHint">Click an endpoint to see response.</p>
             </div>
-            <div class="code-content" data-lang-content="js">
-                <div class="code-block">
-                    <pre data-i18n="clickEndpointHint">Click an endpoint to see an example.</pre><button
-                        class="copy-btn" data-i18n="copyBtn">Copy</button>
+        </div>
+
+        <!-- Code Tab -->
+        <div id="code-content" class="tab-content">
+            <div class="code-tabs" id="language-tabs">
+                <button class="code-tab active" data-lang="curl">cURL</button>
+                <button class="code-tab" data-lang="php">PHP</button>
+                <button class="code-tab" data-lang="js">JavaScript</button>
+            </div>
+            <div id="code-examples">
+                <div class="code-content active" data-lang-content="curl">
+                    <div class="code-block">
+                        <pre data-i18n="clickEndpointHint">Click an endpoint to see an example.</pre><button
+                            class="copy-btn" data-i18n="copyBtn">Copy</button>
+                    </div>
+                </div>
+                <div class="code-content" data-lang-content="php">
+                    <div class="code-block">
+                        <pre data-i18n="clickEndpointHint">Click an endpoint to see an example.</pre><button
+                            class="copy-btn" data-i18n="copyBtn">Copy</button>
+                    </div>
+                </div>
+                <div class="code-content" data-lang-content="js">
+                    <div class="code-block">
+                        <pre data-i18n="clickEndpointHint">Click an endpoint to see an example.</pre><button
+                            class="copy-btn" data-i18n="copyBtn">Copy</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1049,6 +1399,22 @@
                 }
             });
 
+            // Main tabs switching (Parameters, Response, Code)
+            const mainTabs = document.getElementById('main-tabs');
+            mainTabs.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON') {
+                    const tab = e.target.dataset.tab;
+                    mainTabs.querySelector('.active').classList.remove('active');
+                    e.target.classList.add('active');
+                    
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    
+                    document.getElementById(`${tab}-content`).classList.add('active');
+                }
+            });
+
             function renderEndpointHeader(endpointEl, endpointData) {
                 const path = endpointData.path || endpointEl.dataset.id;
                 let badges = '';
@@ -1075,40 +1441,54 @@
                 const endpointData = endpointsData[id];
                 if (!endpointData) { console.warn(`No data for id: ${id}`); return; }
 
+                // Render description in main content
                 const detailsContainer = endpointEl.querySelector('.endpoint-details');
                 if (detailsContainer) {
                     let html = '';
                     if (endpointData.description) {
                         html += `<p>${endpointData.description[currentLang] || endpointData.description['en']}</p>`;
                     }
-
-                    if (endpointData.params && endpointData.params.length > 0) {
-                        html += `<h4 data-i18n="parametersTitle">${i18nData[currentLang].parametersTitle}</h4><table>`;
-                        html += `<tr>
-                                <th data-i18n="fieldHeader">${i18nData[currentLang].fieldHeader}</th>
-                                <th data-i18n="typeHeader">${i18nData[currentLang].typeHeader}</th>
-                                <th data-i18n="locationHeader">${i18nData[currentLang].locationHeader}</th>
-                                <th data-i18n="requiredHeader">${i18nData[currentLang].requiredHeader}</th>
-                             </tr>`;
-                        endpointData.params.forEach(p => {
-                            html += `<tr>
-                                    <td><code>${p.name}</code></td>
-                                    <td>${p.type || 'string'}</td>
-                                    <td>${p.in}</td>
-                                    <td>${p.required ? i18nData[currentLang].yes : i18nData[currentLang].no}</td>
-                                 </tr>`;
-                        });
-                        html += `</table>`;
-                    }
-
-                    if (endpointData.successResponse) {
-                        html += `<h4 data-i18n="successResponseTitle">${i18nData[currentLang].successResponseTitle}</h4><div class="code-block"><pre><code>${endpointData.successResponse.trim()}</code></pre></div>`;
-                    }
-                    if (endpointData.errorResponse) {
-                        html += `<h4 data-i18n="errorResponseTitle">${i18nData[currentLang].errorResponseTitle}</h4><div class="code-block"><pre><code>${endpointData.errorResponse.trim()}</code></pre></div>`;
-                    }
                     detailsContainer.innerHTML = html;
                 }
+
+                // Render Parameters in sidebar
+                const parametersContainer = document.getElementById('parameters-container');
+                let paramsHtml = '';
+                if (endpointData.params && endpointData.params.length > 0) {
+                    paramsHtml += `<table>`;
+                    paramsHtml += `<tr>
+                            <th data-i18n="fieldHeader">${i18nData[currentLang].fieldHeader}</th>
+                            <th data-i18n="typeHeader">${i18nData[currentLang].typeHeader}</th>
+                            <th data-i18n="locationHeader">${i18nData[currentLang].locationHeader}</th>
+                            <th data-i18n="requiredHeader">${i18nData[currentLang].requiredHeader}</th>
+                         </tr>`;
+                    endpointData.params.forEach(p => {
+                        paramsHtml += `<tr>
+                                <td><code>${p.name}</code></td>
+                                <td>${p.type || 'string'}</td>
+                                <td>${p.in}</td>
+                                <td>${p.required ? i18nData[currentLang].yes : i18nData[currentLang].no}</td>
+                             </tr>`;
+                    });
+                    paramsHtml += `</table>`;
+                } else {
+                    paramsHtml = `<p class="text-center">No parameters required.</p>`;
+                }
+                parametersContainer.innerHTML = paramsHtml;
+
+                // Render Response in sidebar
+                const responseContainer = document.getElementById('response-container');
+                let responseHtml = '';
+                if (endpointData.successResponse) {
+                    responseHtml += `<h4 data-i18n="successResponseTitle">${i18nData[currentLang].successResponseTitle}</h4><div class="code-block"><pre><code>${endpointData.successResponse.trim()}</code></pre></div>`;
+                }
+                if (endpointData.errorResponse) {
+                    responseHtml += `<h4 data-i18n="errorResponseTitle">${i18nData[currentLang].errorResponseTitle}</h4><div class="code-block"><pre><code>${endpointData.errorResponse.trim()}</code></pre></div>`;
+                }
+                if (!responseHtml) {
+                    responseHtml = `<p class="text-center">No response examples available.</p>`;
+                }
+                responseContainer.innerHTML = responseHtml;
             }
 
             function renderCodeExamples(endpointEl) {
@@ -1315,6 +1695,159 @@ fetch(url, options).then(...)`;
             const savedLang = localStorage.getItem('api_lang') || 'en';
             setLanguage(savedLang);
             updateActiveLink();
+
+            // Mobile Menu Controls
+            const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+            const mobileOverlay = document.getElementById('mobile-overlay');
+            const sidebar = document.getElementById('sidebar');
+
+            function toggleMobileMenu() {
+                sidebar.classList.toggle('mobile-open');
+                mobileOverlay.classList.toggle('active');
+                document.body.style.overflow = sidebar.classList.contains('mobile-open') ? 'hidden' : '';
+            }
+
+            mobileMenuToggle.addEventListener('click', toggleMobileMenu);
+            mobileOverlay.addEventListener('click', toggleMobileMenu);
+
+            // Close mobile menu when clicking a link
+            sidebar.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    if (window.innerWidth <= 768) {
+                        toggleMobileMenu();
+                    }
+                });
+            });
+
+            // Mobile Bottom Sheet for Code Sidebar
+            const swipeHandle = document.querySelector('.swipe-handle');
+            let touchStartY = 0;
+            let touchCurrentY = 0;
+            let isDragging = false;
+            let currentState = 'hidden'; // hidden, peek, full
+
+            function updateCodeSidebarState(state) {
+                currentState = state;
+                codeSidebar.classList.remove('hidden', 'mobile-peek', 'mobile-full');
+                
+                if (state === 'hidden') {
+                    codeSidebar.classList.add('hidden');
+                    body.classList.add('code-sidebar-hidden');
+                } else if (state === 'peek') {
+                    codeSidebar.classList.add('mobile-peek');
+                    body.classList.remove('code-sidebar-hidden');
+                } else if (state === 'full') {
+                    codeSidebar.classList.add('mobile-full');
+                    body.classList.remove('code-sidebar-hidden');
+                }
+            }
+
+            function handleTouchStart(e) {
+                if (window.innerWidth > 768) return;
+                touchStartY = e.touches[0].clientY;
+                isDragging = true;
+            }
+
+            function handleTouchMove(e) {
+                if (!isDragging || window.innerWidth > 768) return;
+                touchCurrentY = e.touches[0].clientY;
+                const deltaY = touchCurrentY - touchStartY;
+
+                // Prevent default scrolling when dragging handle
+                if (e.target.classList.contains('swipe-handle')) {
+                    e.preventDefault();
+                }
+            }
+
+            function handleTouchEnd(e) {
+                if (!isDragging || window.innerWidth > 768) return;
+                isDragging = false;
+
+                const deltaY = touchCurrentY - touchStartY;
+                const threshold = 50;
+
+                if (Math.abs(deltaY) < threshold) {
+                    // Small movement, treat as tap
+                    if (currentState === 'peek') {
+                        updateCodeSidebarState('full');
+                    } else if (currentState === 'full') {
+                        updateCodeSidebarState('peek');
+                    }
+                    return;
+                }
+
+                // Swipe down
+                if (deltaY > threshold) {
+                    if (currentState === 'full') {
+                        updateCodeSidebarState('peek');
+                    } else if (currentState === 'peek') {
+                        updateCodeSidebarState('hidden');
+                    }
+                }
+                // Swipe up
+                else if (deltaY < -threshold) {
+                    if (currentState === 'peek') {
+                        updateCodeSidebarState('full');
+                    } else if (currentState === 'hidden') {
+                        updateCodeSidebarState('peek');
+                    }
+                }
+            }
+
+            // Add touch listeners to swipe handle
+            if (swipeHandle) {
+                swipeHandle.addEventListener('touchstart', handleTouchStart, { passive: false });
+                swipeHandle.addEventListener('touchmove', handleTouchMove, { passive: false });
+                swipeHandle.addEventListener('touchend', handleTouchEnd);
+            }
+
+            // Update hide/show button behavior for mobile
+            hideCodeBtn.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    updateCodeSidebarState('hidden');
+                } else {
+                    localStorage.setItem('code_sidebar_hidden', 'true');
+                    applySidebarState(true);
+                }
+            });
+
+            showCodeBtn.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    updateCodeSidebarState('peek');
+                } else {
+                    localStorage.setItem('code_sidebar_hidden', 'false');
+                    applySidebarState(false);
+                }
+            });
+
+            // Show/hide swipe handle based on screen size
+            function updateSwipeHandleVisibility() {
+                if (swipeHandle) {
+                    swipeHandle.style.display = window.innerWidth <= 768 ? 'block' : 'none';
+                }
+
+                // Reset to desktop mode when resizing to desktop
+                if (window.innerWidth > 768) {
+                    codeSidebar.classList.remove('mobile-peek', 'mobile-full');
+                    currentState = 'hidden';
+                    const isHidden = localStorage.getItem('code_sidebar_hidden') === 'true';
+                    applySidebarState(isHidden);
+                }
+            }
+
+            window.addEventListener('resize', updateSwipeHandleVisibility);
+            updateSwipeHandleVisibility();
+
+            // When endpoint is clicked on mobile, show code sidebar in peek mode
+            document.querySelectorAll('.endpoint-header').forEach(header => {
+                header.addEventListener('click', () => {
+                    if (window.innerWidth <= 768 && currentState === 'hidden') {
+                        setTimeout(() => {
+                            updateCodeSidebarState('peek');
+                        }, 100);
+                    }
+                });
+            });
         });
     </script>
 </body>
