@@ -124,23 +124,37 @@ self.addEventListener('sync', (event) => {
 
 // Push notification
 self.addEventListener('push', (event) => {
-   // console.log('[Service Worker] Push received');
+    console.log('[Service Worker] Push received', event);
 
-    const data = event.data ? event.data.json() : {};
+    let data = {};
+    if (event.data) {
+        try {
+            data = event.data.json();
+            console.log('[Service Worker] Push data:', data);
+        } catch (e) {
+            console.error('[Service Worker] Failed to parse push data:', e);
+            data = { body: event.data.text() };
+        }
+    }
+
     const title = data.title || 'Cutikuy Notification';
     const options = {
         body: data.body || 'You have a new notification',
-        icon: '/images/icons/icon-192x192.png',
-        badge: '/images/icons/icon-72x72.png',
+        icon: data.icon || '/images/icons/icon-192x192.png',
+        badge: data.badge || '/images/icons/icon-72x72.png',
         vibrate: [200, 100, 200],
         data: data.data || {},
-        actions: data.actions || []
+        actions: data.actions || [],
+        tag: 'push-notification-' + Date.now(), // Unique tag to prevent overwriting
+        renotify: true
     };
 
     event.waitUntil(
         self.registration.showNotification(title, options)
+            .catch(err => console.error('[Service Worker] Show notification error:', err))
     );
 });
+
 
 // Notification click
 self.addEventListener('notificationclick', (event) => {

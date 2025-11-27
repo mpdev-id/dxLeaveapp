@@ -40,8 +40,13 @@ class TestPushNotification extends Notification implements ShouldQueue
         return (new WebPushMessage)
             ->title($this->title)
             ->icon('/images/icons/icon-192x192.png')
+            ->badge('/images/icons/icon-72x72.png')
             ->body($this->body)
             ->action('View', 'view_notification')
-            ->data(['url' => '/member/profile']);
+            ->data([
+                'url' => '/member/profile',
+                'timestamp' => now()->toIso8601String()
+            ])
+            ->vibrate([200, 100, 200]);
     }
 }
