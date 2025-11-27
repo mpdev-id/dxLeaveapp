@@ -299,7 +299,10 @@ class LeaveRequestController extends Controller
                 $leaveRequest->update($validatedData);
                 $updatedLeaveRequest = $leaveRequest->fresh();
 
-                // Kirim notifikasi ke karyawan
+                // Kirim notifikasi ke karyawan - Leave Request Created
+                $updatedLeaveRequest->user->notify(new \App\Notifications\LeaveRequestCreated($updatedLeaveRequest));
+
+                // Kirim notifikasi status update ke karyawan
                 SendLeaveRequestStatusUpdatedNotification::dispatch($updatedLeaveRequest);
 
                 // Kirim notifikasi ke approver
