@@ -8,6 +8,7 @@ use App\Notifications\TestPushNotification;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Log;
 
 class PushNotificationTestController extends Controller
 {
@@ -16,17 +17,28 @@ class PushNotificationTestController extends Controller
      */
     public function getSubscribedUsers(): JsonResponse
     {
-        $users = User::whereHas('pushSubscriptions')
-            ->select('id', 'name', 'email', 'employee_code', 'department_id')
-            ->with('department:id,name')
-            ->withCount('pushSubscriptions')
-            ->orderBy('name')
-            ->get();
+        try {
+            $users = User::whereHas('pushSubscriptions')
+                ->select('id', 'name', 'email', 'employee_code', 'department_id')
+                ->with('department:id,name')
+                ->withCount('pushSubscriptions')
+                ->orderBy('name')
+                ->get();
 
-        return response()->json([
-            'success' => true,
-            'data' => $users,
-        ]);
+            return response()->json([
+                'success' => true,
+                'data' => $users,
+                'total' => $users->count(),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch subscribed users: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch subscribed users',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
@@ -55,16 +67,57 @@ class PushNotificationTestController extends Controller
             ], 404);
         }
 
+        $sentCount = 0;
+        $failedCount = 0;
+        $errors = [];
+
         // Send notification to each user
         foreach ($users as $user) {
-            $user->notify(new TestPushNotification($title, $body));
+            try {
+                $user->notify(new TestPushNotification($title, $body));
+                $sentCount++;
+                
+                Log::info('Push notification sent', [
+                    'user_id' => $user->id,
+                    'user_name' => $user->name,
+                    'title' => $title,
+                ]);
+            } catch (\Exception $e) {
+                $failedCount++;
+                $errors[] = [
+                    'user' => $user->name,
+                    'error' => $e->getMessage(),
+                ];
+                
+                Log::error('Failed to send push notification', [
+                    'user_id' => $user->id,
+                    'user_name' => $user->name,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
 
-        return response()->json([
-            'success' => true,
-            'message' => "Test notification sent to {$users->count()} user(s).",
-            'sent_to' => $users->pluck('name'),
-        ]);
+        // Determine response based on results
+        if ($sentCount > 0) {
+            return response()->json([
+                'success' => true,
+                'message' => "Notification sent to {$sentCount} user(s)" . 
+                            ($failedCount > 0 ? ", {$failedCount} failed" : ""),
+                'sent_count' => $sentCount,
+                'failed_count' => $failedCount,
+                'sent_to' => $users->pluck('name'),
+                'errors' => $errors,
+            ]);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to send notifications to all users',
+                'sent_count' => 0,
+                'failed_count' => $failedCount,
+                'errors' => $errors,
+                'note' => 'This may be due to OpenSSL EC key issue on Windows. Deploy to Linux server for production use.',
+            ], 500);
+        }
     }
 
     /**
@@ -77,8 +130,8 @@ class PushNotificationTestController extends Controller
             'body' => 'nullable|string|max:255',
         ]);
 
-        $title = $validated['title'] ?? 'Test Notification';
-        $body = $validated['body'] ?? 'This is a test push notification from Cutikuy! 🦆';
+        $title = $validated['title'] ?? 'Broadcast Notification';
+        $body = $validated['body'] ?? 'This is a broadcast notification from Cutikuy! 🦆';
 
         $users = User::whereHas('pushSubscriptions')->get();
 
@@ -89,13 +142,56 @@ class PushNotificationTestController extends Controller
             ], 404);
         }
 
-        // Send notification to all subscribed users
-        Notification::send($users, new TestPushNotification($title, $body));
+        $sentCount = 0;
+        $failedCount = 0;
+        $errors = [];
 
-        return response()->json([
-            'success' => true,
-            'message' => "Test notification sent to all {$users->count()} subscribed user(s).",
-            'sent_to' => $users->pluck('name'),
+        // Send notification to all subscribed users
+        foreach ($users as $user) {
+            try {
+                $user->notify(new TestPushNotification($title, $body));
+                $sentCount++;
+            } catch (\Exception $e) {
+                $failedCount++;
+                $errors[] = [
+                    'user' => $user->name,
+                    'error' => $e->getMessage(),
+                ];
+                
+                Log::error('Failed to send broadcast notification', [
+                    'user_id' => $user->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        Log::info('Broadcast notification sent', [
+            'title' => $title,
+            'total_users' => $users->count(),
+            'sent_count' => $sentCount,
+            'failed_count' => $failedCount,
         ]);
+
+        if ($sentCount > 0) {
+            return response()->json([
+                'success' => true,
+                'message' => "Broadcast sent to {$sentCount} user(s)" . 
+                            ($failedCount > 0 ? ", {$failedCount} failed" : ""),
+                'total_users' => $users->count(),
+                'sent_count' => $sentCount,
+                'failed_count' => $failedCount,
+                'errors' => $errors,
+            ]);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to send broadcast to all users',
+                'total_users' => $users->count(),
+                'sent_count' => 0,
+                'failed_count' => $failedCount,
+                'errors' => $errors,
+                'note' => 'This may be due to OpenSSL EC key issue on Windows. Deploy to Linux server for production use.',
+            ], 500);
+        }
     }
 }
