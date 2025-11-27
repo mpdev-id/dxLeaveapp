@@ -185,6 +185,7 @@ class PushNotificationTestController extends Controller
                                 ($failedCount > 0 ? ", {$failedCount} failed" : ""),
                     'sent_count' => $sentCount,
                     'failed_count' => $failedCount,
+                    'sent_to' => $users->pluck('name'), // Add this line
                     'errors' => $errors,
                 ]);
             } else {
