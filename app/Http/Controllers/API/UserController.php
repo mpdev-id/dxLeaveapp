@@ -261,6 +261,29 @@ class UserController extends Controller
 
             $tokenResult = $user->createToken('authToken')->plainTextToken;
 
+            // Send login notification if user has push subscriptions
+            try {
+                if ($user->pushSubscriptions()->exists()) {
+                    // Get device and browser info
+                    $userAgent = $request->userAgent();
+                    $device = $this->getDeviceType($userAgent);
+                    $browser = $this->getBrowserName($userAgent);
+                    $ipAddress = $request->ip();
+                    $loginTime = now()->format('d M Y, H:i');
+
+                    $user->notify(new \App\Notifications\LoginNotification(
+                        $ipAddress,
+                        $userAgent,
+                        $loginTime,
+                        $device,
+                        $browser
+                    ));
+                }
+            } catch (\Exception $e) {
+                // Log error but don't fail login
+                \Log::error('Failed to send login notification: ' . $e->getMessage());
+            }
+
             return ResponseFormatter::success([
                 'access_token' => $tokenResult,
                 'token_type' => 'Bearer',
@@ -273,6 +296,46 @@ class UserController extends Controller
             ], 'Authentication Failed', 500);
         }
     }
+
+    /**
+     * Get device type from user agent
+     */
+    private function getDeviceType($userAgent)
+    {
+        if (preg_match('/mobile/i', $userAgent)) {
+            if (preg_match('/iPad/i', $userAgent)) {
+                return 'iPad';
+            } elseif (preg_match('/iPhone/i', $userAgent)) {
+                return 'iPhone';
+            } elseif (preg_match('/Android/i', $userAgent)) {
+                return 'Android Phone';
+            }
+            return 'Mobile Device';
+        } elseif (preg_match('/tablet/i', $userAgent)) {
+            return 'Tablet';
+        }
+        return 'Desktop';
+    }
+
+    /**
+     * Get browser name from user agent
+     */
+    private function getBrowserName($userAgent)
+    {
+        if (preg_match('/Edge/i', $userAgent)) {
+            return 'Edge';
+        } elseif (preg_match('/Chrome/i', $userAgent)) {
+            return 'Chrome';
+        } elseif (preg_match('/Safari/i', $userAgent)) {
+            return 'Safari';
+        } elseif (preg_match('/Firefox/i', $userAgent)) {
+            return 'Firefox';
+        } elseif (preg_match('/MSIE|Trident/i', $userAgent)) {
+            return 'Internet Explorer';
+        }
+        return 'Unknown Browser';
+    }
+
 
     public function logout(Request $request)
     {
