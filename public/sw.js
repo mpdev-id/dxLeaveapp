@@ -148,14 +148,32 @@ self.addEventListener('notificationclick', (event) => {
 
     event.notification.close();
 
-    const urlToOpen = event.notification.data.url || '/';
+    // Handle action button clicks
+    let urlToOpen = '/';
+    
+    if (event.action) {
+        // Handle specific action buttons
+        switch(event.action) {
+            case 'view_profile':
+                urlToOpen = '/member/profile';
+                break;
+            case 'view_leave':
+                urlToOpen = event.notification.data.url || '/member/leave-requests';
+                break;
+            default:
+                urlToOpen = event.notification.data.url || '/';
+        }
+    } else {
+        // Default click (not on action button)
+        urlToOpen = event.notification.data.url || '/';
+    }
 
     event.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true })
             .then((clientList) => {
                 // Check if there's already a window open
                 for (let client of clientList) {
-                    if (client.url === urlToOpen && 'focus' in client) {
+                    if (client.url.includes(urlToOpen) && 'focus' in client) {
                         return client.focus();
                     }
                 }

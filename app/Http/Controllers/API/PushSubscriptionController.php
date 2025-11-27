@@ -25,11 +25,22 @@ class PushSubscriptionController extends Controller
         $user->pushSubscriptions()->where('endpoint', $validated['endpoint'])->delete();
 
         // Create new subscription
-        $user->updatePushSubscription(
+        $subscription = $user->updatePushSubscription(
             $validated['endpoint'],
             $validated['keys']['p256dh'],
             $validated['keys']['auth']
         );
+
+        // Send welcome push notification
+        // Temporarily disabled due to OpenSSL EC key generation issue
+        // User can test push notifications manually from profile page
+        /*
+        try {
+            $user->notify(new \App\Notifications\WelcomePushNotification());
+        } catch (\Exception $e) {
+            \Log::error('Failed to send welcome push notification: ' . $e->getMessage());
+        }
+        */
 
         return response()->json([
             'success' => true,

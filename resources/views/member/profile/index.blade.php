@@ -3,7 +3,7 @@
 @section('title', 'My Profile')
 
 @section('content')
-<div x-data="userProfile('{{ config('app.base_api') }}')" x-init="init()" class="max-w-5xl mx-auto space-y-6 pb-20 md:pb-6">
+<div x-data="userProfile('{{ config('app.base_api') }}', '{{ config('webpush.vapid.public_key') }}')" x-init="init()" class="max-w-5xl mx-auto space-y-6 pb-20 md:pb-6">
     
     <!-- Profile Header -->
     <div class="card bg-base-100 shadow-xl overflow-hidden border border-base-200">
@@ -157,6 +157,14 @@
                     </svg>
                     <span x-text="isPushEnabled ? 'Notifications Enabled' : 'Enable Notifications'"></span>
                     <span x-show="loadingPush" class="loading loading-spinner loading-xs"></span>
+                </button>
+
+                <button @click="testPushNotification" class="btn btn-info btn-outline" :disabled="!isPushEnabled || testingPush">
+                    <span x-show="testingPush" class="loading loading-spinner loading-xs"></span>
+                    <svg x-show="!testingPush" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+                    <span x-text="testingPush ? 'Sending...' : 'Test Push'"></span>
                 </button>
 
                 <button @click="openChangePasswordModal" class="btn btn-outline">
@@ -325,11 +333,12 @@
         }
     }
 
-    function userProfile(baseApiUrl) {
+    function userProfile(baseApiUrl, vapidKey) {
         return {
             user: {},
             balances: [],
             token: localStorage.getItem('authToken'),
+            vapidPublicKey: vapidKey,
             editPhone: '',
             updatingPhone: false,
             passwordForm: {
@@ -341,6 +350,7 @@
             testingWhatsApp: false,
             isPushEnabled: false,
             loadingPush: false,
+            testingPush: false,
             vapidPublicKey: '{{ config('webpush.vapid.public_key') }}'.trim(),
 
             async init() {
@@ -652,6 +662,52 @@
                     });
                 } finally {
                     this.testingWhatsApp = false;
+                }
+            },
+
+            async testPushNotification() {
+                if (!this.isPushEnabled) {
+                    Swal.fire({
+                        title: 'Push Notifications Disabled',
+                        text: 'Please enable push notifications first',
+                        icon: 'warning',
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
+
+                this.testingPush = true;
+                try {
+                    const response = await fetch(`${baseApiUrl}/user/test-push`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${this.token}`,
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        Swal.fire({
+                            title: 'Success!',
+                            html: `Test notification sent!\u003cbr\u003e\u003cbr\u003eCheck your browser notifications! 🔔`,
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        });
+                    } else {
+                        throw new Error(data.message || 'Failed to send test notification');
+                    }
+                } catch (error) {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: error.message || 'Failed to send test notification',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                } finally {
+                    this.testingPush = false;
                 }
             },
 
