@@ -77,22 +77,30 @@ class PushNotificationTestController extends Controller
                 $user->notify(new TestPushNotification($title, $body));
                 $sentCount++;
                 
-                Log::info('Push notification sent', [
+                Log::info('Push notification sent successfully', [
                     'user_id' => $user->id,
                     'user_name' => $user->name,
                     'title' => $title,
                 ]);
             } catch (\Exception $e) {
                 $failedCount++;
+                $errorMessage = $e->getMessage();
+                
+                // Check for specific OpenSSL error
+                if (str_contains($errorMessage, 'Unable to create the local key')) {
+                    $errorMessage .= " (Windows OpenSSL Issue - Deploy to Linux to fix)";
+                }
+
                 $errors[] = [
                     'user' => $user->name,
-                    'error' => $e->getMessage(),
+                    'error' => $errorMessage,
                 ];
                 
                 Log::error('Failed to send push notification', [
                     'user_id' => $user->id,
                     'user_name' => $user->name,
-                    'error' => $e->getMessage(),
+                    'error' => $errorMessage,
+                    'trace' => $e->getTraceAsString(),
                 ]);
             }
         }
@@ -153,14 +161,22 @@ class PushNotificationTestController extends Controller
                 $sentCount++;
             } catch (\Exception $e) {
                 $failedCount++;
+                $errorMessage = $e->getMessage();
+                
+                // Check for specific OpenSSL error
+                if (str_contains($errorMessage, 'Unable to create the local key')) {
+                    $errorMessage .= " (Windows OpenSSL Issue - Deploy to Linux to fix)";
+                }
+
                 $errors[] = [
                     'user' => $user->name,
-                    'error' => $e->getMessage(),
+                    'error' => $errorMessage,
                 ];
                 
                 Log::error('Failed to send broadcast notification', [
                     'user_id' => $user->id,
-                    'error' => $e->getMessage(),
+                    'error' => $errorMessage,
+                    'trace' => $e->getTraceAsString(),
                 ]);
             }
         }

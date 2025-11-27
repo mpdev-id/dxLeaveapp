@@ -53,7 +53,7 @@ class LeaveRequestCreated extends Notification implements ShouldQueue
         $startDate = $this->leaveRequest->start_date->format('d M Y');
         $endDate = $this->leaveRequest->end_date->format('d M Y');
         $leaveType = $this->leaveRequest->leaveType->name;
-        $duration = $this->leaveRequest->duration;
+        $duration = $this->leaveRequest->duration_days;
         $leavePeriod = str_replace('_', ' ', ucwords(str_replace('_', ' ', $this->leaveRequest->leave_period)));
 
         $message = "Hi {$notifiable->name},\n\n";
@@ -93,7 +93,7 @@ class LeaveRequestCreated extends Notification implements ShouldQueue
     public function toWebPush($notifiable, $notification)
     {
         $leaveType = $this->leaveRequest->leaveType->name;
-        $duration = $this->leaveRequest->duration;
+        $duration = $this->leaveRequest->duration_days;
         
         $title = "Leave Request Submitted ✅";
         $body = "Your {$leaveType} request ({$duration} day(s)) has been submitted and is pending approval.";
