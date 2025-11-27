@@ -39,7 +39,7 @@
             
             /* Animated gradient background */
             .auth-bg {
-                background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+                background: linear-gradient(-45deg, #fffbfaff, #e1bfccff, #e2f7ffff, rgba(240, 255, 252, 1)ff);
                 background-size: 400% 400%;
                 animation: gradient 15s ease infinite;
             }
@@ -80,7 +80,7 @@
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-center">
                     
                     <!-- Left Side: Branding -->
-                    <div class="hidden lg:flex flex-col items-center justify-center text-white p-8 order-2 lg:order-1">
+                    <div class="hidden lg:flex flex-col items-center justify-center text-dark p-8 order-2 lg:order-1">
                         <div class="space-y-6 text-center">
                             <!-- Logo/Mascot -->
                             <div class="flex justify-center">
@@ -98,32 +98,32 @@
                                 <h1 class="text-4xl lg:text-5xl font-bold mb-3 drop-shadow-lg">
                                     {{ config('app.name', 'Cutikuy') }}
                                 </h1>
-                                <p class="text-lg lg:text-xl text-white/90 max-w-md mx-auto">
+                                <p class="text-lg lg:text-xl text-dark/90 max-w-md mx-auto">
                                     Employee Leave Management System
                                 </p>
                             </div>
                             
                             <!-- Features -->
                             <div class="grid grid-cols-2 gap-4 max-w-md mx-auto mt-8">
-                                <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+                                <div class="bg-white/60 backdrop-blur-sm rounded-lg p-4 hover:shadow-xl transition-all duration-300">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                     <p class="text-sm font-semibold">Easy to Use</p>
                                 </div>
-                                <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+                                <div class="bg-white/60 backdrop-blur-sm rounded-lg p-4 hover:shadow-xl transition-all duration-300">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                     </svg>
                                     <p class="text-sm font-semibold">Secure</p>
                                 </div>
-                                <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+                                <div class="bg-white/60 backdrop-blur-sm rounded-lg p-4 hover:shadow-xl transition-all duration-300">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                                     </svg>
                                     <p class="text-sm font-semibold">Notifications</p>
                                 </div>
-                                <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+                                <div class="bg-white/60 backdrop-blur-sm rounded-lg p-4 hover:shadow-xl transition-all duration-300">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
                                     </svg>
@@ -135,11 +135,12 @@
                     
                     <!-- Right Side: Auth Form -->
                     <div class="order-1 lg:order-2">
-                        <div class="card glass-card shadow-2xl w-full max-w-md mx-auto">
+                        <div class="card glass-card duration-300 w-full max-w-md mx-auto" >
                             <div class="card-body p-6 sm:p-8">
                                 <!-- Mobile Logo -->
                                 <div class="flex lg:hidden justify-center mb-6">
-                                    <img 
+                   
+                                <img 
                                         src="{{ asset('images/cute_duck_attendance.png') }}" 
                                         alt="Cutikuy" 
                                         class="w-20 h-20 object-contain"
@@ -159,15 +160,15 @@
                         <!-- Footer Links -->
                         <div class="text-center mt-6 space-y-2">
                             <div class="flex flex-wrap justify-center gap-4 text-sm">
-                                <a href="{{ url('/documentation.html') }}" class="text-white/80 hover:text-white transition-colors">
+                                <a href="{{ url('/documentation.html') }}" class="text-dark/80 hover:text-dark transition-colors">
                                     📚 API Documentation
                                 </a>
-                                <span class="text-white/40">•</span>
-                                <a href="#" class="text-white/80 hover:text-white transition-colors">
+                                <span class="text-dark/40">•</span>
+                                <a href="#" class="text-dark/80 hover:text-dark transition-colors">
                                     ℹ️ Help Center
                                 </a>
                             </div>
-                            <p class="text-xs text-white/60">
+                            <p class="text-xs text-dark/60">
                                 © {{ date('Y') }} {{ config('app.name') }}. All rights reserved.
                             </p>
                         </div>
