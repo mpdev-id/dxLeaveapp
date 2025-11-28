@@ -64,6 +64,7 @@ class LeaveRequestResource extends JsonResource
             'duration_days' => $this->duration_days,
             
             'reason' => $this->reason,
+            'leave_address' => $this->leave_address,
             'supporting_attachment_path' => $this->supporting_attachment_path,
             
             'current_status' => $this->current_status,

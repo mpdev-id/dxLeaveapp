@@ -104,9 +104,65 @@
             <label class="label">
                 <span class="label-text font-semibold">Reason</span>
             </label>
-            <textarea x-model="formData.reason" class="textarea textarea-bordered h-24 w-full p-4" :class="{'textarea-error': errors.reason}" placeholder="Please describe the reason for your leave..." required></textarea>
+            <div class="relative" @click.outside="showReasonSuggestions = false">
+                <textarea 
+                    x-model="formData.reason" 
+                    @focus="showReasonSuggestions = true"
+                    @input="showReasonSuggestions = true"
+                    @click="showReasonSuggestions = true"
+                    @keydown.tab.prevent="
+                        let filtered = suggestions.reasons.filter(s => s.toLowerCase().includes((formData.reason || '').toLowerCase()));
+                        if (showReasonSuggestions && filtered.length > 0) {
+                            formData.reason = filtered[0];
+                            showReasonSuggestions = false;
+                        }
+                    "
+                    class="textarea textarea-bordered h-24 w-full p-4" 
+                    :class="{'textarea-error': errors.reason}" 
+                    placeholder="Please describe the reason for your leave..." 
+                    required
+                ></textarea>
+                <ul x-show="showReasonSuggestions && suggestions.reasons.length > 0" x-transition class="absolute z-50 w-full bg-base-100 shadow-lg rounded-b-lg border border-base-200 max-h-40 overflow-y-auto mt-1">
+                    <template x-for="suggestion in suggestions.reasons.filter(s => s.toLowerCase().includes((formData.reason || '').toLowerCase()))">
+                        <li @click="formData.reason = suggestion; showReasonSuggestions = false" class="p-2 hover:bg-base-200 cursor-pointer text-sm border-b last:border-b-0" x-text="suggestion"></li>
+                    </template>
+                </ul>
+            </div>
             <label class="label" x-show="errors.reason">
                 <span class="label-text-alt text-error" x-text="errors.reason"></span>
+            </label>
+        </div>
+        
+        {{-- Leave Address --}}
+        <div class="form-control w-full">
+            <label class="label">
+                <span class="label-text font-semibold">Leave Address</span>
+            </label>
+            <div class="relative" @click.outside="showAddressSuggestions = false">
+                <textarea 
+                    x-model="formData.leave_address" 
+                    @focus="showAddressSuggestions = true"
+                    @input="showAddressSuggestions = true"
+                    @click="showAddressSuggestions = true"
+                    @keydown.tab.prevent="
+                        let filtered = suggestions.addresses.filter(s => s.toLowerCase().includes((formData.leave_address || '').toLowerCase()));
+                        if (showAddressSuggestions && filtered.length > 0) {
+                            formData.leave_address = filtered[0];
+                            showAddressSuggestions = false;
+                        }
+                    "
+                    class="textarea textarea-bordered h-20 w-full p-4" 
+                    :class="{'textarea-error': errors.leave_address}" 
+                    placeholder="Address during leave..."
+                ></textarea>
+                <ul x-show="showAddressSuggestions && suggestions.addresses.length > 0" x-transition class="absolute z-50 w-full bg-base-100 shadow-lg rounded-b-lg border border-base-200 max-h-40 overflow-y-auto mt-1">
+                    <template x-for="suggestion in suggestions.addresses.filter(s => s.toLowerCase().includes((formData.leave_address || '').toLowerCase()))">
+                        <li @click="formData.leave_address = suggestion; showAddressSuggestions = false" class="p-2 hover:bg-base-200 cursor-pointer text-sm border-b last:border-b-0" x-text="suggestion"></li>
+                    </template>
+                </ul>
+            </div>
+            <label class="label" x-show="errors.leave_address">
+                <span class="label-text-alt text-error" x-text="errors.leave_address"></span>
             </label>
         </div>
 
@@ -191,8 +247,13 @@
         return {
             leaveTypes: [],
             workflows: [],
+            leaveTypes: [],
+            workflows: [],
             publicHolidays: [],
             balances: [],
+            suggestions: { reasons: [], addresses: [] },
+            showReasonSuggestions: false,
+            showAddressSuggestions: false,
             userSignature: null,
             useSavedSignature: false,
             userSignature: null,
@@ -206,7 +267,9 @@
                 start_date: '',
                 end_date: '',
                 leave_period: 'full_day',
+                leave_period: 'full_day',
                 reason: '',
+                leave_address: '',
                 supporting_document: null
             },
             duration: 0,
@@ -218,6 +281,7 @@
             async init() {
                 if (!this.token) return;
                 await this.fetchMasterData();
+                this.fetchSuggestions();
                 
                 // Set default dates to today
                 const today = new Date().toISOString().split('T')[0];
@@ -340,6 +404,19 @@
                     console.error('Error fetching data:', e);
                     Swal.fire('Error', 'Failed to load master data', 'error');
                 }
+            },
+
+            async fetchSuggestions() {
+                try {
+                    const response = await fetch(`${baseApiUrl}/leave-requests/suggestions`, {
+                        headers: { 'Authorization': `Bearer ${this.token}`, 'Accept': 'application/json' }
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.suggestions = data.data;
+                        console.log('Suggestions loaded:', this.suggestions);
+                    }
+                } catch (e) { console.error('Error fetching suggestions:', e); }
             },
 
             calculateDuration() {
@@ -465,7 +542,9 @@
                 formData.append('start_date', this.formData.start_date);
                 formData.append('end_date', this.formData.end_date);
                 formData.append('leave_period', this.formData.leave_period);
+                formData.append('leave_period', this.formData.leave_period);
                 formData.append('reason', this.formData.reason);
+                formData.append('leave_address', this.formData.leave_address);
                 if (this.formData.supporting_document) {
                     formData.append('supporting_document', this.formData.supporting_document);
                 } else if (this.isSickLeave && actionType === 'submit') {

@@ -22,6 +22,7 @@ class LeaveRequest extends Model
         'leave_period',
         'duration_days',
         'reason',
+        'leave_address',
         'supporting_attachment_path',
         'signature_path',
         'current_status',

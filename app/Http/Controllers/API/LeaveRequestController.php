@@ -128,6 +128,7 @@ class LeaveRequestController extends Controller
                 'supporting_document' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
                 'signature' => 'nullable|string', // Base64 string
                 'use_saved_signature' => 'nullable|boolean',
+                'leave_address' => 'nullable|string|max:255',
             ]);
 
             // Handle file upload
@@ -210,6 +211,7 @@ class LeaveRequestController extends Controller
                     'duration_days' => $duration,
                     'supporting_attachment_path' => $attachmentPath,
                     'signature_path' => $signaturePath,
+                    'leave_address' => $validatedData['leave_address'] ?? null,
                     'current_status' => 'Draft', // Selalu mulai dari Draft
                 ]);
             });
@@ -247,6 +249,7 @@ class LeaveRequestController extends Controller
                 'supporting_document' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
                 'signature' => 'nullable|string',
                 'use_saved_signature' => 'nullable|boolean',
+                'leave_address' => 'nullable|string|max:255',
             ]);
             Log::info('Validation successful', ['validated_data' => $validatedData]);
 
@@ -529,6 +532,49 @@ class LeaveRequestController extends Controller
             return ResponseFormatter::success($approvalHistory, 'Approver log retrieved successfully');
         } catch (\Exception $e) {
             return ResponseFormatter::error(null, 'Failed to retrieve approver log: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Get suggestions for reason and leave address based on user's history.
+     */
+    public function getSuggestions()
+    {
+        try {
+            $user = Auth::user();
+            
+            $reasons = LeaveRequest::where('user_id', $user->id)
+                ->whereNotNull('reason')
+                ->where('reason', '!=', '')
+                ->latest()
+                ->pluck('reason')
+                ->unique()
+                ->values()
+                ->take(20);
+
+            if ($reasons->isEmpty()) {
+                $reasons = collect(['Annual Leave', 'Sick Leave', 'Family Matters', 'Personal Matters']);
+            }
+
+            $addresses = LeaveRequest::where('user_id', $user->id)
+                ->whereNotNull('leave_address')
+                ->where('leave_address', '!=', '')
+                ->latest()
+                ->pluck('leave_address')
+                ->unique()
+                ->values()
+                ->take(20);
+
+            if ($addresses->isEmpty()) {
+                $addresses = collect(['Home', 'Out of Town']);
+            }
+
+            return ResponseFormatter::success([
+                'reasons' => $reasons,
+                'addresses' => $addresses,
+            ], 'Suggestions retrieved successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to retrieve suggestions: ' . $e->getMessage(), 500);
         }
     }
 
