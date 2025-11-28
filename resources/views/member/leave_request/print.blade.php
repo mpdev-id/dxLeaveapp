@@ -242,7 +242,7 @@
         </tr>
         <tr>
             <td class="label-col">Leave Date<br>(휴가일)</td>
-            <td>{{ \Carbon\Carbon::parse($leaveRequest->start_date)->format('Y/m/d') }}</td>
+            <td>{{ \Carbon\Carbon::parse($leaveRequest->start_date)->format('Y/m/d') }} ~ {{ \Carbon\Carbon::parse($leaveRequest->end_date)->format('Y/m/d') }}</td>
             <td class="label-col">Total Leave<br>(휴가 기간)</td>
             <td>{{ $leaveRequest->duration_days + 0 }} Day{{ $leaveRequest->duration_days > 1 ? 's' : '' }}</td>
         </tr>
