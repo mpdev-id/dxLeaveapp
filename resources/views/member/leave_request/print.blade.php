@@ -8,9 +8,13 @@
         @media print {
             @page {
                 size: A4;
-                margin: 1cm;
+                margin: 0;
             }
             body {
+                width: 210mm;
+                height: 297mm;
+                margin: 0;
+                padding: 15mm;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
@@ -20,8 +24,12 @@
             font-family: Calibri, sans-serif;
             font-size: 12pt;
             color: #000;
-            margin: 0;
-            padding: 20pt;
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            padding: 15mm;
+            box-sizing: border-box;
+            background: white;
         }
 
         .header {
