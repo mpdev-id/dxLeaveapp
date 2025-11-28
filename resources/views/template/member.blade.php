@@ -137,6 +137,11 @@
                         if (response.ok) {
                             const data = await response.json();
                             this.userName = data.data.name || 'User';
+                        } else if (response.status === 401) {
+                            // Token expired or invalid
+                            localStorage.removeItem('authToken');
+                            localStorage.removeItem('userRole');
+                            window.location.href = '/login';
                         }
                     } catch (error) {
                         console.error('Error fetching user:', error);

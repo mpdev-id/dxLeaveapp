@@ -106,9 +106,19 @@
                     }
                 }
                 
-                // Optional: Clear token if exists to force fresh login
-                if (localStorage.getItem('authToken')) {
-                    // localStorage.removeItem('authToken');
+                // Check if user is already logged in
+                const token = localStorage.getItem('authToken');
+                const role = localStorage.getItem('userRole');
+                
+                if (token) {
+                    // Validate token via API could be done here, but for speed we optimistic redirect
+                    // The dashboard page will handle invalid tokens
+                    if (role === 'admin') {
+                        window.location.href = '/admin/dashboard';
+                    } else {
+                        window.location.href = '/dashboard-member';
+                    }
+                    return;
                 }
             },
             async submitForm() {
@@ -160,15 +170,19 @@
                             localStorage.removeItem('rememberedUser');
                         }
                         
-                        // Store auth token
+                        // Store auth token and role
                         localStorage.setItem('authToken', data.data.access_token);
                         
-                        // Redirect based on role
+                        // Determine redirect URL
+                        let redirectUrl = '/dashboard-member';
                         if (user && user.role && user.role.includes('Super Admin')) {
-                            window.location.href = '/admin/dashboard';
+                            redirectUrl = '/admin/dashboard';
+                            localStorage.setItem('userRole', 'admin');
                         } else {
-                            window.location.href = '/dashboard-member';
+                            localStorage.setItem('userRole', 'member');
                         }
+                        
+                        window.location.href = redirectUrl;
                     } else {
                         this.errorMessage = data.meta?.message || 'Login successful, but no token was provided.';
                     }
