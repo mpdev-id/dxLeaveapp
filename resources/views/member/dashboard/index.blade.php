@@ -31,6 +31,10 @@
                             <span x-text="getPendingCount(balance.leave_type_id)"></span>
                         </div>
                         <div class="flex flex-col items-center">
+                            <span class="font-semibold text-warning">In Progress</span>
+                            <span x-text="getPendingCount(balance.leave_type_id)"></span>
+                        </div>
+                        <div class="flex flex-col items-center">
                             <span class="font-semibold text-error">Rejected</span>
                             <span x-text="getRejectedCount(balance.leave_type_id)"></span>
                         </div>
@@ -101,12 +105,11 @@
                     placeholder="Search..." 
                     class="input input-bordered input-sm w-full md:w-48"
                 >
-                <select x-model="filterStatus" class="select select-bordered select-sm w-full md:w-32">
-                    <option value="">All Status</option>
-                    <option value="Pending">Pending</option>
-                    <option value="Approved">Approved</option>
-                    <option value="Rejected">Rejected</option>
-                    <option value="Draft">Draft</option>
+
+                <select x-model="filterYear" class="select select-bordered select-sm w-full md:w-32">
+                    <template x-for="year in availableYears" :key="year">
+                        <option :value="year" x-text="year"></option>
+                    </template>
                 </select>
                 <select x-model="sortBy" class="select select-bordered select-sm w-full md:w-40">
                     <option value="date_desc">Newest First</option>
@@ -118,6 +121,16 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                 </button>
             </div>
+        </div>
+
+        {{-- Status Tabs --}}
+        <div class="tabs tabs-boxed bg-base-200/50 p-1 w-fit">
+            <a class="tab tab-sm" :class="{ 'tab-active': filterStatus === '' }" @click="filterStatus = ''">All</a>
+            <a class="tab tab-sm" :class="{ 'tab-active': filterStatus === 'Pending' }" @click="filterStatus = 'Pending'">Pending</a>
+            <a class="tab tab-sm" :class="{ 'tab-active': filterStatus === 'In Progress' }" @click="filterStatus = 'In Progress'">In Progress</a>
+            <a class="tab tab-sm" :class="{ 'tab-active': filterStatus === 'Approved' }" @click="filterStatus = 'Approved'">Approved</a>
+            <a class="tab tab-sm" :class="{ 'tab-active': filterStatus === 'Rejected' }" @click="filterStatus = 'Rejected'">Rejected</a>
+            <a class="tab tab-sm" :class="{ 'tab-active': filterStatus === 'Draft' }" @click="filterStatus = 'Draft'">Draft</a>
         </div>
 
         <div class="overflow-x-auto bg-base-100 rounded-box shadow">
@@ -187,6 +200,7 @@
             // Filter states
             searchQuery: '',
             filterStatus: '',
+            filterYear: new Date().getFullYear(),
             sortBy: 'date_desc',
 
             // Approval Data
@@ -225,6 +239,14 @@
                     filtered = filtered.filter(r => r.current_status === this.filterStatus);
                 }
 
+                // Apply year filter
+                if (this.filterYear) {
+                    filtered = filtered.filter(r => {
+                        const date = new Date(r.created_at);
+                        return date.getFullYear() === parseInt(this.filterYear);
+                    });
+                }
+
                 // Apply sorting
                 filtered = [...filtered].sort((a, b) => {
                     switch(this.sortBy) {
@@ -244,9 +266,21 @@
                 return filtered;
             },
 
+            get availableYears() {
+                const currentYear = new Date().getFullYear();
+                const years = [currentYear];
+                // Add years from requests if any
+                this.myRequests.forEach(r => {
+                    const y = new Date(r.created_at).getFullYear();
+                    if (!years.includes(y)) years.push(y);
+                });
+                return years.sort((a, b) => b - a);
+            },
+
             resetFilters() {
                 this.searchQuery = '';
                 this.filterStatus = '';
+                this.filterYear = new Date().getFullYear();
                 this.sortBy = 'date_desc';
             },
 

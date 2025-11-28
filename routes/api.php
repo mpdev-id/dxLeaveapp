@@ -37,6 +37,7 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     // --- Rute Modul Cuti (Leave Requests) ---
     
     // 1. Pengajuan dan Daftar Cuti (Akses oleh Karyawan & Manajer)
+    Route::get('leave-requests/suggestions', [LeaveRequestController::class, 'getSuggestions']);
     Route::resource('leave-requests', LeaveRequestController::class)->only(['index', 'store', 'update', 'show', 'destroy']);
 
     // 2. Tindakan Persetujuan/Penolakan Cuti

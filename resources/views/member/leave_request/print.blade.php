@@ -244,7 +244,7 @@
         </tr>
         <tr>
             <td class="label-col">Leave Address<br>(행선지 주소)</td>
-            <td colspan="3">-</td> <!-- Address not in leave request model -->
+            <td colspan="3">{{ $leaveRequest->leave_address ?? '-' }}</td>
         </tr>
         <tr>
             <td class="label-col">Phone No.<br>(연락처)</td>

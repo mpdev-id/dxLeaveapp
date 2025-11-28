@@ -51,7 +51,7 @@ class LeaveRequestController extends Controller
             $query = LeaveRequest::with(['user.department', 'leaveType', 'currentStep.approverRole', 'workflow.steps.approverRole', 'approvals.approver']);
 
             // Base query for user's own requests
-            $ownRequestsQuery = (clone $query)->where('user_id', $user->id);
+            $ownRequestsQuery = (clone $query)->where('user_id', $user->id)->latest();
 
             // If user has permission to approve, they will also see requests they need to approve.
             if ($user->hasPermissionTo('approve leave request')) {
@@ -67,14 +67,17 @@ class LeaveRequestController extends Controller
                 // Get requests waiting at those steps, excluding the user's own requests
                 $requestsToApproveQuery = (clone $query)
                     ->whereIn('current_workflow_step_id', $approvableStepIds)
-                    ->where('user_id', '!=', $user->id);
+                    ->where('user_id', '!=', $user->id)
+                    ->latest();
 
                 // Get both sets of requests
                 $ownRequests = $ownRequestsQuery->get();
                 $requestsToApprove = $requestsToApproveQuery->get();
 
                 // Merge, ensure uniqueness, and re-index.
-                $requests = $ownRequests->merge($requestsToApprove)->unique('id')->values();
+                // Note: Merging might mess up the order if we don't sort again, 
+                // but frontend handles sorting. We sort here for good measure.
+                $requests = $ownRequests->merge($requestsToApprove)->unique('id')->sortByDesc('created_at')->values();
             } else {
                 // Regular users only see their own requests
                 $requests = $ownRequestsQuery->get();
