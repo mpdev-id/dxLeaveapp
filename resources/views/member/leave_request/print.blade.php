@@ -119,8 +119,8 @@
         }
 
         .approval-date {
-            border-top: 1px solid #ccc;
-            margin-top: 5px;
+            /* border-top: 1px solid #ccc; */
+            /* margin-top: 5px; */
             padding-top: 2px;
             font-size: 9pt;
         }
@@ -287,25 +287,39 @@
         </tr>
         <tr>
             <!-- Requester -->
+            <!-- Requester -->
             <td>
-                <div style="margin-bottom: 45px;">{{ $leaveRequest->user->name }}</div>
+            @if($leaveRequest->signature_url)
+            <img src="{{ $leaveRequest->signature_url }}" alt="Signature" style="max-height: 80px; max-width: 100%; display: block; margin: 5px auto;">
+            @else
+            <div style="height: 80px;"></div>
+            @endif
+            <div><span style="font-size: 9pt;"> {{ $leaveRequest->user->name }}</span></div>
                 <div class="approval-date">Date: {{ $leaveRequest->created_at->format('d/m/Y') }}</div>
             </td>
 
             <!-- Section Leader -->
             <td>
                 @if($slApproval)
-                    <div style="margin-bottom: 5px;">{{ $slApproval->approver->name }}</div>
-                    <div style="font-weight: bold; margin-bottom: 10px;">{{ $slApproval->action }}</div>
+                @if($slApproval->signature_url)
+                <img src="{{ $slApproval->signature_url }}" alt="Signature" style="max-height: 80px; max-width: 100%; display: block; margin: 5px auto;">
+                @else
+                <div style="font-weight: bold; margin-bottom: 10px;">{{ $slApproval->action }}</div>
+                @endif
+                <div><span style="font-size: 9pt;"> {{ $slApproval->approver->name }}</span></div>
                     <div class="approval-date">Date: {{ \Carbon\Carbon::parse($slApproval->acted_at)->format('d/m/Y') }}</div>
                 @endif
             </td>
 
             <!-- Supervisor -->
             <td>
-                @if($spvApproval)
-                    <div style="margin-bottom: 5px;">{{ $spvApproval->approver->name }}</div>
-                    <div style="font-weight: bold; margin-bottom: 10px;">{{ $spvApproval->action }}</div>
+            @if($spvApproval)
+            @if($spvApproval->signature_url)
+            <img src="{{ $spvApproval->signature_url }}" alt="Signature" style="max-height: 80px; max-width: 100%; display: block; margin: 5px auto;">
+                    @else
+                        <div style="font-weight: bold; margin-bottom: 10px;">{{ $spvApproval->action }}</div>
+                    @endif
+            <div><span style="font-size: 9pt;"> {{ $spvApproval->approver->name }}</span></div>
                     <div class="approval-date">Date: {{ \Carbon\Carbon::parse($spvApproval->acted_at)->format('d/m/Y') }}</div>
                 @endif
             </td>
@@ -313,8 +327,12 @@
             <!-- Assistant Mgr -->
             <td>
                 @if($asmenApproval)
-                    <div style="margin-bottom: 5px;">{{ $asmenApproval->approver->name }}</div>
-                    <div style="font-weight: bold; margin-bottom: 10px;">{{ $asmenApproval->action }}</div>
+                @if($asmenApproval->signature_url)
+                <img src="{{ $asmenApproval->signature_url }}" alt="Signature" style="max-height: 80px; max-width: 100%; display: block; margin: 5px auto;">
+                @else
+                <div style="font-weight: bold; margin-bottom: 10px;">{{ $asmenApproval->action }}</div>
+                @endif
+                    <div><span style="font-size: 9pt;">{{ $asmenApproval->approver->name }}</span></div>
                     <div class="approval-date">Date: {{ \Carbon\Carbon::parse($asmenApproval->acted_at)->format('d/m/Y') }}</div>
                 @endif
             </td>
@@ -322,18 +340,27 @@
             <!-- Team Mgr -->
             <td>
                 @if($tlApproval)
-                    <div style="margin-bottom: 5px;">{{ $tlApproval->approver->name }}</div>
-                    <div style="font-weight: bold; margin-bottom: 10px;">{{ $tlApproval->action }}</div>
-                    <div class="approval-date">Date: {{ \Carbon\Carbon::parse($tlApproval->acted_at)->format('d/m/Y') }}</div>
+                @if($tlApproval->signature_url)
+                <img src="{{ $tlApproval->signature_url }}" alt="Signature" style="max-height: 80px; max-width: 100%; display: block; margin: 5px auto;">
+                @else
+                <div style="font-weight: bold; margin-bottom: 10px;">{{ $tlApproval->action }}</div>
+                @endif
+                
+                <div><span style="font-size: 9pt;">{{ $tlApproval->approver->name }}</span></div>
+                <div class="approval-date">Date: {{ \Carbon\Carbon::parse($tlApproval->acted_at)->format('d/m/Y') }}</div>
                 @endif
             </td>
 
             <!-- Dept Mgr -->
             <td>
                 @if($managerApproval)
-                    <div style="margin-bottom: 5px;">{{ $managerApproval->approver->name }}</div>
-                    <div style="font-weight: bold; margin-bottom: 10px;">{{ $managerApproval->action }}</div>
-                    <div class="approval-date">Date: {{ \Carbon\Carbon::parse($managerApproval->acted_at)->format('d/m/Y') }}</div>
+                @if($managerApproval->signature_url)
+                <img src="{{ $managerApproval->signature_url }}" alt="Signature" style="max-height: 80px; max-width: 100%; display: block; margin: 5px auto;">
+                @else
+                        <div style="font-weight: bold; margin-bottom: 10px;">{{ $managerApproval->action }}</div>
+                    @endif
+                <div><span style="font-size: 9pt;">{{ $managerApproval->approver->name }}</span></div>
+                <div class="approval-date">Date: {{ \Carbon\Carbon::parse($managerApproval->acted_at)->format('d/m/Y') }}</div>
                 @endif
             </td>
         </tr>
