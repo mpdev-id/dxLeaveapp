@@ -31,7 +31,9 @@ class User extends Authenticatable
         'department_id',
         'manager_id',
         'status',
+        'status',
         'hire_date',
+        'signature_path',
     ];
 
     /**
@@ -119,5 +121,16 @@ class User extends Authenticatable
     public function routeNotificationForWhatsApp($notification)
     {
         return $this->phone_number;
+    }
+
+    /**
+     * Accessor for signature_path to get full URL.
+     */
+    public function getSignatureUrlAttribute()
+    {
+        if ($this->signature_path) {
+            return \Illuminate\Support\Facades\Storage::disk('public')->url($this->signature_path);
+        }
+        return null;
     }
 }

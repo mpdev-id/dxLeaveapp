@@ -126,6 +126,8 @@ class LeaveRequestController extends Controller
                     Rule::in(['full_day', 'half_day_morning', 'half_day_afternoon']),
                 ],
                 'supporting_document' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+                'signature' => 'nullable|string', // Base64 string
+                'use_saved_signature' => 'nullable|boolean',
             ]);
 
             // Handle file upload
@@ -133,6 +135,38 @@ class LeaveRequestController extends Controller
             if ($request->hasFile('supporting_document')) {
                 // Store in 'storage/app/public/attachments' and get the relative path
                 $attachmentPath = $request->file('supporting_document')->store('attachments', 'public');
+                $attachmentPath = $request->file('supporting_document')->store('attachments', 'public');
+            }
+
+            // Handle Signature
+            $signaturePath = null;
+            if ($request->boolean('use_saved_signature')) {
+                // Use saved signature from user profile
+                if (Auth::user()->signature_path) {
+                    // We copy the file so if user changes profile signature later, this request remains unchanged
+                    $originalPath = Auth::user()->signature_path;
+                    if (Storage::disk('public')->exists($originalPath)) {
+                        $extension = pathinfo($originalPath, PATHINFO_EXTENSION);
+                        $newPath = 'signatures/requests/' . uniqid() . '.' . $extension;
+                        Storage::disk('public')->copy($originalPath, $newPath);
+                        $signaturePath = $newPath;
+                    }
+                }
+            } elseif ($request->filled('signature')) {
+                // Use new signature provided
+                $signatureData = $request->input('signature');
+                if (preg_match('/^data:image\/(\w+);base64,/', $signatureData, $type)) {
+                    $signatureData = substr($signatureData, strpos($signatureData, ',') + 1);
+                    $type = strtolower($type[1]); 
+                    if (in_array($type, ['jpg', 'jpeg', 'gif', 'png'])) {
+                        $signatureData = base64_decode($signatureData);
+                        if ($signatureData !== false) {
+                            $fileName = 'signatures/requests/' . uniqid() . '.' . $type;
+                            Storage::disk('public')->put($fileName, $signatureData);
+                            $signaturePath = $fileName;
+                        }
+                    }
+                }
             }
 
             // Validasi kustom: Cuti setengah hari hanya boleh untuk satu hari.
@@ -163,7 +197,7 @@ class LeaveRequestController extends Controller
             $currentWorkflowStepId = $firstStep ? $firstStep->id : null;
 
             // 5. Buat Permintaan Cuti
-            $leaveRequest = DB::transaction(function () use ($validatedData, $workflow, $duration, $attachmentPath, $currentWorkflowStepId) {
+            $leaveRequest = DB::transaction(function () use ($validatedData, $workflow, $duration, $attachmentPath, $currentWorkflowStepId, $signaturePath) {
                 return LeaveRequest::create([
                     'user_id' => Auth::id(),
                     'leave_type_id' => $validatedData['leave_type_id'],
@@ -175,6 +209,7 @@ class LeaveRequestController extends Controller
                     'reason' => $validatedData['reason'],
                     'duration_days' => $duration,
                     'supporting_attachment_path' => $attachmentPath,
+                    'signature_path' => $signaturePath,
                     'current_status' => 'Draft', // Selalu mulai dari Draft
                 ]);
             });
@@ -210,6 +245,8 @@ class LeaveRequestController extends Controller
                     Rule::in(['full_day', 'half_day_morning', 'half_day_afternoon']),
                 ],
                 'supporting_document' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+                'signature' => 'nullable|string',
+                'use_saved_signature' => 'nullable|boolean',
             ]);
             Log::info('Validation successful', ['validated_data' => $validatedData]);
 
@@ -234,6 +271,35 @@ class LeaveRequestController extends Controller
                 // Store in 'storage/app/public/attachments' and get the relative path
                 $path = $request->file('supporting_document')->store('attachments', 'public');
                 $validatedData['supporting_attachment_path'] = $path;
+                $path = $request->file('supporting_document')->store('attachments', 'public');
+                $validatedData['supporting_attachment_path'] = $path;
+            }
+
+            // Handle Signature Update
+            if ($request->boolean('use_saved_signature')) {
+                 if (Auth::user()->signature_path) {
+                    $originalPath = Auth::user()->signature_path;
+                    if (Storage::disk('public')->exists($originalPath)) {
+                        $extension = pathinfo($originalPath, PATHINFO_EXTENSION);
+                        $newPath = 'signatures/requests/' . uniqid() . '.' . $extension;
+                        Storage::disk('public')->copy($originalPath, $newPath);
+                        $validatedData['signature_path'] = $newPath;
+                    }
+                }
+            } elseif ($request->filled('signature')) {
+                $signatureData = $request->input('signature');
+                if (preg_match('/^data:image\/(\w+);base64,/', $signatureData, $type)) {
+                    $signatureData = substr($signatureData, strpos($signatureData, ',') + 1);
+                    $type = strtolower($type[1]); 
+                    if (in_array($type, ['jpg', 'jpeg', 'gif', 'png'])) {
+                        $signatureData = base64_decode($signatureData);
+                        if ($signatureData !== false) {
+                            $fileName = 'signatures/requests/' . uniqid() . '.' . $type;
+                            Storage::disk('public')->put($fileName, $signatureData);
+                            $validatedData['signature_path'] = $fileName;
+                        }
+                    }
+                }
             }
 
             // Hitung ulang durasi jika ada perubahan terkait tanggal atau periode cuti
@@ -380,6 +446,46 @@ class LeaveRequestController extends Controller
             return ResponseFormatter::error($e->getMessage(), 'A system error occurred.', 500);
         }
     }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  \App\Models\LeaveRequest  $leaveRequest
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy(LeaveRequest $leaveRequest)
+    {
+        try {
+            // Authorization: Ensure user can only delete their own request
+            if ($leaveRequest->user_id !== Auth::id()) {
+                return ResponseFormatter::error(null, 'Unauthorized access to delete leave request', 403);
+            }
+
+            // Check status: Only allow delete if status is 'Draft' or 'Pending'
+            if (!in_array($leaveRequest->current_status, ['Draft', 'Pending'])) {
+                return ResponseFormatter::error(
+                    null,
+                    'Cannot delete leave request with status ' . $leaveRequest->current_status,
+                    403
+                );
+            }
+
+            // Delete attachments if any
+            if ($leaveRequest->supporting_attachment_path) {
+                Storage::disk('public')->delete($leaveRequest->supporting_attachment_path);
+            }
+            if ($leaveRequest->signature_path) {
+                Storage::disk('public')->delete($leaveRequest->signature_path);
+            }
+
+            $leaveRequest->delete();
+
+            return ResponseFormatter::success(null, 'Leave request deleted successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Failed to delete leave request: ' . $e->getMessage(), 500);
+        }
+    }
+
 
     /**
      * Get approval history for the current user (approver log)

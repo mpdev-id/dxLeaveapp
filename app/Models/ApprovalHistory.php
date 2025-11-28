@@ -46,4 +46,15 @@ class ApprovalHistory extends Model
     {
         return $this->belongsTo(User::class, 'approver_user_id');
     }
+
+    /**
+     * Accessor for signature_path to get full URL.
+     */
+    public function getSignatureUrlAttribute()
+    {
+        if ($this->signature_path) {
+            return \Illuminate\Support\Facades\Storage::disk('public')->url($this->signature_path);
+        }
+        return null;
+    }
 }

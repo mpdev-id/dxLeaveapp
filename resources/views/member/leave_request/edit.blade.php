@@ -130,6 +130,40 @@
             </div>
         </div>
 
+        {{-- Signature --}}
+        <div class="form-control w-full">
+            <label class="label">
+                <span class="label-text font-semibold">Signature</span>
+            </label>
+            
+            <div class="flex flex-col gap-4">
+                <!-- Option to use saved signature -->
+                <div x-show="userSignature" class="form-control">
+                    <label class="label cursor-pointer justify-start gap-3">
+                        <input type="checkbox" x-model="useSavedSignature" class="checkbox checkbox-primary" />
+                        <span class="label-text">Use my saved signature</span>
+                    </label>
+                    <div x-show="useSavedSignature" class="mt-2 p-4 border rounded-lg bg-base-100 w-fit">
+                        <img :src="userSignature" alt="Saved Signature" class="h-20 object-contain">
+                    </div>
+                </div>
+
+                <!-- Signature Pad -->
+                <div x-show="!useSavedSignature" class="w-full flex flex-col items-center">
+                    <div class="w-full max-w-sm aspect-square border-2 border-dashed border-gray-300 rounded-lg bg-white relative">
+                        <canvas id="signature-pad" class="absolute inset-0 w-full h-full touch-none"></canvas>
+                    </div>
+                    <div class="w-full max-w-sm flex justify-between mt-2">
+                        <span class="text-xs text-gray-500">Sign above</span>
+                        <button type="button" @click="clearSignature" class="btn btn-xs btn-ghost text-error">Clear</button>
+                    </div>
+                </div>
+            </div>
+            <label class="label" x-show="errors.signature">
+                <span class="label-text-alt text-error" x-text="errors.signature"></span>
+            </label>
+        </div>
+
         {{-- Submit Buttons --}}
         <div class="pt-4 grid grid-cols-2 gap-4">
             <button type="button" @click="submitForm('draft')" class="btn btn-outline btn-secondary w-full" :disabled="submitting">
@@ -146,6 +180,7 @@
 @endsection
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
 <script>
     function editLeave(baseApiUrl, requestId) {
         return {
@@ -153,6 +188,9 @@
             workflows: [],
             publicHolidays: [],
             balances: [],
+            userSignature: null,
+            useSavedSignature: false,
+            signaturePad: null,
             formData: {
                 leave_type_id: '',
                 workflow_id: '',
@@ -175,21 +213,62 @@
                 await this.fetchMasterData();
                 await this.fetchRequestData();
                 this.loading = false;
+
+                // Initialize Signature Pad
+                this.$nextTick(() => {
+                    const canvas = document.getElementById('signature-pad');
+                    if (canvas) {
+                        this.signaturePad = new SignaturePad(canvas, {
+                            backgroundColor: 'rgba(255, 255, 255, 0)'
+                        });
+                        
+                        // Initial resize
+                        this.resizeCanvas();
+                        
+                        // Handle window resize
+                        window.addEventListener("resize", () => this.resizeCanvas());
+                    }
+                });
+
+                // Watch for visibility change
+                this.$watch('useSavedSignature', (value) => {
+                    if (!value) {
+                        setTimeout(() => this.resizeCanvas(), 50);
+                    }
+                });
+            },
+
+            resizeCanvas() {
+                const canvas = document.getElementById('signature-pad');
+                if (canvas && canvas.offsetWidth > 0) {
+                    const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                    canvas.width = canvas.offsetWidth * ratio;
+                    canvas.height = canvas.offsetHeight * ratio;
+                    canvas.getContext("2d").scale(ratio, ratio);
+                    
+                    if (this.signaturePad) {
+                        this.signaturePad.clear(); 
+                    }
+                }
             },
 
             async fetchMasterData() {
                 try {
-                    const [masterResponse, balanceResponse] = await Promise.all([
+                    const [masterResponse, balanceResponse, userResponse] = await Promise.all([
                         fetch(`${baseApiUrl}/master-data`, {
                             headers: { 'Authorization': `Bearer ${this.token}`, 'Accept': 'application/json' }
                         }),
                         fetch(`${baseApiUrl}/user/leave-balances`, {
+                            headers: { 'Authorization': `Bearer ${this.token}`, 'Accept': 'application/json' }
+                        }),
+                        fetch(`${baseApiUrl}/user`, {
                             headers: { 'Authorization': `Bearer ${this.token}`, 'Accept': 'application/json' }
                         })
                     ]);
 
                     const masterData = await masterResponse.json();
                     const balanceData = await balanceResponse.json();
+                    const userData = await userResponse.json();
 
                     if (masterResponse.ok && balanceData.data) {
                         const allLeaveTypes = masterData.data.leave_types;
@@ -200,6 +279,16 @@
 
                         const availableLeaveTypeIds = userBalances.map(b => b.leave_type_id);
                         this.leaveTypes = allLeaveTypes.filter(type => availableLeaveTypeIds.includes(type.id));
+
+                        // Check for saved signature
+                        if (userData.data && userData.data.signature_url) {
+                            this.userSignature = userData.data.signature_url;
+                            // Default to using saved signature if available? Or let user choose?
+                            // Let's default to false to let them see options, or true for convenience.
+                            // If they already signed this request, we might want to show that?
+                            // But edit usually means re-signing or keeping existing.
+                            // For simplicity, let's start with false unless they select it.
+                        }
                     }
                 } catch (e) {
                     console.error('Error fetching master data:', e);
@@ -306,6 +395,12 @@
                 }
             },
 
+            clearSignature() {
+                if (this.signaturePad) {
+                    this.signaturePad.clear();
+                }
+            },
+
             async submitForm(actionType = 'submit') {
                 this.submitting = true;
                 this.action = actionType;
@@ -335,6 +430,25 @@
 
                 if (this.formData.supporting_document) {
                     formData.append('supporting_document', this.formData.supporting_document);
+                }
+
+                // Handle Signature
+                if (this.useSavedSignature) {
+                    formData.append('use_saved_signature', '1');
+                } else {
+                    if (this.signaturePad && !this.signaturePad.isEmpty()) {
+                        formData.append('signature', this.signaturePad.toDataURL());
+                    } else {
+                        // If submitting (not draft), signature might be required? 
+                        if (actionType === 'submit') {
+                            // If user already has a signature on file for this request, maybe they don't need to re-sign?
+                            // But the UI implies a new signature or saved one.
+                            // Let's require it if they don't use saved.
+                            this.errors.signature = 'Signature is required';
+                            this.submitting = false;
+                            return;
+                        }
+                    }
                 }
 
                 try {

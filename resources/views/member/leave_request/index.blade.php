@@ -128,11 +128,15 @@
                             View Details & History
                         </div>
                         <div class="collapse-content text-sm"> 
-                            <div class="flex justify-end mb-2 mt-2">
-                                <a x-show="request.current_status === 'Draft'" :href="`{{ url('/member/leaves') }}/${request.id}/edit`" class="btn btn-xs btn-warning btn-outline gap-1 mr-2">
+                            <div class="flex justify-end mb-2 mt-2 gap-2">
+                                <a x-show="request.current_status === 'Draft'" :href="`{{ url('/member/leaves') }}/${request.id}/edit`" class="btn btn-xs btn-warning btn-outline gap-1">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                                     Edit
                                 </a>
+                                <button x-show="['Draft', 'Pending'].includes(request.current_status)" @click="deleteRequest(request.id)" class="btn btn-xs btn-error btn-outline gap-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                    Delete
+                                </button>
                                 <a :href="`{{ url('/member/leaves') }}/${request.id}/print`" target="_blank" class="btn btn-xs btn-outline gap-1">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4h10z" /></svg>
                                     Print Form
@@ -276,6 +280,42 @@
                     }
                 } catch (e) { console.error('Error fetching requests:', e); }
                 finally { this.loading = false; }
+            },
+
+            async deleteRequest(id) {
+                const result = await Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete it!'
+                });
+
+                if (result.isConfirmed) {
+                    try {
+                        const response = await fetch(`${baseApiUrl}/leave-requests/${id}`, {
+                            method: 'DELETE',
+                            headers: { 
+                                'Authorization': `Bearer ${this.token}`,
+                                'Accept': 'application/json'
+                            }
+                        });
+
+                        if (response.ok) {
+                            Swal.fire('Deleted!', 'Your file has been deleted.', 'success');
+                            this.fetchRequests(); // Refresh list
+                            this.fetchBalances(); // Refresh balances as deleting might restore balance
+                        } else {
+                            const data = await response.json();
+                            Swal.fire('Error', data.meta?.message || 'Failed to delete request', 'error');
+                        }
+                    } catch (e) {
+                        console.error('Error deleting request:', e);
+                        Swal.fire('Error', 'An unexpected error occurred', 'error');
+                    }
+                }
             },
 
             formatDate(dateString) {

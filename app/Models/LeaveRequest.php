@@ -23,6 +23,7 @@ class LeaveRequest extends Model
         'duration_days',
         'reason',
         'supporting_attachment_path',
+        'signature_path',
         'current_status',
         'workflow_id',
         'current_workflow_step_id',
@@ -108,6 +109,17 @@ class LeaveRequest extends Model
                 return $value;
             }
             return Storage::disk('public')->url($value);
+        }
+        return null;
+    }
+
+    /**
+     * Accessor for signature_path to get full URL.
+     */
+    public function getSignatureUrlAttribute()
+    {
+        if ($this->signature_path) {
+            return \Illuminate\Support\Facades\Storage::disk('public')->url($this->signature_path);
         }
         return null;
     }

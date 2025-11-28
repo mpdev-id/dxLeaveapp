@@ -536,4 +536,70 @@ class UserController extends Controller
             );
         }
     }
+    /**
+     * Update user's digital signature
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function updateSignature(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'signature' => 'required|string', // Base64 string
+            ]);
+
+            if ($validator->fails()) {
+                return ResponseFormatter::error(
+                    ['errors' => $validator->errors()],
+                    'Validation failed',
+                    422
+                );
+            }
+
+            $user = $request->user();
+            $signatureData = $request->input('signature');
+
+            // Handle base64 image
+            if (preg_match('/^data:image\/(\w+);base64,/', $signatureData, $type)) {
+                $signatureData = substr($signatureData, strpos($signatureData, ',') + 1);
+                $type = strtolower($type[1]); // jpg, png, gif
+
+                if (!in_array($type, ['jpg', 'jpeg', 'gif', 'png'])) {
+                    return ResponseFormatter::error(null, 'Invalid image type', 422);
+                }
+
+                $signatureData = base64_decode($signatureData);
+
+                if ($signatureData === false) {
+                    return ResponseFormatter::error(null, 'Base64 decode failed', 422);
+                }
+
+                // Delete old signature if exists
+                if ($user->signature_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($user->signature_path)) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($user->signature_path);
+                }
+
+                $fileName = 'signatures/users/' . $user->id . '_' . uniqid() . '.' . $type;
+                \Illuminate\Support\Facades\Storage::disk('public')->put($fileName, $signatureData);
+
+                $user->signature_path = $fileName;
+                $user->save();
+
+                return ResponseFormatter::success(
+                    new UserResource($user),
+                    'Signature updated successfully'
+                );
+            } else {
+                return ResponseFormatter::error(null, 'Invalid signature data format', 422);
+            }
+
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(
+                null,
+                'Failed to update signature: ' . $e->getMessage(),
+                500
+            );
+        }
+    }
 }
