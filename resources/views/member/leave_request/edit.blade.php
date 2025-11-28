@@ -117,13 +117,17 @@
         </div>
 
         {{-- Attachment --}}
-        <div class="form-control w-full">
+        <div class="form-control w-full" x-show="showAttachment" x-transition>
             <label class="label">
-                <span class="label-text font-semibold">Attachment (Optional)</span>
+                <span class="label-text font-semibold">
+                    Attachment 
+                    <span x-text="isSickLeave ? '(Required)' : '(Optional)'" :class="isSickLeave ? 'text-error' : ''"></span>
+                </span>
             </label>
-            <input type="file" @change="handleFileUpload" class="file-input file-input-bordered w-full" accept=".jpg,.jpeg,.png,.pdf" />
+            <input type="file" @change="handleFileUpload" class="file-input file-input-bordered w-full" :class="{'file-input-error': errors.supporting_document}" accept=".jpg,.jpeg,.png,.pdf" />
             <label class="label">
                 <span class="label-text-alt">Max 2MB (JPG, PNG, PDF)</span>
+                <span class="label-text-alt text-error" x-show="errors.supporting_document" x-text="errors.supporting_document"></span>
             </label>
             <div x-show="existingAttachment" class="text-xs mt-1">
                 Current file: <a :href="existingAttachment" target="_blank" class="link link-primary">View Attachment</a>
@@ -155,7 +159,17 @@
                     </div>
                     <div class="w-full max-w-sm flex justify-between mt-2">
                         <span class="text-xs text-gray-500">Sign above</span>
-                        <button type="button" @click="clearSignature" class="btn btn-xs btn-ghost text-error">Clear</button>
+                        <div class="flex gap-2">
+                            <button type="button" @click="undoSignature" class="btn btn-xs btn-ghost" :disabled="historyStep < 0" title="Undo">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
+                            </button>
+                            <button type="button" @click="redoSignature" class="btn btn-xs btn-ghost" :disabled="historyStep >= history.length - 1" title="Redo">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6" /></svg>
+                            </button>
+                            <button type="button" @click="clearSignature" class="btn btn-xs btn-ghost text-error" title="Clear">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -190,7 +204,11 @@
             balances: [],
             userSignature: null,
             useSavedSignature: false,
+            userSignature: null,
+            useSavedSignature: false,
             signaturePad: null,
+            history: [],
+            historyStep: -1,
             formData: {
                 leave_type_id: '',
                 workflow_id: '',
@@ -221,6 +239,10 @@
                         this.signaturePad = new SignaturePad(canvas, {
                             backgroundColor: 'rgba(255, 255, 255, 0)'
                         });
+
+                        this.signaturePad.addEventListener("endStroke", () => {
+                            this.saveHistory();
+                        });
                         
                         // Initial resize
                         this.resizeCanvas();
@@ -238,21 +260,21 @@
                 });
             },
 
-            resizeCanvas() {
-                const canvas = document.getElementById('signature-pad');
-                if (canvas && canvas.offsetWidth > 0) {
-                    const ratio = Math.max(window.devicePixelRatio || 1, 1);
-                    canvas.width = canvas.offsetWidth * ratio;
-                    canvas.height = canvas.offsetHeight * ratio;
-                    canvas.getContext("2d").scale(ratio, ratio);
-                    
-                    if (this.signaturePad) {
-                        this.signaturePad.clear(); 
-                    }
-                }
+            get isSickLeave() {
+                if (!this.formData.leave_type_id) return false;
+                const type = this.leaveTypes.find(t => t.id == this.formData.leave_type_id);
+                if (!type) return false;
+                const name = type.name.toLowerCase();
+                return name.includes('sick') || name.includes('sakit');
             },
 
-            async fetchMasterData() {
+            get showAttachment() {
+                if (!this.formData.leave_type_id) return false;
+                const type = this.leaveTypes.find(t => t.id == this.formData.leave_type_id);
+                if (!type) return false;
+                const name = type.name.toLowerCase();
+                return name.includes('sick') || name.includes('sakit') || name.includes('special') || name.includes('khusus');
+            },
                 try {
                     const [masterResponse, balanceResponse, userResponse] = await Promise.all([
                         fetch(`${baseApiUrl}/master-data`, {
@@ -395,9 +417,35 @@
                 }
             },
 
+            saveHistory() {
+                this.history = this.history.slice(0, this.historyStep + 1);
+                // Deep copy to avoid reference issues
+                this.history.push(JSON.parse(JSON.stringify(this.signaturePad.toData())));
+                this.historyStep++;
+            },
+
+            undoSignature() {
+                if (this.historyStep >= 0) {
+                    this.historyStep--;
+                    if (this.historyStep >= 0) {
+                        this.signaturePad.fromData(this.history[this.historyStep]);
+                    } else {
+                        this.signaturePad.clear();
+                    }
+                }
+            },
+
+            redoSignature() {
+                if (this.historyStep < this.history.length - 1) {
+                    this.historyStep++;
+                    this.signaturePad.fromData(this.history[this.historyStep]);
+                }
+            },
+
             clearSignature() {
                 if (this.signaturePad) {
                     this.signaturePad.clear();
+                    this.saveHistory();
                 }
             },
 
@@ -430,6 +478,11 @@
 
                 if (this.formData.supporting_document) {
                     formData.append('supporting_document', this.formData.supporting_document);
+                } else if (this.isSickLeave && actionType === 'submit' && !this.existingAttachment) {
+                    // Only require if no existing attachment
+                    this.errors.supporting_document = 'Attachment is required for Sick Leave';
+                    this.submitting = false;
+                    return;
                 }
 
                 // Handle Signature

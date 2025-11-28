@@ -175,6 +175,8 @@
             loadingBalances: true,
             loadingRequests: true,
             token: localStorage.getItem('authToken'),
+            userSignature: null,
+            useSavedSignature: false,
             
             // Filter states
             searchQuery: '',
@@ -252,6 +254,12 @@
                         this.user = data.data;
                         const avatarEl = document.getElementById('user-avatar-nav');
                         if (avatarEl) avatarEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(this.user.name)}&background=random`;
+                        
+                        // Check for saved signature
+                        if (this.user.signature_url) {
+                            this.userSignature = this.user.signature_url;
+                            this.useSavedSignature = true;
+                        }
                     }
                 } catch (e) { console.error('Error fetching user:', e); }
             },
@@ -316,7 +324,10 @@
                             'Content-Type': 'application/json',
                             'Accept': 'application/json'
                         },
-                        body: JSON.stringify(this.approvalData)
+                        body: JSON.stringify({
+                            ...this.approvalData,
+                            use_saved_signature: this.useSavedSignature ? 1 : 0
+                        })
                     });
                     
                     const result = await response.json();
@@ -335,10 +346,17 @@
 
             // --- SIGNATURE PAD ---
             signaturePad: null,
-            isFullScreen: false,
-            isLandscape: false,
+            history: [],
+            historyStep: -1,
 
             setupSignaturePad() {
+                // Watch for visibility change
+                this.$watch('useSavedSignature', (value) => {
+                    if (!value) {
+                        setTimeout(() => this.resizeCanvas(), 50);
+                    }
+                });
+
                 this.$nextTick(() => {
                     const canvas = document.getElementById('signature-pad');
                     if (!canvas) return;
@@ -351,29 +369,20 @@
 
                     // Initialize SignaturePad
                     this.signaturePad = new SignaturePad(canvas, {
-                        backgroundColor: 'rgba(255, 255, 255, 0)', // Transparent
-                        penColor: 'rgb(0, 0, 0)',
-                        velocityFilterWeight: 0.7,
-                        minWidth: 0.6,
-                        maxWidth: 1.8,
-                        throttle: 26,
-                        minDistance: 3,
+                        backgroundColor: 'rgba(255, 255, 255, 0)'
                     });
-
-                    // Auto full screen on mobile
-                    if (window.innerWidth < 768) {
-                        this.toggleFullScreen(true);
-                    } else {
-                        this.resizeCanvas();
-                    }
 
                     // Update data model on end stroke
                     this.signaturePad.addEventListener("endStroke", () => {
                         if (!this.signaturePad.isEmpty()) {
                             this.approvalData.signature = this.signaturePad.toDataURL();
                         }
+                        this.saveHistory();
                     });
                     
+                    // Initial resize
+                    this.resizeCanvas();
+
                     // Handle window resize
                     window.addEventListener("resize", () => {
                         this.resizeCanvas();
@@ -383,48 +392,68 @@
             
             resizeCanvas() {
                 const canvas = document.getElementById('signature-pad');
-                if (!canvas || !this.signaturePad) return;
+                if (!canvas) return;
                 
                 const ratio = Math.max(window.devicePixelRatio || 1, 1);
                 
-                // Store data as vector points to avoid distortion
-                const data = this.signaturePad.toData();
+                // Store current data to restore after resize
+                let data = null;
+                if (this.signaturePad) {
+                    data = this.signaturePad.toData();
+                }
                 
                 canvas.width = canvas.offsetWidth * ratio;
                 canvas.height = canvas.offsetHeight * ratio;
                 canvas.getContext("2d").scale(ratio, ratio);
                 
-                this.signaturePad.clear(); // This is necessary after resizing
-                
-                // Restore data
-                if (data) {
-                    this.signaturePad.fromData(data);
+                if (this.signaturePad) {
+                    this.signaturePad.clear(); 
+                    if (data) {
+                        this.signaturePad.fromData(data);
+                    }
                 }
             },
             
-            toggleFullScreen(forceState = null) {
-                if (forceState !== null) {
-                    this.isFullScreen = forceState;
-                } else {
-                    this.isFullScreen = !this.isFullScreen;
-                }
+            saveHistory() {
+                this.history = this.history.slice(0, this.historyStep + 1);
+                // Deep copy to avoid reference issues
+                this.history.push(JSON.parse(JSON.stringify(this.signaturePad.toData())));
+                this.historyStep++;
+            },
 
-                // Check for mobile portrait to force landscape
-                if (this.isFullScreen && window.innerWidth < 768 && window.innerHeight > window.innerWidth) {
-                    this.isLandscape = true;
-                } else {
-                    this.isLandscape = false;
+            undoSignature() {
+                if (this.historyStep >= 0) {
+                    this.historyStep--;
+                    if (this.historyStep >= 0) {
+                        this.signaturePad.fromData(this.history[this.historyStep]);
+                    } else {
+                        this.signaturePad.clear();
+                    }
+                    // Update model
+                    if (!this.signaturePad.isEmpty()) {
+                        this.approvalData.signature = this.signaturePad.toDataURL();
+                    } else {
+                        this.approvalData.signature = '';
+                    }
                 }
+            },
 
-                this.$nextTick(() => {
-                    this.resizeCanvas();
-                });
+            redoSignature() {
+                if (this.historyStep < this.history.length - 1) {
+                    this.historyStep++;
+                    this.signaturePad.fromData(this.history[this.historyStep]);
+                    // Update model
+                    if (!this.signaturePad.isEmpty()) {
+                        this.approvalData.signature = this.signaturePad.toDataURL();
+                    }
+                }
             },
 
             clearSignature() {
                 if (this.signaturePad) {
                     this.signaturePad.clear();
                     this.approvalData.signature = '';
+                    this.saveHistory();
                 }
             },
 

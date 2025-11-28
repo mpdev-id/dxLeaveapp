@@ -32,27 +32,38 @@
                     <label class="label">
                         <span class="label-text">Signature</span>
                     </label>
-                    <div :class="{
-                        'fixed inset-0 z-50 bg-white p-4 flex flex-col': isFullScreen && !isLandscape,
-                        'fixed inset-0 z-50 bg-white p-4 flex flex-col origin-center': isFullScreen && isLandscape,
-                        'rounded-lg p-2 bg-white': !isFullScreen
-                    }"
-                    :style="isFullScreen && isLandscape ? 'width: 100vh; height: 100vw; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(90deg);' : ''">
-                        <div class="flex justify-between items-center mb-2" x-show="isFullScreen">
-                             <h3 class="font-bold text-lg">Sign Here</h3>
-                             <button type="button" class="btn btn-sm btn-circle btn-ghost" @click="toggleFullScreen()">✕</button>
+                    
+                    <div class="flex flex-col gap-4">
+                        <!-- Option to use saved signature -->
+                        <div x-show="userSignature" class="form-control">
+                            <label class="label cursor-pointer justify-start gap-3">
+                                <input type="checkbox" x-model="useSavedSignature" class="checkbox checkbox-primary" />
+                                <span class="label-text">Use my saved signature</span>
+                            </label>
+                            <div x-show="useSavedSignature" class="mt-2 p-4 border rounded-lg bg-base-100 w-fit">
+                                <img :src="userSignature" alt="Saved Signature" class="h-20 object-contain">
+                            </div>
                         </div>
-                        
-                        <div class="flex-grow relative w-full" :class="{'h-full': isFullScreen, 'h-40': !isFullScreen}">
-                            <canvas id="signature-pad" class="w-full h-full touch-none block"></canvas>
-                        </div>
-                        
-                        <div class="flex justify-between mt-2">
-                             <button type="button" class="btn btn-xs btn-outline" @click="toggleFullScreen()">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" /></svg>
-                                <span x-text="isFullScreen ? 'Exit Full Screen' : 'Full Screen'"></span>
-                             </button>
-                             <button type="button" class="btn btn-xs btn-outline btn-error" @click="clearSignature()">Clear Signature</button>
+
+                        <!-- Signature Pad -->
+                        <div x-show="!useSavedSignature" class="w-full flex flex-col items-center">
+                            <div class="w-full max-w-sm aspect-square border-2 border-dashed border-gray-300 rounded-lg bg-white relative">
+                                <canvas id="signature-pad" class="absolute inset-0 w-full h-full touch-none"></canvas>
+                            </div>
+                            <div class="w-full max-w-sm flex justify-between mt-2">
+                                <span class="text-xs text-gray-500">Sign above</span>
+                                <div class="flex gap-2">
+                                    <button type="button" @click="undoSignature" class="btn btn-xs btn-ghost" :disabled="historyStep < 0" title="Undo">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
+                                    </button>
+                                    <button type="button" @click="redoSignature" class="btn btn-xs btn-ghost" :disabled="historyStep >= history.length - 1" title="Redo">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6" /></svg>
+                                    </button>
+                                    <button type="button" @click="clearSignature" class="btn btn-xs btn-ghost text-error" title="Clear">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <input type="hidden" x-model="approvalData.signature">

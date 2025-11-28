@@ -66,7 +66,7 @@ class UserResource extends JsonResource
                     'status' => $leaveRequest->current_status,
                 ];
             })->values()->all(),
-          
+            'signature_url' => $this->signature_url,
         ];
     }
 }

@@ -90,6 +90,33 @@
                         <div class="text-xs text-base-content/40" x-text="calculateTenure(user.hire_date)"></div>
                     </div>
                 </div>
+
+                <!-- Digital Signature -->
+                <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-200/50 transition-colors">
+                    <div class="p-3 bg-secondary/10 rounded-xl text-secondary">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <div class="text-xs text-base-content/60 font-medium uppercase tracking-wider">Digital Signature</div>
+                        <div class="flex items-center gap-2 mt-1">
+                            <div class="h-10 w-24 bg-base-200 rounded flex items-center justify-center overflow-hidden border border-base-300 cursor-pointer hover:bg-base-300 transition-colors" @click="user.signature_url ? openSignaturePreview() : null">
+                                <template x-if="user.signature_url">
+                                    <img :src="user.signature_url" alt="Signature" class="h-full w-full object-contain">
+                                </template>
+                                <template x-if="!user.signature_url">
+                                    <span class="text-xs text-base-content/40 italic">None</span>
+                                </template>
+                            </div>
+                            <button @click="openSignatureModal" class="btn btn-ghost btn-xs btn-square text-secondary" title="Update Signature">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -296,10 +323,77 @@
         </form>
     </dialog>
 
+    <!-- Update Signature Modal -->
+    <dialog id="signatureModal" class="modal modal-bottom sm:modal-middle">
+        <div class="modal-box">
+            <h3 class="font-bold text-lg flex items-center gap-2 text-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                </svg>
+                Update Digital Signature
+            </h3>
+            <div class="mt-4">
+                <p class="text-sm text-base-content/70 mb-2">Draw your signature below. This will be used for your leave requests.</p>
+                
+                <div class="w-full flex flex-col items-center">
+                    <div class="w-full max-w-sm aspect-square border-2 border-dashed border-gray-300 rounded-lg bg-white relative">
+                        <canvas id="profile-signature-pad" class="absolute inset-0 w-full h-full touch-none"></canvas>
+                    </div>
+                    <div class="w-full max-w-sm flex justify-between mt-2">
+                        <span class="text-xs text-gray-500">Sign above</span>
+                        <div class="flex gap-2">
+                            <button type="button" @click="undoSignature" class="btn btn-xs btn-ghost" :disabled="historyStep < 0" title="Undo">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
+                            </button>
+                            <button type="button" @click="redoSignature" class="btn btn-xs btn-ghost" :disabled="historyStep >= history.length - 1" title="Redo">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6" /></svg>
+                            </button>
+                            <button type="button" @click="clearSignature" class="btn btn-xs btn-ghost text-error" title="Clear">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-action">
+                <button type="button" @click="closeSignatureModal" class="btn btn-ghost">Cancel</button>
+                <button type="button" @click="saveSignature" class="btn btn-secondary" :disabled="savingSignature">
+                    <span x-show="savingSignature" class="loading loading-spinner"></span>
+                    <span x-text="savingSignature ? 'Saving...' : 'Save Signature'"></span>
+                </button>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+            <button>close</button>
+        </form>
+    </dialog>
+
+    <!-- Signature Preview Modal -->
+    <dialog id="signaturePreviewModal" class="modal modal-bottom sm:modal-middle">
+        <div class="modal-box">
+            <h3 class="font-bold text-lg flex items-center gap-2 text-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+                My Signature
+            </h3>
+            <div class="mt-4 flex justify-center bg-base-200 p-4 rounded-lg">
+                <img :src="user.signature_url" alt="Signature Preview" class="max-w-full max-h-64 object-contain">
+            </div>
+            <div class="modal-action">
+                <button type="button" @click="closeSignaturePreview" class="btn btn-ghost">Close</button>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+            <button>close</button>
+        </form>
+    </dialog>
+
 </div>
 @endsection
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
 <script>
     function urlBase64ToUint8Array(base64String) {
         if (!base64String) {
@@ -351,6 +445,10 @@
             isPushEnabled: false,
             loadingPush: false,
             testingPush: false,
+            signaturePad: null,
+            history: [],
+            historyStep: -1,
+            savingSignature: false,
             vapidPublicKey: '{{ config('webpush.vapid.public_key') }}'.trim(),
 
             async init() {
@@ -735,6 +833,138 @@
                         });
                     }
                 });
+            },
+
+            openSignatureModal() {
+                document.getElementById('signatureModal').showModal();
+                
+                // Initialize pad if not already
+                this.$nextTick(() => {
+                    const canvas = document.getElementById('profile-signature-pad');
+                    if (canvas && !this.signaturePad) {
+                        this.signaturePad = new SignaturePad(canvas, {
+                            backgroundColor: 'rgba(255, 255, 255, 0)'
+                        });
+
+                        this.signaturePad.addEventListener("endStroke", () => {
+                            this.saveHistory();
+                        });
+
+                        window.addEventListener("resize", () => this.resizeCanvas());
+                    }
+                    // Always resize when opening to ensure correct dimensions
+                    this.resizeCanvas();
+                });
+            },
+
+            closeSignatureModal() {
+                document.getElementById('signatureModal').close();
+                if (this.signaturePad) {
+                    this.signaturePad.clear();
+                }
+            },
+
+            openSignaturePreview() {
+                document.getElementById('signaturePreviewModal').showModal();
+            },
+
+            closeSignaturePreview() {
+                document.getElementById('signaturePreviewModal').close();
+            },
+
+            resizeCanvas() {
+                const canvas = document.getElementById('profile-signature-pad');
+                if (canvas && canvas.offsetWidth > 0) {
+                    const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                    
+                    // Store current data to restore after resize
+                    let data = null;
+                    if (this.signaturePad) {
+                        data = this.signaturePad.toData();
+                    }
+
+                    canvas.width = canvas.offsetWidth * ratio;
+                    canvas.height = canvas.offsetHeight * ratio;
+                    canvas.getContext("2d").scale(ratio, ratio);
+                    
+                    if (this.signaturePad) {
+                        this.signaturePad.clear(); 
+                        if (data) {
+                            this.signaturePad.fromData(data);
+                        }
+                    }
+                }
+            },
+
+            saveHistory() {
+                this.history = this.history.slice(0, this.historyStep + 1);
+                // Deep copy to avoid reference issues
+                this.history.push(JSON.parse(JSON.stringify(this.signaturePad.toData())));
+                this.historyStep++;
+            },
+
+            undoSignature() {
+                if (this.historyStep >= 0) {
+                    this.historyStep--;
+                    if (this.historyStep >= 0) {
+                        this.signaturePad.fromData(this.history[this.historyStep]);
+                    } else {
+                        this.signaturePad.clear();
+                    }
+                }
+            },
+
+            redoSignature() {
+                if (this.historyStep < this.history.length - 1) {
+                    this.historyStep++;
+                    this.signaturePad.fromData(this.history[this.historyStep]);
+                }
+            },
+
+            clearSignature() {
+                if (this.signaturePad) {
+                    this.signaturePad.clear();
+                    this.saveHistory();
+                }
+            },
+
+            async saveSignature() {
+                if (!this.signaturePad || this.signaturePad.isEmpty()) {
+                    Swal.fire('Error', 'Please provide a signature', 'error');
+                    return;
+                }
+
+                this.savingSignature = true;
+                try {
+                    const signatureData = this.signaturePad.toDataURL();
+                    
+                    const response = await fetch(`${baseApiUrl}/user/update-signature`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${this.token}`,
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            signature: signatureData
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        this.user = data.data; // Update user data to show new signature
+                        this.closeSignatureModal();
+                        Swal.fire('Success', 'Signature updated successfully', 'success');
+                    } else {
+                        throw new Error(data.message || 'Failed to update signature');
+                    }
+                } catch (error) {
+                    console.error('Error saving signature:', error);
+                    Swal.fire('Error', error.message || 'Failed to save signature', 'error');
+                } finally {
+                    this.savingSignature = false;
+                }
             }
         }
     }
