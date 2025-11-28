@@ -53,8 +53,7 @@
                     </div>
                     <div x-show="selectedRequest.supporting_attachment_path">
                         <p class="font-semibold">Attachment</p>
-                        <a :href="`/storage/${selectedRequest.supporting_attachment_path}`" target="_blank"
-                            class="link link-primary">View Document</a>
+                        <a :href="`/storage/${selectedRequest.supporting_attachment_path}`" class="link link-primary">View Document</a>
                     </div>
                     <div class="md:col-span-3">
                         <p class="font-semibold">Reason</p>

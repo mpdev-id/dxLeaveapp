@@ -291,7 +291,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     attachmentHtml = `
                         <div>
                             <p class="font-semibold">Attachment</p>
-                            <a href="/storage/${details.supporting_attachment_path}" target="_blank" class="link link-primary">View Document</a>
+                            <a href="/storage/${details.supporting_attachment_path}" class="link link-primary">View Document</a>
                         </div>
                     `;
                 }
