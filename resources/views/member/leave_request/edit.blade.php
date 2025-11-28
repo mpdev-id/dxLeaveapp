@@ -186,7 +186,7 @@
                 <span class="label-text-alt text-error" x-show="errors.supporting_document" x-text="errors.supporting_document"></span>
             </label>
             <div x-show="existingAttachment" class="text-xs mt-1">
-                Current file: <a :href="existingAttachment" target="_blank" class="link link-primary">View Attachment</a>
+                Current file: <a :href="existingAttachment" class="link link-primary">View Attachment</a>
             </div>
         </div>
 

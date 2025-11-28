@@ -144,7 +144,7 @@
                      <input type="file" @change="handleFileSelect" id="supporting_document" class="file-input file-input-bordered w-full">
                      <p x-show="formErrors.supporting_document" class="text-error text-sm mt-1" x-text="formErrors.supporting_document"></p>
                      <div x-show="editMode && formData.supporting_document_path" class="text-sm mt-2">
-                        Current file: <a :href="`/storage/${formData.supporting_document_path}`" target="_blank" class="link" x-text="formData.supporting_document_path.split('/').pop()"></a>
+                        Current file: <a :href="`/storage/${formData.supporting_document_path}`" class="link" x-text="formData.supporting_document_path.split('/').pop()"></a>
                      </div>
                 </div>
             </div>
