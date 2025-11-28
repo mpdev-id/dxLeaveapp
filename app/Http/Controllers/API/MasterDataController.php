@@ -32,11 +32,14 @@ class MasterDataController extends Controller
             $workflows = Workflow::all();
             $employeeEntitlements = EmployeeEntitlement::all();
 
+            $publicHolidays = PublicHoliday::all();
+
             return ResponseFormatter::success([
                 'users' => UserResource::collection($users),
                 'leave_types' => LeaveTypeResource::collection($leaveTypes),
                 'workflows' => $workflows,
                 'employee_entitlements' => EmployeeEntitlementResource::collection($employeeEntitlements),
+                'public_holidays' => PublicHolidayResource::collection($publicHolidays),
             ], 'Master data retrieved successfully');
         } catch (\Exception $e) {
             return ResponseFormatter::error(null, 'Failed to retrieve master data: ' . $e->getMessage(), 500);

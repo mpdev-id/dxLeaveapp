@@ -151,6 +151,7 @@
         return {
             leaveTypes: [],
             workflows: [],
+            publicHolidays: [],
             balances: [],
             formData: {
                 leave_type_id: '',
@@ -193,6 +194,7 @@
                     if (masterResponse.ok && balanceData.data) {
                         const allLeaveTypes = masterData.data.leave_types;
                         this.workflows = masterData.data.workflows || [];
+                        this.publicHolidays = masterData.data.public_holidays || [];
                         const userBalances = balanceData.data;
                         this.balances = userBalances;
 
@@ -270,11 +272,19 @@
                         }
                     }
                 } else {
+                    // Calculate working days (exclude weekends and public holidays)
                     let count = 0;
                     let curDate = new Date(start);
+                    
+                    // Format holidays to YYYY-MM-DD for easy comparison
+                    const holidayDates = this.publicHolidays.map(h => h.date);
+
                     while (curDate <= end) {
                         const dayOfWeek = curDate.getDay();
-                        if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+                        const dateString = curDate.toISOString().split('T')[0];
+
+                        // Check if weekend (0=Sun, 6=Sat) OR public holiday
+                        if (dayOfWeek !== 0 && dayOfWeek !== 6 && !holidayDates.includes(dateString)) {
                             count++;
                         }
                         curDate.setDate(curDate.getDate() + 1);

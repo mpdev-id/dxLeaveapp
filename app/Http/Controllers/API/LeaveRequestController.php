@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\LeaveRequestResource;
 use App\Models\LeaveRequest;
 use App\Models\Workflow;
+use App\Models\PublicHoliday;
 use App\Services\LeaveRequestService;
 use App\Services\EntitlementService;
 use App\Services\WorkflowService;
@@ -144,14 +145,7 @@ class LeaveRequestController extends Controller
             }
 
             // 2. Hitung Durasi Cuti
-            $startDate = Carbon::parse($validatedData['start_date']);
-            $endDate = Carbon::parse($validatedData['end_date']);
-            $duration = 0;
-            if (in_array($validatedData['leave_period'], ['half_day_morning', 'half_day_afternoon'])) {
-                $duration = 0.5;
-            } else {
-                $duration = $startDate->diffInDays($endDate) + 1;
-            }
+            $duration = $this->calculateDuration($validatedData['start_date'], $validatedData['end_date'], $validatedData['leave_period']);
 
             // 3. Cek Jatah Cuti
             if (!$this->entitlementService->hasSufficientBalance(Auth::user(), $validatedData['leave_type_id'], $duration)) {
@@ -256,13 +250,22 @@ class LeaveRequestController extends Controller
                     }
                     $validatedData['duration_days'] = 0.5;
                 } else {
-                    $validatedData['duration_days'] = $startDate->diffInDays($endDate) + 1;
+                    $validatedData['duration_days'] = $this->calculateDuration($startDate, $endDate, $leavePeriod);
                 }
             }
 
             // Jika status diubah ke 'Pending', lakukan validasi penuh dan mulai alur kerja
             if (isset($validatedData['current_status']) && $validatedData['current_status'] === 'Pending') {
                 // Log::info('Attempting to change status to Pending');
+
+                // Recalculate duration to ensure it's up to date with holidays/weekends
+                // This handles cases where the draft was created before holiday logic was added,
+                // or if holidays were added/changed since the draft was created.
+                $currentStartDate = $validatedData['start_date'] ?? $leaveRequest->start_date;
+                $currentEndDate = $validatedData['end_date'] ?? $leaveRequest->end_date;
+                $currentLeavePeriod = $validatedData['leave_period'] ?? $leaveRequest->leave_period;
+                
+                $validatedData['duration_days'] = $this->calculateDuration($currentStartDate, $currentEndDate, $currentLeavePeriod);
 
                 // Validasi field yang wajib ada saat submit
                 $submitData = array_merge($leaveRequest->toArray(), $validatedData);
@@ -421,5 +424,43 @@ class LeaveRequestController extends Controller
         } catch (\Exception $e) {
             return ResponseFormatter::error(null, 'Failed to retrieve approver log: ' . $e->getMessage(), 500);
         }
+    }
+
+    /**
+     * Calculate leave duration excluding weekends and public holidays.
+     *
+     * @param string|Carbon $startDate
+     * @param string|Carbon $endDate
+     * @param string $leavePeriod
+     * @return float
+     */
+    private function calculateDuration($startDate, $endDate, $leavePeriod)
+    {
+        if (in_array($leavePeriod, ['half_day_morning', 'half_day_afternoon'])) {
+            return 0.5;
+        }
+
+        $start = Carbon::parse($startDate);
+        $end = Carbon::parse($endDate);
+        
+        // Fetch public holidays within the range
+        $holidays = PublicHoliday::whereBetween('date', [$start->format('Y-m-d'), $end->format('Y-m-d')])
+                                 ->get()
+                                 ->pluck('date')
+                                 ->map(function ($date) {
+                                     return $date->format('Y-m-d');
+                                 })
+                                 ->toArray();
+
+        $duration = 0;
+        while ($start->lte($end)) {
+            // Check if it's not a weekend and not a public holiday
+            if (!$start->isWeekend() && !in_array($start->format('Y-m-d'), $holidays)) {
+                $duration++;
+            }
+            $start->addDay();
+        }
+
+        return $duration;
     }
 }

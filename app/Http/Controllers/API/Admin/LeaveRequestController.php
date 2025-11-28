@@ -10,6 +10,7 @@ use App\Jobs\SendLeaveRequestStatusUpdatedNotification;
 use App\Models\LeaveRequest;
 use App\Models\User;
 use App\Models\Workflow;
+use App\Models\PublicHoliday;
 use App\Services\EntitlementService;
 use App\Services\LeaveRequestService;
 use App\Services\WorkflowService;
@@ -129,9 +130,7 @@ class LeaveRequestController extends Controller
                 }
             }
 
-            $startDate = Carbon::parse($validatedData['start_date']);
-            $endDate = Carbon::parse($validatedData['end_date']);
-            $duration = (in_array($validatedData['leave_period'], ['half_day_morning', 'half_day_afternoon'])) ? 0.5 : $startDate->diffInDays($endDate) + 1;
+            $duration = $this->calculateDuration($validatedData['start_date'], $validatedData['end_date'], $validatedData['leave_period']);
 
 
             if (!$this->entitlementService->hasSufficientBalance($user, $validatedData['leave_type_id'], $duration)) {
@@ -248,7 +247,7 @@ class LeaveRequestController extends Controller
                     }
                     $validatedData['duration_days'] = 0.5;
                 } else {
-                    $validatedData['duration_days'] = $startDate->diffInDays($endDate) + 1;
+                    $validatedData['duration_days'] = $this->calculateDuration($startDate, $endDate, $leavePeriod);
                 }
 
                 if (!$this->entitlementService->hasSufficientBalance($leaveRequest->user, $validatedData['leave_type_id'] ?? $leaveRequest->leave_type_id, $validatedData['duration_days'])) {
@@ -461,5 +460,43 @@ class LeaveRequestController extends Controller
         } catch (\Exception $e) {
             return ResponseFormatter::error(null, 'Failed to retrieve employee leave requests: ' . $e->getMessage(), 500);
         }
+    }
+
+    /**
+     * Calculate leave duration excluding weekends and public holidays.
+     *
+     * @param string|Carbon $startDate
+     * @param string|Carbon $endDate
+     * @param string $leavePeriod
+     * @return float
+     */
+    private function calculateDuration($startDate, $endDate, $leavePeriod)
+    {
+        if (in_array($leavePeriod, ['half_day_morning', 'half_day_afternoon'])) {
+            return 0.5;
+        }
+
+        $start = Carbon::parse($startDate);
+        $end = Carbon::parse($endDate);
+        
+        // Fetch public holidays within the range
+        $holidays = PublicHoliday::whereBetween('date', [$start->format('Y-m-d'), $end->format('Y-m-d')])
+                                 ->get()
+                                 ->pluck('date')
+                                 ->map(function ($date) {
+                                     return $date->format('Y-m-d');
+                                 })
+                                 ->toArray();
+
+        $duration = 0;
+        while ($start->lte($end)) {
+            // Check if it's not a weekend and not a public holiday
+            if (!$start->isWeekend() && !in_array($start->format('Y-m-d'), $holidays)) {
+                $duration++;
+            }
+            $start->addDay();
+        }
+
+        return $duration;
     }
 }
