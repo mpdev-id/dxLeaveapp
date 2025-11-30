@@ -273,9 +273,18 @@
                     });
                     const data = await response.json();
                     if (response.ok) {
-                        // API already filters for current user's requests
-                        this.requests = data.data || [];
-                        console.log('Loaded requests:', this.requests.length);
+                        // Store all data first
+                        const allRequests = data.data || [];
+                        console.log('API returned:', allRequests.length, 'requests');
+                        
+                        // Filter for current user only (API returns all for approvers, so we must filter)
+                        if (this.user) {
+                            this.requests = allRequests.filter(r => r.user && r.user.id === this.user.id);
+                            console.log('Filtered to:', this.requests.length, 'requests for user', this.user.id);
+                        } else {
+                            console.warn('User not loaded yet, showing all requests');
+                            this.requests = allRequests;
+                        }
                     } else {
                         console.error('Failed to fetch requests:', data);
                     }

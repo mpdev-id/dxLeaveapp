@@ -39,7 +39,26 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     Route::get('teams', [\App\Http\Controllers\API\Admin\TeamController::class, 'index']);
     Route::get('plants', [\App\Http\Controllers\API\Admin\PlantController::class, 'index']);
 
-    // --- Rute Modul Cuti (Leave Requests) ---
+    
+    // Debug route
+    Route::get('debug/leave-requests', function() {
+        $user = Auth::user();
+        $requests = \App\Models\LeaveRequest::where('user_id', $user->id)->get();
+        return response()->json([
+            'user_id' => $user->id,
+            'user_name' => $user->name,
+            'total_requests' => $requests->count(),
+            'requests' => $requests->map(function($r) {
+                return [
+                    'id' => $r->id,
+                    'uuid' => $r->uuid,
+                    'status' => $r->current_status,
+                    'leave_type' => $r->leaveType?->name,
+                    'created_at' => $r->created_at,
+                ];
+            })
+        ]);
+    });
     
     // 1. Pengajuan dan Daftar Cuti (Akses oleh Karyawan & Manajer)
     Route::get('leave-requests/suggestions', [LeaveRequestController::class, 'getSuggestions']);
