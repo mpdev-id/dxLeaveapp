@@ -256,15 +256,11 @@
         return {
             leaveTypes: [],
             workflows: [],
-            leaveTypes: [],
-            workflows: [],
             publicHolidays: [],
             balances: [],
             suggestions: { reasons: [], addresses: [] },
             showReasonSuggestions: false,
             showAddressSuggestions: false,
-            userSignature: null,
-            useSavedSignature: false,
             userSignature: null,
             useSavedSignature: false,
             signaturePad: null,
@@ -275,7 +271,6 @@
                 workflow_id: '',
                 start_date: '',
                 end_date: '',
-                leave_period: 'full_day',
                 leave_period: 'full_day',
                 reason: '',
                 leave_address: '',
@@ -339,6 +334,8 @@
                 const name = type.name.toLowerCase();
                 return name.includes('sick') || name.includes('sakit') || name.includes('special') || name.includes('khusus');
             },
+
+            async fetchMasterData() {
                 try {
                     const [masterResponse, balanceResponse, userResponse] = await Promise.all([
                         fetch(`${baseApiUrl}/master-data`, {
@@ -369,11 +366,6 @@
                         // Check for saved signature
                         if (userData.data && userData.data.signature_url) {
                             this.userSignature = userData.data.signature_url;
-                            // Default to using saved signature if available? Or let user choose?
-                            // Let's default to false to let them see options, or true for convenience.
-                            // If they already signed this request, we might want to show that?
-                            // But edit usually means re-signing or keeping existing.
-                            // For simplicity, let's start with false unless they select it.
                         }
                     }
                 } catch (e) {
@@ -407,7 +399,6 @@
                         this.formData.workflow_id = req.workflow_id; // Ensure backend sends this
                         this.formData.start_date = req.start_date;
                         this.formData.end_date = req.end_date;
-                        this.formData.leave_period = req.leave_period;
                         this.formData.leave_period = req.leave_period;
                         this.formData.reason = req.reason;
                         this.formData.leave_address = req.leave_address;
@@ -521,6 +512,18 @@
                 }
             },
 
+            resizeCanvas() {
+                if (!this.signaturePad) return;
+                const canvas = document.getElementById('signature-pad');
+                if (!canvas) return;
+                
+                const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                canvas.width = canvas.offsetWidth * ratio;
+                canvas.height = canvas.offsetHeight * ratio;
+                canvas.getContext("2d").scale(ratio, ratio);
+                this.signaturePad.clear();
+            },
+
             clearSignature() {
                 if (this.signaturePad) {
                     this.signaturePad.clear();
@@ -545,7 +548,6 @@
                 formData.append('workflow_id', this.formData.workflow_id);
                 formData.append('start_date', this.formData.start_date);
                 formData.append('end_date', this.formData.end_date);
-                formData.append('leave_period', this.formData.leave_period);
                 formData.append('leave_period', this.formData.leave_period);
                 formData.append('reason', this.formData.reason);
                 formData.append('leave_address', this.formData.leave_address);

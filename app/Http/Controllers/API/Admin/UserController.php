@@ -25,7 +25,7 @@ class UserController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = User::with('roles')
+            $query = User::with(['roles', 'department', 'plant'])
                 ->when($request->filled('search'), function ($query) use ($request) {
                     $search = $request->input('search');
                     return $query->where(function ($q) use ($search) {
@@ -68,6 +68,7 @@ class UserController extends Controller
             'manager_id' => ['nullable', 'exists:users,id'],
             'status' => ['nullable', 'string', 'max:255'],
             'hire_date' => ['nullable', 'date'],
+            'plant_id' => ['nullable', 'exists:plants,id'],
             'roles' => ['array'],
         ]);
 
@@ -88,6 +89,7 @@ class UserController extends Controller
                     'manager_id' => $request->manager_id,
                     'status' => $request->status,
                     'hire_date' => $request->hire_date,
+                    'plant_id' => $request->plant_id,
                 ]);
 
                 if ($request->has('roles')) {
@@ -123,7 +125,7 @@ class UserController extends Controller
     public function show(User $user)
     {
         try {
-            return ResponseFormatter::success(new UserResource($user->load('roles')), 'User retrieved successfully');
+            return ResponseFormatter::success(new UserResource($user->load(['roles', 'plant', 'department'])), 'User retrieved successfully');
         } catch (\Exception $e) {
             return ResponseFormatter::error(null, 'Failed to retrieve user: ' . $e->getMessage(), 500);
         }
@@ -142,6 +144,7 @@ class UserController extends Controller
                 'manager_id' => ['nullable', 'exists:users,id'],
                 'status' => ['nullable', 'string', 'max:255'],
                 'hire_date' => ['nullable', 'date'],
+                'plant_id' => ['nullable', 'exists:plants,id'],
                 'roles' => ['array'],
             ]);
 

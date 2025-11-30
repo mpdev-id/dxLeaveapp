@@ -232,13 +232,13 @@
             <td class="label-col">ID No.</td>
             <td>{{ $leaveRequest->user->employee_code }}</td>
             <td class="label-col">Team</td>
-            <td>-</td> <!-- Team not in user model explicitly, usually part of dept or separate -->
+            <td>{{ $leaveRequest->user->plant->team->name ?? '-' }}</td>
         </tr>
         <tr>
             <td class="label-col">Join Date</td>
             <td>{{ $leaveRequest->user->hire_date ? \Carbon\Carbon::parse($leaveRequest->user->hire_date)->format('Y/m/d') : '-' }}</td>
             <td class="label-col">Plant</td>
-            <td>-</td> <!-- Plant info not available -->
+            <td>{{ $leaveRequest->user->plant->name ?? '-' }}</td>
         </tr>
         <tr>
             <td class="label-col">Leave Date<br>(휴가일)</td>
@@ -265,10 +265,14 @@
     </div>
 
     @php
-        // Helper to find approval by role
-        $findApproval = function($roleName) use ($leaveRequest) {
+        // Helper to find approval by role or step
+        $findApproval = function($roleName, $stepNumber = null) use ($leaveRequest) {
             foreach ($leaveRequest->approvals as $approval) {
-                // Check if approver has the role
+                // Check by Step Number (New Logic)
+                if ($stepNumber && $approval->workflowStep && $approval->workflowStep->step_number == $stepNumber) {
+                    return $approval;
+                }
+                // Fallback: Check by Role (Old Logic)
                 if ($approval->approver && $approval->approver->hasRole($roleName)) {
                     return $approval;
                 }
@@ -276,12 +280,16 @@
             return null;
         };
 
-        // Mapping roles to columns
-        $slApproval = $findApproval('SL');
-        $spvApproval = $findApproval('SPV');
-        $asmenApproval = $findApproval('ASMEN');
-        $tlApproval = $findApproval('TL');
-        $managerApproval = $findApproval('Manager');
+        // Mapping:
+        // Step 1: Plant Supervisor -> Mapped to Supervisor Column (Step 1)
+        // Step 2: Team Leader -> Mapped to Team Mgr Column (Step 2)
+        // Step 3: Dept Head -> Mapped to Dept Mgr Column (Step 3)
+        
+        $slApproval = $findApproval('SL'); // Section Leader (Optional/Specific)
+        $spvApproval = $findApproval('SPV', 1); // Supervisor (Step 1)
+        $asmenApproval = $findApproval('ASMEN'); // Assistant Mgr (Optional)
+        $tlApproval = $findApproval('TL', 2); // Team Mgr (Step 2)
+        $managerApproval = $findApproval('Manager', 3); // Dept Mgr (Step 3)
     @endphp
 
     <table class="approval-table">
@@ -294,7 +302,6 @@
             <th style="width: 16%">Dept. Mgr.</th>
         </tr>
         <tr>
-            <!-- Requester -->
             <!-- Requester -->
             <td>
             @if($leaveRequest->signature_url)

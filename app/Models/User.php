@@ -34,6 +34,7 @@ class User extends Authenticatable
         'status',
         'hire_date',
         'signature_path',
+        'plant_id',
     ];
 
     /**
@@ -84,6 +85,31 @@ class User extends Authenticatable
     public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class);
+    }
+
+    public function plant(): BelongsTo
+    {
+        return $this->belongsTo(Plant::class);
+    }
+
+    public function teamsLed(): HasMany
+    {
+        return $this->hasMany(Team::class, 'leader_id');
+    }
+
+    public function additionalTeamsLed(): HasMany
+    {
+        return $this->hasMany(Team::class, 'additional_leader_id');
+    }
+
+    public function plantsSupervised(): HasMany
+    {
+        return $this->hasMany(Plant::class, 'supervisor_id');
+    }
+
+    public function departmentsHeaded(): HasMany
+    {
+        return $this->hasMany(Department::class, 'head_id');
     }
 
     // --- Relasi LMS ---

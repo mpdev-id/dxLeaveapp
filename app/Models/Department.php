@@ -10,7 +10,17 @@ class Department extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'head_id'];
+
+    public function head(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'head_id');
+    }
+
+    public function teams(): HasMany
+    {
+        return $this->hasMany(Team::class);
+    }
 
     /**
      * Relasi One-to-Many: Satu Departemen memiliki banyak Karyawan (User).

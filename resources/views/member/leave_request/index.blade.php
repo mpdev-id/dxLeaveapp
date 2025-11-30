@@ -273,12 +273,15 @@
                     });
                     const data = await response.json();
                     if (response.ok) {
-                        // Filter for current user only (API returns all for approvers, so we must filter)
-                        if (this.user) {
-                            this.requests = data.data.filter(r => r.user.id === this.user.id);
-                        }
+                        // API already filters for current user's requests
+                        this.requests = data.data || [];
+                        console.log('Loaded requests:', this.requests.length);
+                    } else {
+                        console.error('Failed to fetch requests:', data);
                     }
-                } catch (e) { console.error('Error fetching requests:', e); }
+                } catch (e) { 
+                    console.error('Error fetching requests:', e); 
+                }
                 finally { this.loading = false; }
             },
 
@@ -373,10 +376,7 @@
                         comments = approval.comments;
                         date = approval.created_at;
                     } else {
-                        // Show who is supposed to approve
-                        if (step.assigned_approver) {
-                            approverName = step.assigned_approver.name;
-                        }
+                        // Pending step: Show Role only (approverName remains null)
                     }
 
                     return {

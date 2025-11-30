@@ -28,11 +28,16 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     Route::get('user', [UserController::class, 'fetch']);
     Route::get('user/leave-balances', [UserController::class, 'getLeaveBalances']);
     Route::patch('user/update-phone', [UserController::class, 'updatePhoneNumber']);
+    Route::patch('user/update-profile', [UserController::class, 'updateProfile']);
     Route::post('user/update-signature', [UserController::class, 'updateSignature']);
     Route::patch('user/change-password', [UserController::class, 'changePassword']);
     Route::post('user/test-whatsapp', [UserController::class, 'testWhatsApp']);
     Route::post('user/test-push', [\App\Http\Controllers\API\TestPushController::class, 'sendTest']);
     Route::post('logout', [UserController::class, 'logout']);
+
+    // Master Data for Dropdowns
+    Route::get('teams', [\App\Http\Controllers\API\Admin\TeamController::class, 'index']);
+    Route::get('plants', [\App\Http\Controllers\API\Admin\PlantController::class, 'index']);
 
     // --- Rute Modul Cuti (Leave Requests) ---
     
@@ -63,6 +68,8 @@ Route::middleware(['auth:sanctum', 'role:Super Admin', 'throttle:120,1'])->prefi
     Route::apiResource('leave-types', LeaveTypeController::class);
     Route::apiResource('public-holidays', PublicHolidayController::class);
     Route::apiResource('employee-entitlements', EmployeeEntitlementController::class);
+    Route::apiResource('teams', \App\Http\Controllers\API\Admin\TeamController::class);
+    Route::apiResource('plants', \App\Http\Controllers\API\Admin\PlantController::class);
     Route::apiResource('leave-requests', AdminLeaveRequestController::class)->names('admin.leave-requests');
     Route::patch('leave-requests/{leaveRequest}/handle-approval', [AdminLeaveRequestController::class, 'handleApproval'])->name('admin.leave-requests.handle-approval');
     Route::post('leave-requests/{leaveRequest}/submit', [AdminLeaveRequestController::class, 'submit'])->name('admin.leave-requests.submit');

@@ -30,8 +30,10 @@ class LeaveRequestController extends Controller
     {
         $leaveRequest->load([
             'user.department', 
+            'user.plant.team',
             'leaveType', 
-            'approvals.approver.roles'
+            'approvals.approver.roles',
+            'approvals.step'
         ]);
 
         return view('member.leave_request.print', compact('leaveRequest'));

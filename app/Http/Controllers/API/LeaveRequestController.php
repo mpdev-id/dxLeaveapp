@@ -357,18 +357,56 @@ class LeaveRequestController extends Controller
                 }
 
                 // Cari langkah pertama dari alur kerja yang terkait
+                // Cari langkah pertama dari alur kerja yang terkait
                 $workflow = $leaveRequest->workflow;
                 if (!$workflow) {
                     return ResponseFormatter::error(null, 'Workflow not found for this leave request.', 500);
                 }
-                $firstStep = $workflow->steps()->orderBy('step_number', 'asc')->first();
-                if (!$firstStep) {
-                    return ResponseFormatter::error(null, 'Workflow is not configured correctly. No steps found.', 500);
+                
+                // Find the first valid step with an approver
+                $currentStep = $workflow->steps()->orderBy('step_number', 'asc')->first();
+                $approver = null;
+
+                while ($currentStep) {
+                    $approver = $this->workflowService->findApproverForStep($leaveRequest->user, $currentStep);
+                    
+                    if ($approver) {
+                        break;
+                    }
+
+                    // Log auto-approval for skipped steps (optional for initial submission, but good for history)
+                    // Note: Since request isn't fully 'started' yet, maybe we just skip without logging to history?
+                    // Or we log it. Let's log it to be consistent.
+                    \App\Models\ApprovalHistory::create([
+                        'approvable_id' => $leaveRequest->id,
+                        'approvable_type' => \App\Models\LeaveRequest::class,
+                        'workflow_step_id' => $currentStep->id,
+                        'approver_user_id' => null, // System
+                        'action' => 'Auto-Approved',
+                        'comments' => 'System: Step skipped (No approver found).',
+                        'acted_at' => now(),
+                    ]);
+
+                    $currentStep = $this->workflowService->getNextStep($workflow, $currentStep);
                 }
 
-                // Set ID langkah alur kerja saat ini ke langkah pertama
-                $validatedData['current_workflow_step_id'] = $firstStep->id;
-                Log::info('Setting current_workflow_step_id to first step', ['step_id' => $firstStep->id]);
+                if (!$currentStep) {
+                     // If all steps are skipped (e.g. user is the CEO?), auto-approve immediately
+                     $validatedData['current_workflow_step_id'] = null;
+                     $validatedData['current_status'] = 'Approved';
+                     
+                     $leaveRequest->update($validatedData);
+                     $this->entitlementService->deductLeaveBalance($leaveRequest);
+                     
+                     // Notify user
+                     $leaveRequest->user->notify(new \App\Notifications\LeaveRequestStatusUpdated($leaveRequest, null));
+                     
+                     return ResponseFormatter::success(new LeaveRequestResource($leaveRequest->fresh()), 'Leave request submitted and auto-approved.');
+                }
+
+                // Set ID langkah alur kerja saat ini ke langkah valid pertama
+                $validatedData['current_workflow_step_id'] = $currentStep->id;
+                Log::info('Setting current_workflow_step_id to step', ['step_id' => $currentStep->id]);
 
                 // Lakukan pembaruan DULUAN agar status 'Pending' tersimpan sebelum notif
                 $leaveRequest->update($validatedData);
@@ -381,8 +419,6 @@ class LeaveRequestController extends Controller
                 SendLeaveRequestStatusUpdatedNotification::dispatch($updatedLeaveRequest);
 
                 // Kirim notifikasi ke approver
-                $approver = $this->workflowService->findApproverForStep($updatedLeaveRequest->user, $firstStep);
-                // dd($approver);
                 if ($approver) {
                     SendLeaveRequestNotification::dispatch($approver, $updatedLeaveRequest);
                     Log::info('Approver notification queued', ['approver_id' => $approver->id]);

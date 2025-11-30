@@ -82,6 +82,21 @@
                         <div class="form-control">
                             <label class="label">
                                 <span class="label-text flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                                    Plant
+                                </span>
+                            </label>
+                            <select x-model="newUser.plant_id" class="select select-bordered w-full" :class="{'select-error': errors.plant_id}">
+                                <option value="">Select Plant</option>
+                                <template x-for="plant in plants" :key="plant.id">
+                                    <option :value="plant.id" x-text="plant.name"></option>
+                                </template>
+                            </select>
+                             <div x-show="errors.plant_id" class="text-error text-sm mt-1" x-text="errors.plant_id ? errors.plant_id[0] : ''"></div>
+                        </div>
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text flex items-center gap-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h2a2 2 0 002-2V8a2 2 0 00-2-2h-2M14 10l-4 4-4-4m8 4H5" /></svg>
                                     Manager
                                 </span>
@@ -143,11 +158,14 @@
             <table class="table table-zebra w-full">
                 <thead>
                     <tr>
-                        <th>Name</th>
-                        <th>Level</th>
-                        <th>Join Date</th>
-                        <th>Status</th>
-                        <th>Actions</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Department</th>
+                                <th>Plant</th>
+                                <th>Role</th>
+                                <th>Join Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -177,21 +195,19 @@
                                     </div>
                                     <div>
                                         <div class="font-bold" x-text="user.name"></div>
-                                        <div class="text-sm opacity-50" x-text="user.email"></div>
-                                    </div>
+                                    <div class="text-sm opacity-50" x-text="user.employee_code"></div>
                                 </div>
                             </td>
+                            <td x-text="user.email"></td>
+                            <td x-text="user.department ? user.department.name : '-'"></td>
+                            <td x-text="user.plant ? user.plant.name : '-'"></td>
                             <td>
-                                <div class="flex flex-wrap gap-1">
-                                    <template x-if="user.roles && user.roles.length > 0">
-                                        <template x-for="role in user.roles" :key="role.id">
-                                            <span class="badge badge-primary badge-sm" x-text="role.name"></span>
-                                        </template>
+                                    <template x-for="role in user.roles" :key="role.id">
+                                        <span class="badge badge-sm badge-outline mr-1" x-text="role.name"></span>
                                     </template>
                                     <template x-if="!user.roles || user.roles.length === 0">
                                         <span class="badge badge-ghost badge-sm">No Role</span>
                                     </template>
-                                </div>
                             </td>
                             <td x-text="user.hire_date ? new Date(user.hire_date).toLocaleDateString() : 'N/A'"></td>
                             <td>
@@ -231,6 +247,7 @@
         return {
             users: [],
             departments: [],
+            plants: [],
             roles: [],
             loading: true,
             search: '',
@@ -246,6 +263,7 @@
                 phone_number: '',
                 password: '',
                 department_id: '',
+                plant_id: '',
                 manager_id: '',
                 status: 'active',
                 hire_date: '',
@@ -255,6 +273,7 @@
             init() {
                 this.fetchUsers();
                 this.fetchDepartments();
+                this.fetchPlants();
                 this.fetchRoles();
             },
             async fetchUsers() {
@@ -300,6 +319,21 @@
                     console.error('Error fetching departments:', error);
                 }
             },
+            async fetchPlants() {
+                try {
+                    const token = localStorage.getItem('authToken');
+                    const response = await fetch(`${baseApiUrl}/admin/master/plants?all=true`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Accept': 'application/json'
+                        }
+                    });
+                    const data = await response.json();
+                    this.plants = data.data;
+                } catch (error) {
+                    console.error('Error fetching plants:', error);
+                }
+            },
             async fetchRoles() {
                 try {
                     const token = localStorage.getItem('authToken');
@@ -330,7 +364,7 @@
                 this.isEdit = false;
                 this.newUser = {
                     id: null, name: '', employee_code: '', email: '', phone_number: '',
-                    password: '', department_id: '', manager_id: '', status: 'active',
+                    password: '', department_id: '', plant_id: '', manager_id: '', status: 'active',
                     hire_date: '', roles: []
                 };
                 this.errors = {};
@@ -342,6 +376,7 @@
                     id: user.id, name: user.name, employee_code: user.employee_code,
                     email: user.email, phone_number: user.phone_number, password: '',
                     department_id: user.department_id ? Number(user.department_id) : '',
+                    plant_id: user.plant_id ? Number(user.plant_id) : '',
                     manager_id: user.manager_id ? Number(user.manager_id) : '',
                     status: user.status || 'active', hire_date: user.hire_date || '',
                     roles: user.roles ? user.roles.map(role => role.name) : []

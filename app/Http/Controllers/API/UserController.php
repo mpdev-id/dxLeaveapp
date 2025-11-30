@@ -602,4 +602,44 @@ class UserController extends Controller
             );
         }
     }
+    /**
+     * Update user profile (Name, Email, Department, Plant)
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function updateProfile(Request $request)
+    {
+        try {
+            $user = $request->user();
+            
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|unique:users,email,' . $user->id,
+                'department_id' => 'nullable|exists:departments,id',
+                'plant_id' => 'nullable|exists:plants,id',
+            ]);
+
+            if ($validator->fails()) {
+                return ResponseFormatter::error(
+                    ['errors' => $validator->errors()],
+                    'Validation failed',
+                    422
+                );
+            }
+
+            $user->update($request->only(['name', 'email', 'department_id', 'plant_id']));
+
+            return ResponseFormatter::success(
+                new UserResource($user->fresh()),
+                'Profile updated successfully'
+            );
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(
+                null,
+                'Failed to update profile: ' . $e->getMessage(),
+                500
+            );
+        }
+    }
 }

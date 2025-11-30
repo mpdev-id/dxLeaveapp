@@ -47,6 +47,19 @@ class UserResource extends JsonResource
                 'name' => $this->department->name,
             ] : null,
             'department_id' => $this->department_id,
+            'plant' => $this->plant ? [
+                'id' => $this->plant->id,
+                'name' => $this->plant->name,
+                'team' => $this->plant->team ? [
+                    'id' => $this->plant->team->id,
+                    'name' => $this->plant->team->name,
+                ] : null,
+            ] : null,
+            'team' => $this->plant && $this->plant->team ? [
+                'id' => $this->plant->team->id,
+                'name' => $this->plant->team->name,
+            ] : null,
+            'plant_id' => $this->plant_id,
             'manager_id' => $this->manager_id,
             'hire_date'  => $this->hire_date,
             'sisa_cuti' => $this->entitlements->mapWithKeys(function ($entitlement) {

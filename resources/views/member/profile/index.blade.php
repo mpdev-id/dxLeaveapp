@@ -22,11 +22,20 @@
                     </div>
                 </div>
                 <div class="text-center md:text-left flex-1">
-                    <h2 class="text-3xl font-bold" x-text="user.name">Loading...</h2>
+                    <div class="flex items-center gap-2 justify-center md:justify-start">
+                        <h2 class="text-3xl font-bold" x-text="user.name">Loading...</h2>
+                        <button @click="openEditProfileModal" class="btn btn-ghost btn-sm btn-circle text-primary" title="Edit Profile">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                            </svg>
+                        </button>
+                    </div>
                     <p class="text-base-content/60 font-medium" x-text="user.email">-</p>
                 </div>
                 <div class="flex flex-wrap justify-center gap-2 mt-4 md:mt-0">
                      <div class="badge badge-lg badge-primary" x-text="user.department?.name || 'No Department'"></div>
+                     <div class="badge badge-lg badge-secondary" x-text="user.plant?.name || 'No Plant'"></div>
+                     <div class="badge badge-lg badge-accent" x-text="user.plant?.team?.name || 'No Team'"></div>
                      <div class="badge badge-lg badge-outline" x-text="user.role || 'Employee'"></div>
                 </div>
             </div>
@@ -261,6 +270,85 @@
         </form>
     </dialog>
 
+    <!-- Edit Profile Modal -->
+    <dialog id="editProfileModal" class="modal modal-bottom sm:modal-middle">
+        <div class="modal-box">
+            <h3 class="font-bold text-lg flex items-center gap-2 text-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                Edit Profile
+            </h3>
+            <form @submit.prevent="updateProfile" class="mt-4 space-y-3">
+                <!-- Name -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">Full Name</span>
+                    </label>
+                    <input type="text" x-model="editForm.name" class="input input-bordered w-full" required />
+                </div>
+
+                <!-- Email -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">Email Address</span>
+                    </label>
+                    <input type="email" x-model="editForm.email" class="input input-bordered w-full" required />
+                </div>
+
+                <!-- Department -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">Department</span>
+                    </label>
+                    <select x-model="editForm.department_id" class="select select-bordered w-full">
+                        <option value="">Select Department</option>
+                        <template x-for="dept in departments" :key="dept.id">
+                            <option :value="dept.id" x-text="dept.name"></option>
+                        </template>
+                    </select>
+                </div>
+
+                <!-- Team (Filter) -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">Team</span>
+                    </label>
+                    <select x-model="editForm.team_id" class="select select-bordered w-full" :disabled="!editForm.department_id">
+                        <option value="">Select Team</option>
+                        <template x-for="team in filteredTeams" :key="team.id">
+                            <option :value="team.id" x-text="team.name"></option>
+                        </template>
+                    </select>
+                </div>
+
+                <!-- Plant -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">Plant</span>
+                    </label>
+                    <select x-model="editForm.plant_id" class="select select-bordered w-full" :disabled="!editForm.team_id">
+                        <option value="">Select Plant</option>
+                        <template x-for="plant in filteredPlants" :key="plant.id">
+                            <option :value="plant.id" x-text="plant.name"></option>
+                        </template>
+                    </select>
+                </div>
+
+                <div class="modal-action">
+                    <button type="button" @click="closeEditProfileModal" class="btn btn-ghost">Cancel</button>
+                    <button type="submit" class="btn btn-primary" :disabled="updatingProfile">
+                        <span x-show="updatingProfile" class="loading loading-spinner"></span>
+                        <span x-text="updatingProfile ? 'Saving...' : 'Save Changes'"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+            <button>close</button>
+        </form>
+    </dialog>
+
     <!-- Change Password Modal -->
     <dialog id="changePasswordModal" class="modal modal-bottom sm:modal-middle">
         <div class="modal-box">
@@ -431,10 +519,21 @@
         return {
             user: {},
             balances: [],
+            departments: [],
+            teams: [],
+            plants: [],
             token: localStorage.getItem('authToken'),
             vapidPublicKey: vapidKey,
             editPhone: '',
             updatingPhone: false,
+            editForm: {
+                name: '',
+                email: '',
+                department_id: '',
+                team_id: '', // Virtual field for filtering
+                plant_id: ''
+            },
+            updatingProfile: false,
             passwordForm: {
                 current_password: '',
                 new_password: '',
@@ -456,8 +555,78 @@
                 await Promise.all([
                     this.fetchUser(),
                     this.fetchBalances(),
-                    this.checkPushSubscription()
+                    this.checkPushSubscription(),
+                    this.fetchDepartments(),
+                    this.fetchTeams(),
+                    this.fetchPlants()
                 ]);
+            },
+
+            get filteredTeams() {
+                if (!this.editForm.department_id || !Array.isArray(this.teams)) return [];
+                return this.teams.filter(t => t.department_id == this.editForm.department_id);
+            },
+
+            get filteredPlants() {
+                if (!this.editForm.team_id || !Array.isArray(this.plants)) return [];
+                return this.plants.filter(p => p.team_id == this.editForm.team_id);
+            },
+
+            async fetchDepartments() {
+                try {
+                    const response = await fetch(`${baseApiUrl}/departments?all=true`, {
+                        headers: { 'Authorization': `Bearer ${this.token}`, 'Accept': 'application/json' }
+                    });
+                    const result = await response.json();
+                    if (Array.isArray(result.data)) {
+                        this.departments = result.data;
+                    } else if (result.data && Array.isArray(result.data.data)) {
+                        this.departments = result.data.data;
+                    } else {
+                        this.departments = [];
+                    }
+                    console.log('Departments loaded:', this.departments.length);
+                } catch (e) { console.error('Error fetching departments:', e); this.departments = []; }
+            },
+
+            async fetchTeams() {
+                try {
+                    const response = await fetch(`${baseApiUrl}/teams?all=true`, {
+                        headers: { 'Authorization': `Bearer ${this.token}`, 'Accept': 'application/json' }
+                    });
+                    const result = await response.json();
+                    if (Array.isArray(result.data)) {
+                        this.teams = result.data;
+                    } else if (result.data && Array.isArray(result.data.data)) {
+                        this.teams = result.data.data;
+                    } else {
+                        this.teams = [];
+                    }
+                    console.log('Teams loaded:', this.teams.length);
+                } catch (e) { 
+                    console.error('Error fetching teams:', e); 
+                    this.teams = [];
+                }
+            },
+
+            async fetchPlants() {
+                try {
+                    const response = await fetch(`${baseApiUrl}/plants?all=true`, {
+                        headers: { 'Authorization': `Bearer ${this.token}`, 'Accept': 'application/json' }
+                    });
+                    const result = await response.json();
+                    if (Array.isArray(result.data)) {
+                        this.plants = result.data;
+                    } else if (result.data && Array.isArray(result.data.data)) {
+                        this.plants = result.data.data;
+                    } else {
+                        this.plants = [];
+                    }
+                    console.log('Plants loaded:', this.plants.length);
+                } catch (e) { 
+                    console.error('Error fetching plants:', e); 
+                    this.plants = [];
+                }
             },
 
             async checkPushSubscription() {
@@ -560,6 +729,55 @@
                         this.balances = data.data;
                     }
                 } catch (e) { console.error('Error fetching balances:', e); }
+            },
+
+            openEditProfileModal() {
+                this.editForm = {
+                    name: this.user.name,
+                    email: this.user.email,
+                    department_id: this.user.department_id,
+                    plant_id: this.user.plant_id,
+                    team_id: this.user.team?.id || ''
+                };
+                document.getElementById('editProfileModal').showModal();
+            },
+
+            closeEditProfileModal() {
+                document.getElementById('editProfileModal').close();
+            },
+
+            async updateProfile() {
+                this.updatingProfile = true;
+                try {
+                    const response = await fetch(`${baseApiUrl}/user/update-profile`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Authorization': `Bearer ${this.token}`,
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            name: this.editForm.name,
+                            email: this.editForm.email,
+                            department_id: this.editForm.department_id,
+                            plant_id: this.editForm.plant_id
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        this.user = data.data;
+                        this.closeEditProfileModal();
+                        Swal.fire('Success', 'Profile updated successfully', 'success');
+                    } else {
+                        throw new Error(data.meta?.message || 'Failed to update profile');
+                    }
+                } catch (error) {
+                    Swal.fire('Error', error.message || 'Failed to update profile', 'error');
+                } finally {
+                    this.updatingProfile = false;
+                }
             },
 
             openEditPhoneModal() {

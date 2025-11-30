@@ -15,7 +15,7 @@ class DatabaseSeeder extends Seeder
             DepartmentsSeeder::class,
             RoleAndPermissionSeeder::class,
             UserSeeder::class,
-            CutikuyrovalWorkflowSeeder::class, // Alur kerja 5 langkah yang baru
+            UniversalLeaveWorkflowSeeder::class, // Universal workflow for all teams
             LeaveTypeSeeder::class,
             PublicHolidaySeeder::class,
         ]);

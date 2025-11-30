@@ -35,7 +35,7 @@ class LeaveRequestService
             }
 
             // Cek apakah approver memiliki peran yang sesuai untuk langkah ini
-            if (!$this->workflowService->isApproverForStep($approver, $currentStep)) {
+            if (!$this->workflowService->isApproverForStep($approver, $currentStep, $request)) {
                 throw ValidationException::withMessages(['authorization' => 'You are not authorized to approve this step.']);
             }
 
@@ -59,26 +59,54 @@ class LeaveRequestService
                     'current_workflow_step_id' => null, // Hentikan alur kerja
                 ]);
             } elseif ($action === 'Approved') {
-                // Cek apakah ini adalah langkah terakhir
-                if ($currentStep->is_final_step || !$nextStep) {
-                    // Langkah terakhir, alur kerja selesai
+                // Logic to find the next valid step with an approver
+                $nextStep = $this->workflowService->getNextStep($request->workflow, $currentStep);
+                $nextApprover = null;
+
+                while ($nextStep) {
+                    $nextApprover = $this->workflowService->findApproverForStep($request->user, $nextStep);
+                    
+                    if ($nextApprover) {
+                        // Found an approver for this step, break the loop
+                        break;
+                    }
+
+                    // No approver found for this step, automatically approve/skip it
+                    // Log the auto-approval
+                    ApprovalHistory::create([
+                        'approvable_id' => $request->id,
+                        'approvable_type' => LeaveRequest::class,
+                        'workflow_step_id' => $nextStep->id,
+                        'approver_user_id' => null, // System
+                        'action' => 'Auto-Approved',
+                        'comments' => 'System: Step skipped (No approver found).',
+                        'acted_at' => now(),
+                    ]);
+
+                    // Move to the next step
+                    $nextStep = $this->workflowService->getNextStep($request->workflow, $nextStep);
+                }
+
+                if (!$nextStep) {
+                    // No more steps, workflow finished
                     $request->update([
                         'current_status' => 'Approved',
                         'current_workflow_step_id' => null,
                     ]);
-                    // Kurangi jatah cuti
+                    // Deduct leave balance
                     $this->entitlementService->deductLeaveBalance($request);
+                    
+                    // Notify user of final approval
+                    // (Notification logic is at the end of method)
                 } else {
-                    // Lanjut ke langkah berikutnya
+                    // Move to the next valid step
                     $request->update([
                         'current_status' => 'In Progress',
                         'current_workflow_step_id' => $nextStep->id,
                     ]);
 
-                    // KIRIM NOTIFIKASI KE APPROVER BERIKUTNYA
-                    $nextApprover = $this->workflowService->findApproverForStep($request->user, $nextStep);
+                    // Notify the next approver
                     if ($nextApprover) {
-                        // Menggunakan job untuk pengiriman notifikasi
                         SendLeaveRequestNotification::dispatch($nextApprover, $request->fresh());
                     }
                 }

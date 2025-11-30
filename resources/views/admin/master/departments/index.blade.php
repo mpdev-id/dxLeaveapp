@@ -23,6 +23,18 @@
                         <input type="text" x-model="newDepartment.name" placeholder="e.g., Human Resources" class="input input-bordered w-full" :class="{'input-error': errors.name}" required>
                         <div x-show="errors.name" class="text-error text-sm mt-1" x-text="errors.name ? errors.name[0] : ''"></div>
                     </div>
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Head of Department</span>
+                        </label>
+                        <select x-model="newDepartment.head_id" class="select select-bordered w-full" :class="{'select-error': errors.head_id}">
+                            <option value="">Select Head</option>
+                            <template x-for="user in users" :key="user.id">
+                                <option :value="user.id" x-text="user.name"></option>
+                            </template>
+                        </select>
+                        <div x-show="errors.head_id" class="text-error text-sm mt-1" x-text="errors.head_id ? errors.head_id[0] : ''"></div>
+                    </div>
                     <div class="modal-action">
                         <button type="button" class="btn btn-ghost" onclick="hideModal('department_modal')">Cancel</button>
                         <button type="submit" class="btn btn-primary" :disabled="loading" x-text="isEdit ? 'Update' : 'Create'"></button>
@@ -85,17 +97,32 @@
     function departmentsTable(baseApiUrl) {
         return {
             departments: [],
+            users: [],
             loading: true,
             search: '',
             perPage: 10,
             currentPage: 1,
             totalPages: 1,
             isEdit: false,
-            newDepartment: { id: null, name: '' },
+            newDepartment: { id: null, name: '', head_id: '' },
             errors: {},
 
             init() {
                 this.fetchDepartments();
+                this.fetchUsers();
+            },
+
+            async fetchUsers() {
+                try {
+                    const token = localStorage.getItem('authToken');
+                    const response = await fetch(`${baseApiUrl}/admin/master/users?all=true`, {
+                        headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+                    });
+                    const data = await response.json();
+                    this.users = data.data;
+                } catch (error) {
+                    console.error('Error fetching users:', error);
+                }
             },
 
             async fetchDepartments() {
@@ -126,14 +153,18 @@
 
             openAddModal() {
                 this.isEdit = false;
-                this.newDepartment = { id: null, name: '' };
+                this.newDepartment = { id: null, name: '', head_id: '' };
                 this.errors = {};
                 showModal('department_modal');
             },
 
             openEditModal(department) {
                 this.isEdit = true;
-                this.newDepartment = { ...department };
+                this.newDepartment = { 
+                    id: department.id, 
+                    name: department.name,
+                    head_id: department.head_id
+                };
                 this.errors = {};
                 showModal('department_modal');
             },

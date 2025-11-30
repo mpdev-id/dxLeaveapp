@@ -92,6 +92,8 @@
                                 <li><a href="{{ route('admin.users.index') }}">Employees</a></li>
                                 <li><a href="{{ route('admin.employee-entitlements.index') }}">Employee Entitlements</a></li>
                                 <li><a href="{{ route('admin.departments.index') }}">Departments</a></li>
+                                <li><a href="{{ route('admin.teams.index') }}">Teams</a></li>
+                                <li><a href="{{ route('admin.plants.index') }}">Plants</a></li>
                                 <li><a href="{{ route('admin.leave-types.index') }}">Leave Types</a></li>
                                 <li><a href="{{ route('admin.workflows.index') }}">Workflows</a></li>
                             </ul>
