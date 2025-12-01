@@ -46,10 +46,10 @@
         }
     </style>
 </head>
-<body class="bg-base-200 min-h-screen pb-16 md:pb-0">
+<body class="bg-base-200 min-h-screen pb-16 md:pb-0" x-data="navbarUser('{{ config('app.base_api') }}')" x-init="init()">
 
     {{-- Top Navbar (Desktop/Tablet) --}}
-    <div class="navbar bg-base-100 shadow-lg sticky top-0 z-50" x-data="navbarUser('{{ config('app.base_api') }}')" x-init="init()">
+    <div class="navbar bg-base-100 shadow-lg sticky top-0 z-50">
         <div class="flex-1 flex items-center gap-2">
             <img src="{{ asset('images/cute_duck_attendance.png') }}" alt="Cutikuy" class="w-10 h-10 object-contain rounded-full">
             <a class="btn btn-ghost text-xl">{{ config('app.name', 'Cutikuy') }}</a>
@@ -68,12 +68,11 @@
                 <ul tabindex="0" class="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
                     <li><a href="{{ route('dashboard-member') }}">Dashboard</a></li>
                     <li><a href="{{ route('member.leaves.index') }}">My Leaves</a></li>
-                    <!-- @can('approve leave request')
+                    <template x-if="userRole !== 'Member'">
                         <li><a href="{{ route('member.approver-log.index') }}">Approver Log</a></li>
-                    @endcan -->
-                        <li><a href="{{ route('member.approver-log.index') }}">Approver Log</a></li>
+                    </template>
                     <li><a href="{{ route('member.profile.index') }}">Profile</a></li>
-                    <li><a href="#" onclick="logoutApi(event)">Logout</a></li>
+                    <li><a href="#" @click.prevent="logout">Logout</a></li>
                 </ul>
             </div>
         </div>
@@ -94,16 +93,12 @@
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
             <span class="text-[10px] font-medium">Leaves</span>
         </a>
-        <!-- @can('approve leave request')
+        <template x-if="userRole !== 'Member'">
             <a href="{{ route('member.approver-log.index') }}" class="{{ request()->routeIs('member.approver-log.*') ? 'active text-primary bg-primary/10' : 'text-base-content/60 hover:text-primary' }} flex-1 flex flex-col items-center justify-center gap-1 h-full transition-colors duration-200">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 <span class="text-[10px] font-medium">Approvals</span>
             </a>
-            @endcan -->
-            <a href="{{ route('member.approver-log.index') }}" class="{{ request()->routeIs('member.approver-log.*') ? 'active text-primary bg-primary/10' : 'text-base-content/60 hover:text-primary' }} flex-1 flex flex-col items-center justify-center gap-1 h-full transition-colors duration-200">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                <span class="text-[10px] font-medium">Approvals</span>
-            </a>
+        </template>
         <a href="{{ route('member.profile.index') }}" class="{{ request()->routeIs('member.profile.*') ? 'active text-primary bg-primary/10' : 'text-base-content/60 hover:text-primary' }} flex-1 flex flex-col items-center justify-center gap-1 h-full transition-colors duration-200">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
             <span class="text-[10px] font-medium">Profile</span>
@@ -117,6 +112,7 @@
         function navbarUser(baseApiUrl) {
             return {
                 userName: 'User',
+                userRole: localStorage.getItem('userRole') || '',
                 
                 async init() {
                     await this.fetchUser();
@@ -126,6 +122,20 @@
                     try {
                         const token = localStorage.getItem('authToken');
                         if (!token) return;
+
+                        // Check cache
+                        const cachedData = localStorage.getItem('userData');
+                        const cachedTimestamp = localStorage.getItem('userDataTimestamp');
+                        const now = new Date().getTime();
+                        const cacheDuration = 30 * 60 * 1000; // 30 minutes
+
+                        if (cachedData && cachedTimestamp && (now - cachedTimestamp < cacheDuration)) {
+                            const data = JSON.parse(cachedData);
+                            this.userName = data.name || 'User';
+                            this.userRole = data.role || '';
+                            localStorage.setItem('userRole', this.userRole); // Ensure role is synced
+                            return;
+                        }
                         
                         const response = await fetch(`${baseApiUrl}/user`, {
                             headers: {
@@ -137,34 +147,47 @@
                         if (response.ok) {
                             const data = await response.json();
                             this.userName = data.data.name || 'User';
+                            this.userRole = data.data.role || '';
+                            
+                            // Update cache
+                            localStorage.setItem('userRole', this.userRole);
+                            localStorage.setItem('userData', JSON.stringify(data.data));
+                            localStorage.setItem('userDataTimestamp', now.toString());
                         } else if (response.status === 401) {
                             // Token expired or invalid
-                            localStorage.removeItem('authToken');
-                            localStorage.removeItem('userRole');
+                            this.clearAuth();
                             window.location.href = '/login';
                         }
                     } catch (error) {
                         console.error('Error fetching user:', error);
                     }
+                },
+
+                clearAuth() {
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('userRole');
+                    localStorage.removeItem('userData');
+                    localStorage.removeItem('userDataTimestamp');
+                },
+
+                async logout() {
+                    const baseApiUrl = '{{ config('app.base_api') }}';
+                    try {
+                        await fetch(`${baseApiUrl}/logout`, {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/json',
+                                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                            }
+                        });
+                    } catch (error) {
+                        console.error('Logout error:', error);
+                    } finally {
+                        this.clearAuth();
+                        window.location.href = '/login';
+                    }
                 }
             }
-        }
-        
-        function logoutApi(event) {
-            event.preventDefault();
-            const baseApiUrl = '{{ config('app.base_api') }}'; // Ensure this config is available
-            
-            fetch(`${baseApiUrl}/logout`, {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                }
-            })
-            .finally(() => {
-                localStorage.removeItem('authToken');
-                window.location.href = '/login';
-            });
         }
 
         // Register Service Worker

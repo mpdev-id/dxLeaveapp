@@ -33,7 +33,7 @@
 
         <!-- Loading state -->
         <div x-show="loading" class="text-center p-8">
-            <span class="loading loading-lg loading-spinner text-primary"></span>
+            <span class="loading loading-lg loading-dots text-primary"></span>
             <p>Loading data...</p>
         </div>
 

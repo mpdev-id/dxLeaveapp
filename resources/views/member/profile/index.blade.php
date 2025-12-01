@@ -7,36 +7,63 @@
     
     <!-- Profile Header -->
     <div class="card bg-base-100 shadow-xl overflow-hidden border border-base-200">
-        <div class="h-32 bg-gradient-to-r from-primary to-secondary relative">
-            <div class="absolute inset-0 bg-white/10 pattern-dots"></div>
+        <div class="h-32 bg-gradient-to-b from-primary-300 to-white/10 relative">
+            <div class="absolute inset-0 bg-white/10"></div>
         </div>
         <div class="card-body pt-0 relative">
             <div class="flex flex-col md:flex-row items-center md:items-end -mt-16 mb-4 gap-6">
                 <div class="avatar online placeholder">
                     <div class="w-32 rounded-full ring ring-base-100 ring-offset-base-100 ring-offset-2 shadow-2xl bg-base-100">
-                        <img
-                            alt="User Avatar"
-                            :src="`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'U')}&background=random&color=fff&size=128&bold=true`"
-                            class="w-full h-full object-cover"
-                        />
+                        <template x-if="user.name">
+                            <img
+                                alt="User Avatar"
+                                :src="`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'U')}&background=random&color=fff&size=128&bold=true`"
+                                class="w-full h-full object-cover"
+                            />
+                        </template>
+                        <template x-if="!user.name">
+                            <div class="skeleton w-full h-full rounded-full"></div>
+                        </template>
                     </div>
                 </div>
-                <div class="text-center md:text-left flex-1">
-                    <div class="flex items-center gap-2 justify-center md:justify-start">
-                        <h2 class="text-3xl font-bold" x-text="user.name">Loading...</h2>
-                        <button @click="openEditProfileModal" class="btn btn-ghost btn-sm btn-circle text-primary" title="Edit Profile">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                            </svg>
-                        </button>
-                    </div>
-                    <p class="text-base-content/60 font-medium" x-text="user.email">-</p>
+                <div class="text-center md:text-left flex-1 w-full">
+                    <template x-if="user.name">
+                        <div>
+                            <div class="flex items-center gap-2 justify-center md:justify-start">
+                                <h2 class="text-xl font-bold tracking-tight" x-text="user.name"></h2>
+                                <button @click="openEditProfileModal" class="btn btn-ghost btn-sm btn-circle text-primary" title="Edit Profile">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <p class="text-base-content/60 font-medium" x-text="user.email"></p>
+                             <div class="badge badge-md badge-error text-xs overflow-hidden whitespace-nowrap text-ellipsis" x-text="user.role || 'Employee'"></div>
+
+                        </div>
+                    </template>
+                    <template x-if="!user.name">
+                        <div class="w-full flex flex-col items-center md:items-start gap-2">
+                            <div class="skeleton h-8 w-48"></div>
+                            <div class="skeleton h-4 w-32"></div>
+                        </div>
+                    </template>
                 </div>
                 <div class="flex flex-wrap justify-center gap-2 mt-4 md:mt-0">
-                     <div class="badge badge-lg badge-primary" x-text="user.department?.name || 'No Department'"></div>
-                     <div class="badge badge-lg badge-secondary" x-text="user.plant?.name || 'No Plant'"></div>
-                     <div class="badge badge-lg badge-accent" x-text="user.plant?.team?.name || 'No Team'"></div>
-                     <div class="badge badge-lg badge-outline" x-text="user.role || 'Employee'"></div>
+                    <template x-if="user.name">
+                        <div class="flex gap-2">
+                             <div class="badge badge-md badge-primary" x-text="user.department?.name || 'No Department'"></div>
+                             <div class="badge badge-md badge-secondary" x-text="user.plant?.name || 'No Plant'"></div>
+                             <div class="badge badge-md badge-accent" x-text="user.plant?.team?.name || 'No Team'"></div>
+                            </div>
+                    </template>
+                    <template x-if="!user.name">
+                        <div class="flex gap-2">
+                            <div class="skeleton h-6 w-24 rounded-full"></div>
+                            <div class="skeleton h-6 w-20 rounded-full"></div>
+                            <div class="skeleton h-6 w-16 rounded-full"></div>
+                        </div>
+                    </template>
                 </div>
             </div>
             
@@ -51,9 +78,14 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0c0 .884-.5 1.343-1 1.343m-1.343 0H9m1.343 0h1.343" />
                         </svg>
                     </div>
-                    <div>
+                    <div class="w-full">
                         <div class="text-xs text-base-content/60 font-medium uppercase tracking-wider">Employee ID</div>
-                        <div class="font-bold text-lg" x-text="user.employee_code">-</div>
+                        <template x-if="user.employee_code">
+                            <div class="font-bold text-lg" x-text="user.employee_code"></div>
+                        </template>
+                        <template x-if="!user.employee_code">
+                            <div class="skeleton h-6 w-24 mt-1"></div>
+                        </template>
                     </div>
                 </div>
 
@@ -66,23 +98,28 @@
                     </div>
                     <div class="flex-1">
                         <div class="text-xs text-base-content/60 font-medium uppercase tracking-wider">WhatsApp</div>
-                        <div class="flex items-center gap-2">
-                            <span class="font-bold text-lg" x-text="user.phone_number || '-'">-</span>
-                            <div class="flex gap-1">
-                                <button @click="openEditPhoneModal" class="btn btn-ghost btn-xs btn-square text-info" title="Edit Number">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                                    </svg>
-                                </button>
-                                <button @click="testWhatsApp" :disabled="testingWhatsApp" class="btn btn-ghost btn-xs btn-square text-success" title="Test WhatsApp Connection">
-                                    <span x-show="testingWhatsApp" class="loading loading-spinner loading-xs"></span>
-                                    <svg x-show="!testingWhatsApp" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                        <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                                        <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                                    </svg>
-                                </button>
+                        <template x-if="user.name">
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-lg" x-text="user.phone_number || '-'"></span>
+                                <div class="flex gap-1">
+                                    <button @click="openEditPhoneModal" class="btn btn-ghost btn-xs btn-square text-info" title="Edit Number">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                        </svg>
+                                    </button>
+                                    <button @click="testWhatsApp" :disabled="testingWhatsApp" class="btn btn-ghost btn-xs btn-square text-success" title="Test WhatsApp Connection">
+                                        <span x-show="testingWhatsApp" class="loading loading-xs loading-dots"></span>
+                                        <svg x-show="!testingWhatsApp" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                            <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                                            <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
-                        </div>
+                        </template>
+                        <template x-if="!user.name">
+                            <div class="skeleton h-6 w-32 mt-1"></div>
+                        </template>
                     </div>
                 </div>
 
@@ -93,10 +130,17 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
-                    <div>
+                    <div class="w-full">
                         <div class="text-xs text-base-content/60 font-medium uppercase tracking-wider">Joined Date</div>
-                        <div class="font-bold text-lg" x-text="formatDate(user.hire_date)">-</div>
-                        <div class="text-xs text-base-content/40" x-text="calculateTenure(user.hire_date)"></div>
+                        <template x-if="user.hire_date">
+                            <div>
+                                <div class="font-bold text-lg" x-text="formatDate(user.hire_date)"></div>
+                                <div class="text-xs text-base-content/40" x-text="calculateTenure(user.hire_date)"></div>
+                            </div>
+                        </template>
+                        <template x-if="!user.hire_date">
+                            <div class="skeleton h-6 w-28 mt-1"></div>
+                        </template>
                     </div>
                 </div>
 
@@ -109,21 +153,26 @@
                     </div>
                     <div class="flex-1">
                         <div class="text-xs text-base-content/60 font-medium uppercase tracking-wider">Digital Signature</div>
-                        <div class="flex items-center gap-2 mt-1">
-                            <div class="h-10 w-24 bg-base-200 rounded flex items-center justify-center overflow-hidden border border-base-300 cursor-pointer hover:bg-base-300 transition-colors" @click="user.signature_url ? openSignaturePreview() : null">
-                                <template x-if="user.signature_url">
-                                    <img :src="user.signature_url" alt="Signature" class="h-full w-full object-contain">
-                                </template>
-                                <template x-if="!user.signature_url">
-                                    <span class="text-xs text-base-content/40 italic">None</span>
-                                </template>
+                        <template x-if="user.name">
+                            <div class="flex items-center gap-2 mt-1">
+                                <div class="h-10 w-24 bg-base-200 rounded flex items-center justify-center overflow-hidden border border-base-300 cursor-pointer hover:bg-base-300 transition-colors" @click="user.signature_url ? openSignaturePreview() : null">
+                                    <template x-if="user.signature_url">
+                                        <img :src="user.signature_url" alt="Signature" class="h-full w-full object-contain">
+                                    </template>
+                                    <template x-if="!user.signature_url">
+                                        <span class="text-xs text-base-content/40 italic">None</span>
+                                    </template>
+                                </div>
+                                <button @click="openSignatureModal" class="btn btn-ghost btn-xs btn-square text-secondary" title="Update Signature">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                    </svg>
+                                </button>
                             </div>
-                            <button @click="openSignatureModal" class="btn btn-ghost btn-xs btn-square text-secondary" title="Update Signature">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                                </svg>
-                            </button>
-                        </div>
+                        </template>
+                        <template x-if="!user.name">
+                            <div class="skeleton h-10 w-24 mt-1 rounded"></div>
+                        </template>
                     </div>
                 </div>
             </div>
@@ -139,6 +188,14 @@
             Leave Balances
         </h3>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <template x-if="loadingBalances">
+                <div class="contents">
+                    <div class="skeleton h-32 w-full rounded-box"></div>
+                    <div class="skeleton h-32 w-full rounded-box"></div>
+                    <div class="skeleton h-32 w-full rounded-box"></div>
+                    <div class="skeleton h-32 w-full rounded-box"></div>
+                </div>
+            </template>
             <template x-for="balance in balances" :key="balance.leave_type_id">
                 <div class="card bg-base-100 shadow-sm hover:shadow-md transition-all duration-300 border border-base-200 group">
                     <div class="card-body p-5">
@@ -159,7 +216,7 @@
                     </div>
                 </div>
             </template>
-            <template x-if="balances.length === 0">
+            <template x-if="balances.length === 0 && !loadingBalances">
                 <div class="col-span-full card bg-base-100 border border-base-200 border-dashed">
                     <div class="card-body items-center text-center py-8 text-base-content/50">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 opacity-20 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -192,11 +249,11 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                     </svg>
                     <span x-text="isPushEnabled ? 'Notifications Enabled' : 'Enable Notifications'"></span>
-                    <span x-show="loadingPush" class="loading loading-spinner loading-xs"></span>
+                    <span x-show="loadingPush" class="loading loading-dots loading-xs"></span>
                 </button>
 
                 <button @click="testPushNotification" class="btn btn-info btn-outline" :disabled="!isPushEnabled || testingPush">
-                    <span x-show="testingPush" class="loading loading-spinner loading-xs"></span>
+                    <span x-show="testingPush" class="loading loading-dots loading-xs"></span>
                     <svg x-show="!testingPush" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                     </svg>
@@ -214,7 +271,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                     </svg>
-                    Logout
+                     Logout
                 </button>
             </div>
         </div>
@@ -259,7 +316,7 @@
                 <div class="modal-action">
                     <button type="button" @click="closeEditPhoneModal" class="btn btn-ghost">Cancel</button>
                     <button type="submit" class="btn btn-success" :disabled="updatingPhone">
-                        <span x-show="updatingPhone" class="loading loading-spinner"></span>
+                        <span x-show="updatingPhone" class="loading loading-bars loading-sm"></span>
                         <span x-text="updatingPhone ? 'Updating...' : 'Update Number'"></span>
                     </button>
                 </div>
@@ -338,7 +395,7 @@
                 <div class="modal-action">
                     <button type="button" @click="closeEditProfileModal" class="btn btn-ghost">Cancel</button>
                     <button type="submit" class="btn btn-primary" :disabled="updatingProfile">
-                        <span x-show="updatingProfile" class="loading loading-spinner"></span>
+                        <span x-show="updatingProfile" class="loading loading-bars loading-sm"></span>
                         <span x-text="updatingProfile ? 'Saving...' : 'Save Changes'"></span>
                     </button>
                 </div>
@@ -400,7 +457,7 @@
                 <div class="modal-action">
                     <button type="button" @click="closeChangePasswordModal" class="btn btn-ghost">Cancel</button>
                     <button type="submit" class="btn btn-warning" :disabled="changingPassword">
-                        <span x-show="changingPassword" class="loading loading-spinner"></span>
+                        <span x-show="changingPassword" class="loading loading-bars loading-sm"></span>
                         <span x-text="changingPassword ? 'Changing...' : 'Change Password'"></span>
                     </button>
                 </div>
@@ -446,7 +503,7 @@
             <div class="modal-action">
                 <button type="button" @click="closeSignatureModal" class="btn btn-ghost">Cancel</button>
                 <button type="button" @click="saveSignature" class="btn btn-secondary" :disabled="savingSignature">
-                    <span x-show="savingSignature" class="loading loading-spinner"></span>
+                    <span x-show="savingSignature" class="loading loading-bars loading-sm"></span>
                     <span x-text="savingSignature ? 'Saving...' : 'Save Signature'"></span>
                 </button>
             </div>
@@ -517,6 +574,7 @@
 
     function userProfile(baseApiUrl, vapidKey) {
         return {
+            loadingBalances: true,
             user: {},
             balances: [],
             departments: [],
@@ -729,6 +787,7 @@
                         this.balances = data.data;
                     }
                 } catch (e) { console.error('Error fetching balances:', e); }
+                finally { this.loadingBalances = false; }
             },
 
             openEditProfileModal() {
@@ -739,11 +798,11 @@
                     plant_id: this.user.plant_id,
                     team_id: this.user.team?.id || ''
                 };
-                document.getElementById('editProfileModal').showModal();
+                showModal('editProfileModal');
             },
 
             closeEditProfileModal() {
-                document.getElementById('editProfileModal').close();
+                hideModal('editProfileModal');
             },
 
             async updateProfile() {
@@ -769,6 +828,11 @@
                     if (response.ok) {
                         this.user = data.data;
                         this.closeEditProfileModal();
+                        
+                        // Clear navbar cache to force refresh on next load
+                        localStorage.removeItem('userData');
+                        localStorage.removeItem('userDataTimestamp');
+                        
                         Swal.fire('Success', 'Profile updated successfully', 'success');
                     } else {
                         throw new Error(data.meta?.message || 'Failed to update profile');
@@ -782,11 +846,11 @@
 
             openEditPhoneModal() {
                 this.editPhone = this.user.phone_number ? this.user.phone_number.replace(/^62/, '') : '';
-                document.getElementById('editPhoneModal').showModal();
+                showModal('editPhoneModal');
             },
 
             closeEditPhoneModal() {
-                document.getElementById('editPhoneModal').close();
+                hideModal('editPhoneModal');
                 this.editPhone = '';
             },
 
@@ -840,11 +904,11 @@
                     new_password: '',
                     new_password_confirmation: ''
                 };
-                document.getElementById('changePasswordModal').showModal();
+                showModal('changePasswordModal');
             },
 
             closeChangePasswordModal() {
-                document.getElementById('changePasswordModal').close();
+                hideModal('changePasswordModal');
                 this.passwordForm = {
                     current_password: '',
                     new_password: '',
@@ -1054,7 +1118,7 @@
             },
 
             openSignatureModal() {
-                document.getElementById('signatureModal').showModal();
+                showModal('signatureModal');
                 
                 // Initialize pad if not already
                 this.$nextTick(() => {
@@ -1076,18 +1140,18 @@
             },
 
             closeSignatureModal() {
-                document.getElementById('signatureModal').close();
+                hideModal('signatureModal');
                 if (this.signaturePad) {
                     this.signaturePad.clear();
                 }
             },
 
             openSignaturePreview() {
-                document.getElementById('signaturePreviewModal').showModal();
+                showModal('signaturePreviewModal');
             },
 
             closeSignaturePreview() {
-                document.getElementById('signaturePreviewModal').close();
+                hideModal('signaturePreviewModal');
             },
 
             resizeCanvas() {

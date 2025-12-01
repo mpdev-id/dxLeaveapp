@@ -52,7 +52,7 @@ class SPAEnhancer {
     setupLoadingOverlay() {
         const overlay = document.createElement('div');
         overlay.className = 'loading-overlay';
-        overlay.innerHTML = '<div class="loading-spinner"></div>';
+        overlay.innerHTML = '<div class="loading-bars loading-sm"></div>';
         document.body.appendChild(overlay);
 
         window.showLoading = () => overlay.classList.add('active');

@@ -12,16 +12,70 @@
     </div>
     
     <div class="grid grid-cols-2 gap-3 mb-6">
-        <template x-for="balance in balances" :key="balance.leave_type_id">
-            <div class="stat bg-base-100 shadow-sm rounded-box p-3 border border-base-200">
-                <div class="stat-title text-[10px] font-bold uppercase tracking-wider truncate" x-text="balance.leave_type_name"></div>
-                <div class="stat-value text-primary text-xl" x-text="balance.remaining_days"></div>
-                <div class="stat-desc text-[10px]">Days Remaining</div>
+        <template x-if="loading">
+            <div class="contents">
+                <div class="skeleton h-20 w-full rounded-box"></div>
+                <div class="skeleton h-20 w-full rounded-box"></div>
             </div>
+        </template>
+        <template x-if="!loading">
+            <template x-for="balance in balances" :key="balance.leave_type_id">
+                <div class="stat bg-base-100 shadow-sm rounded-box p-3 border border-base-200">
+                    <div class="stat-title text-[10px] font-bold uppercase tracking-wider truncate" x-text="balance.leave_type_name"></div>
+                    <div class="stat-value text-primary text-xl" x-text="balance.remaining_days"></div>
+                    <div class="stat-desc text-[10px]">Days Remaining</div>
+                </div>
+            </template>
         </template>
     </div>
 
-    <form @submit.prevent="submitForm" class="space-y-6">
+    {{-- Form Skeleton --}}
+    <div x-show="loading" class="space-y-6">
+        <div class="form-control w-full">
+            <div class="skeleton rounded-full h-4 w-20 mb-2"></div>
+            <div class="skeleton rounded-full h-12 w-full"></div>
+        </div>
+        <div class="form-control w-full">
+            <div class="skeleton rounded-full h-4 w-24 mb-2"></div>
+            <div class="skeleton rounded-full h-12 w-full"></div>
+        </div>
+        <div class="form-control w-full">
+            <div class="skeleton rounded-full h-4 w-24 mb-2"></div>
+            <div class="skeleton rounded-full h-12 w-full"></div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+            <div class="form-control w-full">
+                <div class="skeleton rounded-full h-4 w-24 mb-2"></div>
+                <div class="skeleton rounded-full h-12 w-full"></div>
+            </div>
+            <div class="form-control w-full">
+                <div class="skeleton rounded-full h-4 w-20 mb-2"></div>
+                <div class="skeleton rounded-full h-12 w-full"></div>
+            </div>
+        </div>
+        <div class="form-control w-full">
+            <div class="skeleton rounded-full h-4 w-20 mb-2"></div>
+            <div class="skeleton rounded-full h-24 w-full"></div>
+        </div>
+        <div class="form-control w-full">
+            <div class="skeleton rounded-full h-4 w-28 mb-2"></div>
+            <div class="skeleton rounded-full h-20 w-full"></div>
+        </div>
+        <div class="form-control w-full">
+            <div class="skeleton rounded-full h-4 w-24 mb-2"></div>
+            <div class="skeleton rounded-full h-12 w-full"></div>
+        </div>
+        <div class="form-control w-full">
+            <div class="skeleton rounded-full h-4 w-20 mb-2"></div>
+            <div class="skeleton rounded-full h-40 w-full rounded-lg"></div>
+        </div>
+        <div class="grid grid-cols-2 gap-4 pt-4">
+            <div class="skeleton rounded-full h-12 w-full"></div>
+            <div class="skeleton rounded-full h-12 w-full"></div>
+        </div>
+    </div>
+
+    <form @submit.prevent="submitForm" class="space-y-6" x-show="!loading">
         {{-- Leave Period --}}
         <div class="form-control w-full">
             <label class="label">
@@ -228,11 +282,11 @@
         {{-- Submit Buttons --}}
         <div class="pt-4 grid grid-cols-2 gap-4">
             <button type="button" @click="submitForm('draft')" class="btn btn-outline btn-secondary w-full" :disabled="submitting">
-                <span x-show="submitting && action === 'draft'" class="loading loading-spinner"></span>
+                <span x-show="submitting && action === 'draft'" class="loading loading-bars loading-sm"></span>
                 <span x-text="submitting && action === 'draft' ? 'Saving...' : 'Save as Draft'"></span>
             </button>
             <button type="submit" class="btn btn-primary w-full" :disabled="submitting">
-                <span x-show="submitting && action === 'submit'" class="loading loading-spinner"></span>
+                <span x-show="submitting && action === 'submit'" class="loading loading-bars loading-sm"></span>
                 <span x-text="submitting && action === 'submit' ? 'Submitting...' : 'Submit Request'"></span>
             </button>
         </div>
@@ -245,8 +299,7 @@
 <script>
     function createLeave(baseApiUrl) {
         return {
-            leaveTypes: [],
-            workflows: [],
+            loading: true,
             leaveTypes: [],
             workflows: [],
             publicHolidays: [],
@@ -254,8 +307,6 @@
             suggestions: { reasons: [], addresses: [] },
             showReasonSuggestions: false,
             showAddressSuggestions: false,
-            userSignature: null,
-            useSavedSignature: false,
             userSignature: null,
             useSavedSignature: false,
             signaturePad: null,
@@ -266,7 +317,6 @@
                 workflow_id: '',
                 start_date: '',
                 end_date: '',
-                leave_period: 'full_day',
                 leave_period: 'full_day',
                 reason: '',
                 leave_address: '',
@@ -285,8 +335,6 @@
                 
                 // Set default dates to today
                 const today = new Date().toISOString().split('T')[0];
-                this.formData.start_date = today;
-                this.formData.end_date = today;
                 this.formData.start_date = today;
                 this.formData.end_date = today;
                 this.calculateDuration();
@@ -403,6 +451,8 @@
                 } catch (e) {
                     console.error('Error fetching data:', e);
                     Swal.fire('Error', 'Failed to load master data', 'error');
+                } finally {
+                    this.loading = false;
                 }
             },
 

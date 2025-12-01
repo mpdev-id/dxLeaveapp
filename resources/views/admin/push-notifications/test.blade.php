@@ -151,7 +151,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                                     </svg>
                                 </span>
-                                <span x-show="loading" class="loading loading-spinner loading-xs"></span>
+                                <span x-show="loading" class="loading loading-dots loading-xs"></span>
                                 <span x-text="loading ? 'Sending...' : 'Send to ' + form.user_ids.length + ' user(s)'"></span>
                             </button>
 
@@ -265,7 +265,7 @@
                         <!-- Loading -->
                         <template x-if="loading && subscribedUsers.length === 0">
                             <div class="flex flex-col items-center justify-center py-16">
-                                <span class="loading loading-spinner loading-lg text-primary"></span>
+                                <span class="loading loading-dots loading-lg text-primary"></span>
                                 <p class="text-sm text-base-content/60 mt-4">Loading users...</p>
                             </div>
                         </template>

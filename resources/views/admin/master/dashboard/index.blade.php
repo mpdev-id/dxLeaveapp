@@ -96,7 +96,7 @@
                                                                         </select>                                        </div>
                                     </div>                </div>
                 <div x-show="loadingChart" class="text-center p-8">
-                    <span class="loading loading-lg loading-spinner text-primary"></span>
+                    <span class="loading loading-lg loading-dots text-primary"></span>
                 </div>
                 <div x-show="!loadingChart">
                     <canvas id="monthlyLeaveChart"></canvas>

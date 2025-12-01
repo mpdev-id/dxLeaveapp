@@ -79,12 +79,6 @@
 
     {{-- Leave List --}}
     <div class="space-y-4">
-        <template x-if="loading">
-            <div class="flex justify-center py-8">
-                <span class="loading loading-spinner loading-lg"></span>
-            </div>
-        </template>
-
         <template x-if="!loading && filteredRequests.length === 0">
             <div class="text-center py-10 opacity-50">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
@@ -92,85 +86,134 @@
             </div>
         </template>
 
-        <template x-for="request in filteredRequests" :key="request.id">
-            <div class="card bg-base-100 shadow-sm border border-base-200">
-                <div class="card-body p-4">
-                    <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <h3 class="font-bold text-lg" x-text="request.leave_type.name"></h3>
-                            <span class="text-xs text-base-content/60" x-text="`Applied on ${formatDate(request.created_at)}`"></span>
-                        </div>
-                        <div class="badge" :class="getStatusColor(request.current_status)" x-text="request.current_status"></div>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-2 text-sm my-2">
-                        <div>
-                            <span class="block text-xs opacity-70">Start Date</span>
-                            <span class="font-medium" x-text="formatDate(request.start_date)"></span>
-                        </div>
-                        <div>
-                            <span class="block text-xs opacity-70">End Date</span>
-                            <span class="font-medium" x-text="formatDate(request.end_date)"></span>
-                        </div>
-                        <div>
-                            <span class="block text-xs opacity-70">Duration</span>
-                            <span class="font-medium" x-text="`${request.duration_days} Days`"></span>
-                        </div>
-                        <div>
-                            <span class="block text-xs opacity-70">Period</span>
-                            <span class="font-medium capitalize" x-text="request.leave_period.replace(/_/g, ' ')"></span>
-                        </div>
-                    </div>
+        <div class="overflow-x-auto bg-base-100 shadow-sm border border-base-200 rounded-box">
+            <table class="table table-zebra w-full">
+                <thead>
+                    <tr>
+                        <th>Leave Type</th>
+                        <th>Dates</th>
+                        <th>Applied On</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{-- Loading Skeleton --}}
+                    <template x-if="loading">
+                        <template x-for="i in 5" :key="i">
+                            <tr>
+                                <td><div class="skeleton h-4 w-32"></div><div class="skeleton h-3 w-20 mt-1"></div></td>
+                                <td><div class="skeleton h-4 w-24"></div><div class="skeleton h-3 w-16 mt-1"></div></td>
+                                <td><div class="skeleton h-4 w-24"></div></td>
+                                <td><div class="skeleton h-6 w-20 rounded-full"></div></td>
+                                <td><div class="skeleton h-8 w-8 rounded-md"></div></td>
+                            </tr>
+                        </template>
+                    </template>
 
-                    <div class="collapse collapse-arrow bg-base-200 mt-2 rounded-box">
-                        <input type="checkbox" /> 
-                        <div class="collapse-title text-sm font-medium min-h-0 py-2">
-                            View Details & History
-                        </div>
-                        <div class="collapse-content text-sm"> 
-                            <div class="flex justify-end mb-2 mt-2 gap-2">
-                                <a x-show="request.current_status === 'Draft'" :href="`{{ url('/member/leaves') }}/${request.id}/edit`" class="btn btn-xs btn-warning btn-outline gap-1">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                                    Edit
-                                </a>
-                                <button x-show="['Draft', 'Pending'].includes(request.current_status)" @click="deleteRequest(request.id)" class="btn btn-xs btn-error btn-outline gap-1">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                    Delete
-                                </button>
-                                <a :href="`{{ url('/member/leaves') }}/${request.id}/print`" class="btn btn-xs btn-outline gap-1">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4h10z" /></svg>
-                                    Print Form
-                                </a>
-                            </div>
-                            <p class="mb-2"><span class="font-semibold">Reason:</span> <span x-text="request.reason"></span></p>
-                            
-                            <div class="divider my-4">Approval History</div>
-                            <ul class="steps steps-vertical lg:steps-horizontal w-full overflow-x-hidden">
-                                <template x-for="item in getTimeline(request)" :key="item.step_name">
-                                    <li class="step" :class="getStepClass(item.status)">
-                                        <div class="text-center w-full ml-2">
-                                            <div class="font-bold text-xs" x-text="item.approver_name || item.step_name"></div>
-                                            <div class="text-[10px] uppercase font-semibold" :class="getStatusTextColor(item.status)" x-text="item.status"></div>
-                                            <div x-show="item.comments" class="text-xs italic opacity-70" x-text="`Comment: ${item.comments}`"></div>
-                                            <div class="text-[10px] opacity-50" x-show="item.date" x-text="formatDate(item.date)"></div>
-                                        </div>
-                                    </li>
-                                </template>
-                                
-                                <template x-if="!request.workflow">
-                                    <li class="step step-error" data-content="!">Workflow Not Found</li>
-                                </template>
-                                
-                                <template x-if="request.workflow && (!request.workflow.steps || request.workflow.steps.length === 0)">
-                                    <li class="step step-warning" data-content="?">Workflow has no steps</li>
-                                </template>
-                            </ul>
-                        </div>
+                    <template x-if="!loading && filteredRequests.length > 0">
+                        <template x-for="request in filteredRequests" :key="request.id">
+                            <tr>
+                                <td>
+                                    <div class="font-bold text-sm" x-text="request.leave_type.name"></div>
+                                    <div class="text-xs opacity-50" x-text="`${request.duration_days} Days`"></div>
+                                </td>
+                                <td class="text-sm">
+                                    <div x-text="formatDate(request.start_date)"></div>
+                                    <div class="text-xs opacity-50">to</div>
+                                    <div x-text="formatDate(request.end_date)"></div>
+                                </td>
+                                <td>
+                                    <div class="text-sm" x-text="formatDate(request.created_at)"></div>
+                                </td>
+                                <td>
+                                    <div class="badge badge-sm" :class="getStatusColor(request.current_status)" x-text="request.current_status"></div>
+                                </td>
+                                <td>
+                                    <div class="flex gap-2">
+                                        <button @click="viewDetails(request)" class="btn btn-xs btn-ghost btn-square" title="View Details">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                        </button>
+                                        <template x-if="request.current_status === 'Draft'">
+                                            <a :href="`{{ url('/member/leaves') }}/${request.id}/edit`" class="btn btn-xs btn-ghost btn-square text-warning" title="Edit">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                                            </a>
+                                        </template>
+                                        <template x-if="request.current_status === 'Draft' || request.current_status === 'Pending'">
+                                            <button @click="deleteRequest(request.id)" class="btn btn-xs btn-ghost btn-square text-error" title="Delete">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                            </button>
+                                        </template>
+                                        <a :href="`{{ url('/member/leaves') }}/${request.id}/print`" class="btn btn-xs btn-ghost btn-square" title="Print Form">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4h10z" /></svg>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </template>
+                    </template>
+                    <template x-if="filteredRequests.length === 0 && !loading">
+                        <tr>
+                            <td colspan="5" class="text-center py-8 text-base-content/50">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                No leave requests found
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+
+        {{-- The original card-based display is removed as it's replaced by the table --}}
+    </div>
+
+    {{-- Details Modal --}}
+    <dialog id="leave_details_modal" class="modal">
+        <div class="modal-box">
+            <h3 class="font-bold text-lg" x-text="selectedRequest?.leave_type?.name"></h3>
+            <div class="py-4 space-y-4">
+                <div>
+                    <span class="font-semibold block text-xs opacity-70">Reason</span>
+                    <span x-text="selectedRequest?.reason || '-'"></span>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <span class="font-semibold block text-xs opacity-70">Start Date</span>
+                        <span x-text="formatDate(selectedRequest?.start_date)"></span>
+                    </div>
+                    <div>
+                        <span class="font-semibold block text-xs opacity-70">End Date</span>
+                        <span x-text="formatDate(selectedRequest?.end_date)"></span>
                     </div>
                 </div>
+                <div>
+                    <span class="font-semibold block text-xs opacity-70">Duration</span>
+                    <span x-text="`${selectedRequest?.duration_days} Days`"></span>
+                </div>
+                
+                <div class="divider">Approval History</div>
+                <ul class="steps steps-vertical w-full overflow-x-hidden">
+                    <template x-for="item in getTimeline(selectedRequest)" :key="item.step_name">
+                        <li class="step" :class="getStepClass(item.status)">
+                            <div class="text-left w-full ml-2">
+                                <div class="font-bold text-xs" x-text="item.approver_name || item.step_name"></div>
+                                <div class="text-[10px] uppercase font-semibold" :class="getStatusTextColor(item.status)" x-text="item.status"></div>
+                                <div x-show="item.comments" class="text-xs italic opacity-70" x-text="`Comment: ${item.comments}`"></div>
+                                <div class="text-[10px] opacity-50" x-show="item.date" x-text="formatDate(item.date)"></div>
+                            </div>
+                        </li>
+                    </template>
+                </ul>
             </div>
-        </template>
-    </div>
+            <div class="modal-action">
+                <form method="dialog">
+                    <button class="btn">Close</button>
+                </form>
+            </div>
+        </div>
+    </dialog>
 </div>
 @endsection
 
@@ -187,6 +230,12 @@
             searchQuery: '',
             filterStatus: '',
             sortBy: 'date_desc',
+            selectedRequest: null,
+
+            viewDetails(request) {
+                this.selectedRequest = request;
+                document.getElementById('leave_details_modal').showModal();
+            },
 
             async init() {
                 if (!this.token) return;

@@ -51,7 +51,7 @@
                 </div>
 
                 <button type="submit" class="btn btn-primary w-full" :disabled="loading">
-                    <span x-show="loading" class="loading loading-spinner"></span>
+                    <span x-show="loading" class="loading loading-bars loading-sm"></span>
                     <span x-text="loading ? 'Sending...' : 'Send OTP'"></span>
                 </button>
             </form>
@@ -103,7 +103,7 @@
                         Back
                     </button>
                     <button type="submit" class="btn btn-primary flex-1" :disabled="loading">
-                        <span x-show="loading" class="loading loading-spinner"></span>
+                        <span x-show="loading" class="loading loading-bars loading-sm"></span>
                         <span x-text="loading ? 'Resetting...' : 'Reset Password'"></span>
                     </button>
                 </div>

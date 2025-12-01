@@ -8,16 +8,25 @@
     {{-- Welcome Section --}}
     <div class="flex items-center justify-between">
         <div>
-            <h1 class="text-2xl font-bold text-base-content">Hello, <span x-text="user.name || 'User'"></span>!</h1>
+            <h1 class="text-xl font-bold text-base-content">Hello, <span x-text="user.name || 'User'"></span>!</h1>
             <p class="text-sm text-base-content/70" x-text="user.employee_code"></p>
         </div>
-        <div class="badge badge-primary badge-lg" x-text="user.department?.name || 'No Dept'"></div>
+        <div class="badge badge-primary badge-lg text-sm font-bold" x-text="user.department?.name || 'No Dept'"></div>
     </div>
 
     {{-- Leave Balances --}}
-    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div class="flex overflow-x-auto gap-4 pb-4 snap-x no-scrollbar">
+        {{-- Loading Skeleton for Balances --}}
+        <template x-if="loadingBalances">
+            <div class="flex gap-4">
+                <div class="skeleton h-48 w-80 flex-none rounded-box"></div>
+                <div class="skeleton h-48 w-80 flex-none rounded-box"></div>
+                <div class="skeleton h-48 w-80 flex-none rounded-box"></div>
+            </div>
+        </template>
+
         <template x-for="balance in balances" :key="balance.leave_type_id">
-            <div class="stats shadow bg-base-100 border border-base-200">
+            <div class="stats shadow bg-base-100 border border-base-200 min-w-[300px] max-w-[300px] flex-none snap-center">
                 <div class="stat">
                     <div class="stat-title font-bold text-base-content" x-text="balance.leave_type_name"></div>
                     <div class="stat-value text-primary text-3xl" x-text="balance.remaining_days"></div>
@@ -46,12 +55,6 @@
                 </div>
             </div>
         </template>
-        {{-- Loading State for Balances --}}
-        <template x-if="loadingBalances">
-            <div class="col-span-full flex justify-center py-8">
-                <span class="loading loading-dots loading-lg text-primary"></span>
-            </div>
-        </template>
     </div>
 
     {{-- Approvals Section (For Approvers) --}}
@@ -60,9 +63,9 @@
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
             Waiting for Your Approval
         </h2>
-        <div class="grid gap-4 md:grid-cols-2">
+        <div class="flex overflow-x-auto gap-4 pb-4 snap-x no-scrollbar">
             <template x-for="request in approvals" :key="request.id">
-                <div class="card bg-base-100 shadow-md border-l-4 border-warning">
+                <div class="card bg-base-100 shadow-md border-l-4 border-warning min-w-[320px] max-w-[320px] flex-none snap-center">
                     <div class="card-body p-4">
                         <div class="flex justify-between items-start">
                             <div>
@@ -144,6 +147,18 @@
                     </tr>
                 </thead>
                 <tbody>
+                    {{-- Loading Skeleton for Table --}}
+                    <template x-if="loadingRequests">
+                        <template x-for="i in 5">
+                            <tr>
+                                <td><div class="skeleton h-4 w-32"></div><div class="skeleton h-3 w-20 mt-1"></div></td>
+                                <td><div class="skeleton h-4 w-24"></div><div class="skeleton h-3 w-16 mt-1"></div></td>
+                                <td><div class="skeleton h-6 w-20 rounded-full"></div></td>
+                                <td><div class="skeleton h-8 w-8 rounded-full"></div></td>
+                            </tr>
+                        </template>
+                    </template>
+
                     <template x-for="request in filteredRequests" :key="request.id">
                         <tr>
                             <td>
@@ -529,4 +544,15 @@
     }
 
 </script>
+@endpush
+@push('styles')
+<style>
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .no-scrollbar {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+    }
+</style>
 @endpush

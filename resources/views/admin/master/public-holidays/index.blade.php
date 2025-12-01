@@ -52,7 +52,7 @@
                 <tbody>
                     <template x-if="loading">
                         <tr>
-                            <td colspan="3" class="text-center py-10"><span class="loading loading-spinner loading-lg"></span></td>
+                            <td colspan="3" class="text-center py-10"><span class="loading loading-dots loading-lg"></span></td>
                         </tr>
                     </template>
                     <template x-if="!loading && publicHolidays.length === 0">

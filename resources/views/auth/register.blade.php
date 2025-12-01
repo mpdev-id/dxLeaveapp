@@ -89,7 +89,7 @@
 
                 <div class="card-actions justify-center mt-6">
                     <button type="submit" class="btn btn-primary w-full" :disabled="loading">
-                        <span x-show="loading" class="loading loading-spinner"></span>
+                        <span x-show="loading" class="loading loading-bars loading-sm"></span>
                         <span x-text="loading ? 'Processing...' : 'Register'"></span>
                     </button>
                 </div>

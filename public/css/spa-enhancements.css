@@ -34,7 +34,7 @@ body.page-transitioning {
     pointer-events: all;
 }
 
-.loading-spinner {
+.loading-dots {
     width: 60px;
     height: 60px;
     border: 4px solid rgba(255, 255, 255, 0.3);
