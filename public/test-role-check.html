@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Role Check Test - Updated</title>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-case {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .fail {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        .info-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Role Permission Test (Updated)</h1>
+    <p>Testing multi-role checking logic for Approver Log menu visibility</p>
+
+    <div class="info-box">
+        <h3>⚠️ Important: API Response Format</h3>
+        <p>The API returns <code>role</code> as an <strong>array</strong>, not a comma-separated string:</p>
+        <code style="display: block; padding: 10px; background: white; margin: 10px 0;">
+            { "role": ["Super Admin", "SL", "SPV"] }
+        </code>
+        <p>The new implementation supports both <strong>array</strong> and <strong>string</strong> formats!</p>
+    </div>
+
+    <div x-data="roleTest()">
+        <!-- Test Case 1: Array format (from API) -->
+        <div class="test-case">
+            <h3>Test Case 1: Array Format (API Response)</h3>
+            <p><strong>userRole:</strong> <code x-text="JSON.stringify(testCase1)"></code></p>
+            <p><strong>Type:</strong> Array (from API)</p>
+            <p><strong>Expected:</strong> Menu should be visible ✅</p>
+            <div :class="checkRole(testCase1) ? 'result success' : 'result fail'">
+                <strong>Result:</strong> <span x-text="checkRole(testCase1) ? '✅ PASS - Menu will be shown' : '❌ FAIL - Menu will be hidden'"></span>
+            </div>
+        </div>
+
+        <!-- Test Case 2: Array with single role -->
+        <div class="test-case">
+            <h3>Test Case 2: Array with Single Approver Role</h3>
+            <p><strong>userRole:</strong> <code x-text="JSON.stringify(testCase2)"></code></p>
+            <p><strong>Type:</strong> Array</p>
+            <p><strong>Expected:</strong> Menu should be visible ✅</p>
+            <div :class="checkRole(testCase2) ? 'result success' : 'result fail'">
+                <strong>Result:</strong> <span x-text="checkRole(testCase2) ? '✅ PASS - Menu will be shown' : '❌ FAIL - Menu will be hidden'"></span>
+            </div>
+        </div>
+
+        <!-- Test Case 3: Array with Employee only -->
+        <div class="test-case">
+            <h3>Test Case 3: Array with Employee Role Only</h3>
+            <p><strong>userRole:</strong> <code x-text="JSON.stringify(testCase3)"></code></p>
+            <p><strong>Type:</strong> Array</p>
+            <p><strong>Expected:</strong> Menu should be hidden ❌</p>
+            <div :class="!checkRole(testCase3) ? 'result success' : 'result fail'">
+                <strong>Result:</strong> <span x-text="!checkRole(testCase3) ? '✅ PASS - Menu will be hidden' : '❌ FAIL - Menu will be shown'"></span>
+            </div>
+        </div>
+
+        <!-- Test Case 4: String format (comma-separated) -->
+        <div class="test-case">
+            <h3>Test Case 4: String Format (Comma-Separated)</h3>
+            <p><strong>userRole:</strong> <code x-text="testCase4"></code></p>
+            <p><strong>Type:</strong> String (backward compatibility)</p>
+            <p><strong>Expected:</strong> Menu should be visible ✅</p>
+            <div :class="checkRole(testCase4) ? 'result success' : 'result fail'">
+                <strong>Result:</strong> <span x-text="checkRole(testCase4) ? '✅ PASS - Menu will be shown' : '❌ FAIL - Menu will be hidden'"></span>
+            </div>
+        </div>
+
+        <!-- Test Case 5: String with Employee only -->
+        <div class="test-case">
+            <h3>Test Case 5: String with Employee Only</h3>
+            <p><strong>userRole:</strong> <code x-text="testCase5"></code></p>
+            <p><strong>Type:</strong> String</p>
+            <p><strong>Expected:</strong> Menu should be hidden ❌</p>
+            <div :class="!checkRole(testCase5) ? 'result success' : 'result fail'">
+                <strong>Result:</strong> <span x-text="!checkRole(testCase5) ? '✅ PASS - Menu will be hidden' : '❌ FAIL - Menu will be shown'"></span>
+            </div>
+        </div>
+
+        <!-- Test Case 6: Empty array -->
+        <div class="test-case">
+            <h3>Test Case 6: Empty Array</h3>
+            <p><strong>userRole:</strong> <code x-text="JSON.stringify(testCase6)"></code></p>
+            <p><strong>Type:</strong> Array (empty)</p>
+            <p><strong>Expected:</strong> Menu should be hidden ❌</p>
+            <div :class="!checkRole(testCase6) ? 'result success' : 'result fail'">
+                <strong>Result:</strong> <span x-text="!checkRole(testCase6) ? '✅ PASS - Menu will be hidden' : '❌ FAIL - Menu will be shown'"></span>
+            </div>
+        </div>
+
+        <!-- Test Case 7: Mixed roles (array) -->
+        <div class="test-case">
+            <h3>Test Case 7: Mixed Roles (Employee + Manager)</h3>
+            <p><strong>userRole:</strong> <code x-text="JSON.stringify(testCase7)"></code></p>
+            <p><strong>Type:</strong> Array</p>
+            <p><strong>Expected:</strong> Menu should be visible ✅ (has Manager)</p>
+            <div :class="checkRole(testCase7) ? 'result success' : 'result fail'">
+                <strong>Result:</strong> <span x-text="checkRole(testCase7) ? '✅ PASS - Menu will be shown' : '❌ FAIL - Menu will be hidden'"></span>
+            </div>
+        </div>
+
+        <div class="test-case" style="background: #e7f3ff; border: 2px solid #0066cc;">
+            <h3>📋 Implementation Summary</h3>
+            <p><strong>Approver Roles:</strong> Super Admin, SL, SPV, ASMEN, TL, Manager</p>
+            <p><strong>Supported Formats:</strong></p>
+            <ul>
+                <li>✅ Array: <code>["Super Admin", "SL"]</code> (from API)</li>
+                <li>✅ String: <code>"Super Admin,SL"</code> (backward compatibility)</li>
+            </ul>
+            <p><strong>Function:</strong></p>
+            <code style="display: block; padding: 10px; background: #f8f9fa; margin: 10px 0; white-space: pre-wrap;">
+hasApproverRole() {
+    const approverRoles = ['Super Admin', 'SL', 'SPV', 'ASMEN', 'TL', 'Manager'];
+    let roles = [];
+    
+    if (Array.isArray(this.userRole)) {
+        roles = this.userRole;
+    } else if (typeof this.userRole === 'string' && this.userRole) {
+        roles = this.userRole.split(',').map(r => r.trim());
+    }
+    
+    return roles.some(role => approverRoles.includes(role));
+}
+            </code>
+        </div>
+
+        <div class="test-case" style="background: #d1ecf1; border: 2px solid #0c5460;">
+            <h3>🔍 Debug Info</h3>
+            <p><strong>Current localStorage.userRole:</strong></p>
+            <code x-text="localStorage.getItem('userRole') || '(not set)'" style="display: block; padding: 10px; background: white;"></code>
+            <button @click="setTestRole()" style="margin-top: 10px; padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                Set Test Role in localStorage
+            </button>
+            <button @click="clearTestRole()" style="margin-top: 10px; margin-left: 10px; padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                Clear localStorage
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function roleTest() {
+            return {
+                // Array formats (from API)
+                testCase1: ['Super Admin', 'SL', 'SPV', 'ASMEN', 'TL', 'Manager'],
+                testCase2: ['SL'],
+                testCase3: ['Employee'],
+                testCase6: [],
+                testCase7: ['Employee', 'Manager'],
+                
+                // String formats (backward compatibility)
+                testCase4: 'Super Admin,SL,Manager',
+                testCase5: 'Employee',
+                
+                checkRole(userRole) {
+                    const approverRoles = ['Super Admin', 'SL', 'SPV', 'ASMEN', 'TL', 'Manager'];
+                    let roles = [];
+                    
+                    // Handle different formats
+                    if (Array.isArray(userRole)) {
+                        roles = userRole;
+                    } else if (typeof userRole === 'string' && userRole) {
+                        roles = userRole.split(',').map(r => r.trim());
+                    }
+                    
+                    return roles.some(role => approverRoles.includes(role));
+                },
+                
+                setTestRole() {
+                    const testRole = ['Super Admin', 'SL', 'SPV'];
+                    localStorage.setItem('userRole', JSON.stringify(testRole));
+                    alert('Test role set! Refresh the member page to see the menu.');
+                },
+                
+                clearTestRole() {
+                    localStorage.removeItem('userRole');
+                    localStorage.removeItem('userData');
+                    localStorage.removeItem('userDataTimestamp');
+                    alert('localStorage cleared!');
+                }
+            }
+        }
+    </script>
+</body>
+</html>

@@ -70,4 +70,5 @@ Route::get('/member/leaves/create', [\App\Http\Controllers\Member\LeaveRequestCo
 Route::get('/member/leaves/{leaveRequest}/edit', [\App\Http\Controllers\Member\LeaveRequestController::class, 'edit'])->name('member.leaves.edit');
 Route::get('/member/leaves/{leaveRequest}/print', [\App\Http\Controllers\Member\LeaveRequestController::class, 'print'])->name('member.leaves.print');
 Route::get('/member/profile', [\App\Http\Controllers\Member\ProfileController::class, 'index'])->name('member.profile.index');
-Route::get('/member/approver-log', [\App\Http\Controllers\Member\ApproverLogController::class, 'index'])->name('member.approver-log.index');
+Route::get('/member/approver-log', [\App\Http\Controllers\Member\ApproverLogController::class, 'index'])
+    ->name('member.approver-log.index');
