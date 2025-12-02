@@ -61,6 +61,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         return view('admin.push-notifications.test');
     })->name('push-notifications.test');
 
+    // Role & Permission Management
+    Route::get('/roles-permissions', [\App\Http\Controllers\Admin\Master\RolePermissionController::class, 'index'])->name('roles-permissions.index');
+
     Route::resource('workflows', \App\Http\Controllers\Admin\Master\WorkflowController::class);
 });
 

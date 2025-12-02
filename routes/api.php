@@ -100,6 +100,14 @@ Route::middleware(['auth:sanctum', 'role:Super Admin', 'throttle:120,1'])->prefi
     Route::get('push-notifications/subscribed-users', [\App\Http\Controllers\API\Admin\PushNotificationTestController::class, 'getSubscribedUsers']);
     Route::post('push-notifications/test', [\App\Http\Controllers\API\Admin\PushNotificationTestController::class, 'sendTest']);
     Route::post('push-notifications/test-all', [\App\Http\Controllers\API\Admin\PushNotificationTestController::class, 'sendToAll']);
+    
+    
+    // Role & Permission Management
+    Route::get('roles-permissions/roles', [\App\Http\Controllers\Admin\Master\RolePermissionController::class, 'getRoles']);
+    Route::get('roles-permissions/permissions', [\App\Http\Controllers\Admin\Master\RolePermissionController::class, 'getPermissions']);
+    Route::post('roles-permissions/roles', [\App\Http\Controllers\Admin\Master\RolePermissionController::class, 'createRole']);
+    Route::put('roles-permissions/roles/{role}/permissions', [\App\Http\Controllers\Admin\Master\RolePermissionController::class, 'updateRolePermissions']);
+    Route::delete('roles-permissions/roles/{role}', [\App\Http\Controllers\Admin\Master\RolePermissionController::class, 'deleteRole']);
 });
 // --- Rute Administrasi Dasbor (Hanya untuk Admin) ---
 Route::middleware(['auth:sanctum', 'role:Super Admin', 'throttle:120,1'])->prefix('admin/dashboard')->group(function () {

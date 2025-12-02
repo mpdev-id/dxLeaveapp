@@ -96,6 +96,7 @@
                                 <li><a href="{{ route('admin.plants.index') }}">Plants</a></li>
                                 <li><a href="{{ route('admin.leave-types.index') }}">Leave Types</a></li>
                                 <li><a href="{{ route('admin.workflows.index') }}">Workflows</a></li>
+                                <li><a href="{{ route('admin.roles-permissions.index') }}">Roles & Permissions</a></li>
                             </ul>
                         </details>
                     </li>
