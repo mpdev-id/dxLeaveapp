@@ -31,14 +31,61 @@ class WorkflowService
             return $approver->id === $step->approver_user_id;
         }
 
+        // 3. Role-based approval - MUST check if approver is the designated person in hierarchy
         if ($step->required_approver_type === 'Role') {
-            if (!$step->approverRole) {
+            if (!$step->approverRole || !$requestModel) {
                 return false;
             }
-            return $approver->hasRole($step->approverRole->name);
+
+            // Get requester info
+            $requester = $requestModel instanceof \App\Models\LeaveRequest 
+                ? $requestModel->user 
+                : null;
+
+            if (!$requester) {
+                return false;
+            }
+
+            $roleName = $step->approverRole->name;
+            $plant = $requester->plant;
+            $team = $plant?->team;
+            $department = $team?->department ?? $requester->department;
+
+            // Check if approver is the designated person for this role in the hierarchy
+            switch ($roleName) {
+                case 'SPV':
+                    // Must be the supervisor of requester's plant
+                    return $plant && $plant->supervisor_id === $approver->id;
+
+                case 'SL':
+                    // Must be the SL of requester's team
+                    return $team && $team->sl_id === $approver->id;
+
+                case 'ASMEN':
+                    // Must be the ASMEN of requester's team
+                    return $team && $team->asmen_id === $approver->id;
+
+                case 'TL':
+                    // Must be the leader or additional leader of requester's team
+                    if (!$team) return false;
+                    return $team->leader_id === $approver->id 
+                        || $team->additional_leader_id === $approver->id;
+
+                case 'Manager':
+                    // Must be the head of requester's department
+                    return $department && $department->head_id === $approver->id;
+
+                default:
+                    // For other roles, check if approver has the role AND is in manager hierarchy
+                    if (!$approver->hasRole($roleName)) {
+                        return false;
+                    }
+                    // Additional check: must be in the manager hierarchy
+                    return $this->isInManagerHierarchy($requester, $approver);
+            }
         }
 
-        // Logic baru untuk hierarki
+        // 4. Legacy logic for specific approver types (for backward compatibility)
         if ($requestModel && $requestModel instanceof \App\Models\LeaveRequest) {
             $requester = $requestModel->user;
             
@@ -79,6 +126,26 @@ class WorkflowService
                          
                 return $deptHead && $deptHead->id === $approver->id;
             }
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if approver is in the manager hierarchy of the requester
+     */
+    private function isInManagerHierarchy(User $requester, User $approver): bool
+    {
+        $currentManager = $requester->manager;
+        $maxLevels = 5;
+        $level = 0;
+
+        while ($currentManager && $level < $maxLevels) {
+            if ($currentManager->id === $approver->id) {
+                return true;
+            }
+            $currentManager = $currentManager->manager;
+            $level++;
         }
 
         return false;

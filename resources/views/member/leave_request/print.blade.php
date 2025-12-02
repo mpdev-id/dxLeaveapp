@@ -316,25 +316,35 @@
             <!-- Section Leader -->
             <td>
                 @if($slApproval)
-                @if($slApproval->signature_url)
-                <img src="{{ $slApproval->signature_url }}" alt="Signature" style="max-height: 80px; max-width: 100%; display: block; margin: 5px auto;">
-                @else
-                <div style="font-weight: bold; margin-bottom: 10px;">{{ $slApproval->action }}</div>
-                @endif
-                <div><span style="font-size: 9pt;"> {{ $slApproval->approver->name }}</span></div>
+                    @if($slApproval->signature_url)
+                        {{-- Use approval signature if available --}}
+                        <img src="{{ $slApproval->signature_url }}" alt="Signature" style="max-height: 80px; max-width: 100%; display: block; margin: 5px auto;">
+                    @elseif($slApproval->approver && $slApproval->approver->signature_url)
+                        {{-- Use approver's profile signature if available --}}
+                        <img src="{{ $slApproval->approver->signature_url }}" alt="Signature" style="max-height: 80px; max-width: 100%; display: block; margin: 5px auto;">
+                    @else
+                        {{-- Fallback to text if no signature --}}
+                        <div style="font-weight: bold; margin-bottom: 10px;">Approved</div>
+                    @endif
+                    <div><span style="font-size: 9pt;"> {{ $slApproval->approver->name }}</span></div>
                     <div class="approval-date">Date: {{ \Carbon\Carbon::parse($slApproval->acted_at)->format('d/m/Y') }}</div>
                 @endif
             </td>
 
             <!-- Supervisor -->
             <td>
-            @if($spvApproval)
-            @if($spvApproval->signature_url)
-            <img src="{{ $spvApproval->signature_url }}" alt="Signature" style="max-height: 80px; max-width: 100%; display: block; margin: 5px auto;">
+                @if($spvApproval)
+                    @if($spvApproval->signature_url)
+                        {{-- Use approval signature if available --}}
+                        <img src="{{ $spvApproval->signature_url }}" alt="Signature" style="max-height: 80px; max-width: 100%; display: block; margin: 5px auto;">
+                    @elseif($spvApproval->approver && $spvApproval->approver->signature_url)
+                        {{-- Use approver's profile signature if available --}}
+                        <img src="{{ $spvApproval->approver->signature_url }}" alt="Signature" style="max-height: 80px; max-width: 100%; display: block; margin: 5px auto;">
                     @else
-                        <div style="font-weight: bold; margin-bottom: 10px;">{{ $spvApproval->action }}</div>
+                        {{-- Fallback to text if no signature --}}
+                        <div style="font-weight: bold; margin-bottom: 10px;">Approved</div>
                     @endif
-            <div><span style="font-size: 9pt;"> {{ $spvApproval->approver->name }}</span></div>
+                    <div><span style="font-size: 9pt;"> {{ $spvApproval->approver->name }}</span></div>
                     <div class="approval-date">Date: {{ \Carbon\Carbon::parse($spvApproval->acted_at)->format('d/m/Y') }}</div>
                 @endif
             </td>
@@ -342,11 +352,16 @@
             <!-- Assistant Mgr -->
             <td>
                 @if($asmenApproval)
-                @if($asmenApproval->signature_url)
-                <img src="{{ $asmenApproval->signature_url }}" alt="Signature" style="max-height: 80px; max-width: 100%; display: block; margin: 5px auto;">
-                @else
-                <div style="font-weight: bold; margin-bottom: 10px;">{{ $asmenApproval->action }}</div>
-                @endif
+                    @if($asmenApproval->signature_url)
+                        {{-- Use approval signature if available --}}
+                        <img src="{{ $asmenApproval->signature_url }}" alt="Signature" style="max-height: 80px; max-width: 100%; display: block; margin: 5px auto;">
+                    @elseif($asmenApproval->approver && $asmenApproval->approver->signature_url)
+                        {{-- Use approver's profile signature if available --}}
+                        <img src="{{ $asmenApproval->approver->signature_url }}" alt="Signature" style="max-height: 80px; max-width: 100%; display: block; margin: 5px auto;">
+                    @else
+                        {{-- Fallback to text if no signature --}}
+                        <div style="font-weight: bold; margin-bottom: 10px;">Approved</div>
+                    @endif
                     <div><span style="font-size: 9pt;">{{ $asmenApproval->approver->name }}</span></div>
                     <div class="approval-date">Date: {{ \Carbon\Carbon::parse($asmenApproval->acted_at)->format('d/m/Y') }}</div>
                 @endif
@@ -355,27 +370,36 @@
             <!-- Team Mgr -->
             <td>
                 @if($tlApproval)
-                @if($tlApproval->signature_url)
-                <img src="{{ $tlApproval->signature_url }}" alt="Signature" style="max-height: 80px; max-width: 100%; display: block; margin: 5px auto;">
-                @else
-                <div style="font-weight: bold; margin-bottom: 10px;">{{ $tlApproval->action }}</div>
-                @endif
-                
-                <div><span style="font-size: 9pt;">{{ $tlApproval->approver->name }}</span></div>
-                <div class="approval-date">Date: {{ \Carbon\Carbon::parse($tlApproval->acted_at)->format('d/m/Y') }}</div>
+                    @if($tlApproval->signature_url)
+                        {{-- Use approval signature if available --}}
+                        <img src="{{ $tlApproval->signature_url }}" alt="Signature" style="max-height: 80px; max-width: 100%; display: block; margin: 5px auto;">
+                    @elseif($tlApproval->approver && $tlApproval->approver->signature_url)
+                        {{-- Use approver's profile signature if available --}}
+                        <img src="{{ $tlApproval->approver->signature_url }}" alt="Signature" style="max-height: 80px; max-width: 100%; display: block; margin: 5px auto;">
+                    @else
+                        {{-- Fallback to text if no signature --}}
+                        <div style="font-weight: bold; margin-bottom: 10px;">Approved</div>
+                    @endif
+                    <div><span style="font-size: 9pt;">{{ $tlApproval->approver->name }}</span></div>
+                    <div class="approval-date">Date: {{ \Carbon\Carbon::parse($tlApproval->acted_at)->format('d/m/Y') }}</div>
                 @endif
             </td>
 
             <!-- Dept Mgr -->
             <td>
                 @if($managerApproval)
-                @if($managerApproval->signature_url)
-                <img src="{{ $managerApproval->signature_url }}" alt="Signature" style="max-height: 80px; max-width: 100%; display: block; margin: 5px auto;">
-                @else
-                        <div style="font-weight: bold; margin-bottom: 10px;">{{ $managerApproval->action }}</div>
+                    @if($managerApproval->signature_url)
+                        {{-- Use approval signature if available --}}
+                        <img src="{{ $managerApproval->signature_url }}" alt="Signature" style="max-height: 80px; max-width: 100%; display: block; margin: 5px auto;">
+                    @elseif($managerApproval->approver && $managerApproval->approver->signature_url)
+                        {{-- Use approver's profile signature if available --}}
+                        <img src="{{ $managerApproval->approver->signature_url }}" alt="Signature" style="max-height: 80px; max-width: 100%; display: block; margin: 5px auto;">
+                    @else
+                        {{-- Fallback to text if no signature --}}
+                        <div style="font-weight: bold; margin-bottom: 10px;">Approved</div>
                     @endif
-                <div><span style="font-size: 9pt;">{{ $managerApproval->approver->name }}</span></div>
-                <div class="approval-date">Date: {{ \Carbon\Carbon::parse($managerApproval->acted_at)->format('d/m/Y') }}</div>
+                    <div><span style="font-size: 9pt;">{{ $managerApproval->approver->name }}</span></div>
+                    <div class="approval-date">Date: {{ \Carbon\Carbon::parse($managerApproval->acted_at)->format('d/m/Y') }}</div>
                 @endif
             </td>
         </tr>

@@ -48,35 +48,35 @@ class LeaveRequestController extends Controller
         try {
             $user = Auth::user();
             // Eager load relationships for efficiency and for the resource
-            $query = LeaveRequest::with(['user.department', 'user.plant.team.department', 'leaveType', 'currentStep.approverRole', 'workflow.steps.approverRole', 'approvals.approver']);
+            $query = LeaveRequest::with(['user.department', 'leaveType', 'currentStep.approverRole', 'workflow.steps.approverRole', 'approvals.approver']);
 
             // Base query for user's own requests
             $ownRequestsQuery = (clone $query)->where('user_id', $user->id)->latest();
 
             // If user has permission to approve, they will also see requests they need to approve.
             if ($user->hasPermissionTo('approve leave request')) {
-                // Get requests that need approval and filter by hierarchy
-                $requestsToApprove = (clone $query)
+                // Get user roles
+                $userRoles = $user->getRoleNames();
+
+                // Get workflow steps the user can approve based on their roles
+                $approvableStepIds = DB::table('workflow_steps as ws')
+                    ->join('roles', 'ws.approver_role_id', '=', 'roles.id')
+                    ->whereIn('roles.name', $userRoles)
+                    ->pluck('ws.id');
+
+                // Get requests waiting at those steps, excluding the user's own requests
+                $requestsToApproveQuery = (clone $query)
+                    ->whereIn('current_workflow_step_id', $approvableStepIds)
                     ->where('user_id', '!=', $user->id)
-                    ->whereNotNull('current_workflow_step_id')
-                    ->whereIn('current_status', ['Pending', 'In Progress'])
-                    ->latest()
-                    ->get()
-                    ->filter(function ($leaveRequest) use ($user) {
-                        // Check if user is authorized to approve current step
-                        $currentStep = $leaveRequest->currentStep;
-                        if (!$currentStep) {
-                            return false;
-                        }
-                        
-                        // Use WorkflowService to check if user is approver for this step
-                        return $this->workflowService->isApproverForStep($user, $currentStep, $leaveRequest);
-                    });
+                    ->latest();
 
                 // Get both sets of requests
                 $ownRequests = $ownRequestsQuery->get();
+                $requestsToApprove = $requestsToApproveQuery->get();
 
                 // Merge, ensure uniqueness, and re-index.
+                // Note: Merging might mess up the order if we don't sort again, 
+                // but frontend handles sorting. We sort here for good measure.
                 $requests = $ownRequests->merge($requestsToApprove)->unique('id')->sortByDesc('created_at')->values();
             } else {
                 // Regular users only see their own requests

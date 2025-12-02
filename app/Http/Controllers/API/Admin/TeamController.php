@@ -44,6 +44,13 @@ class TeamController extends Controller
             'asmen_id' => 'nullable|exists:users,id',
         ]);
 
+        // Convert empty strings to null for nullable fields
+        foreach (['leader_id', 'additional_leader_id', 'sl_id', 'asmen_id'] as $field) {
+            if (isset($validated[$field]) && $validated[$field] === '') {
+                $validated[$field] = null;
+            }
+        }
+
         $team = Team::create($validated);
 
         // Auto-assign 'TL' role
@@ -84,6 +91,13 @@ class TeamController extends Controller
             'sl_id' => 'nullable|exists:users,id',
             'asmen_id' => 'nullable|exists:users,id',
         ]);
+
+        // Convert empty strings to null for nullable fields
+        foreach (['leader_id', 'additional_leader_id', 'sl_id', 'asmen_id'] as $field) {
+            if (isset($validated[$field]) && $validated[$field] === '') {
+                $validated[$field] = null;
+            }
+        }
 
         $oldLeaderId = $team->leader_id;
         $oldAdditionalLeaderId = $team->additional_leader_id;
